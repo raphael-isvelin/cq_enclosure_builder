@@ -52,8 +52,6 @@ class PartSize:
 class Part:
     """Base class for all parts."""
 
-    DEFAULT_COLOR = (216/255, 201/255, 155/255)
-
     def __init__(self):
         # To simplify, we want to design all panels in a way where the side of the panel
         #   that's supposed to be inside of the box (e.g. screw holes, ramps, etc.) is on the top,

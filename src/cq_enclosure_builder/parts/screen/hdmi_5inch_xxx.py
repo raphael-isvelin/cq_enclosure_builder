@@ -16,6 +16,7 @@
 
 import cadquery as cq
 import math
+from cq_enclosure_builder.constants import DEFAULT_PART_COLOR
 from cq_enclosure_builder.part import Part, AssemblyPart
 from cq_enclosure_builder.parts_factory import register_part
 from cq_enclosure_builder.parts.common.default_screw_block import DefaultScrewBlock
@@ -120,7 +121,7 @@ class Hdmi5InchXxxPart(Part):
 
         screws = list(map(mirror_and_translate, screws))
 
-        assembly_parts = [AssemblyPart(screen_panel, "Screen", cq.Color(*Part.DEFAULT_COLOR))]
+        assembly_parts = [AssemblyPart(screen_panel, "Screen", cq.Color(*DEFAULT_PART_COLOR))]
         for idx, screw in enumerate(screws):
             assembly_parts.append(AssemblyPart(screw, f"Screw {idx}", cq.Color(0.7, 0.3, 0.8)))
 
