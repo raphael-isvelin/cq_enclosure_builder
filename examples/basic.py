@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../src")
+
 from cq_enclosure_builder import PartFactory as pf
 
 print("available categories: " + str(pf.list_categories()))

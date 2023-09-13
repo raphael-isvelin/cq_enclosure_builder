@@ -1,1 +1,1 @@
-from . import potentiometer_xxx
+from . import potentiometer_wh148

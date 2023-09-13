@@ -15,9 +15,7 @@
 """
 
 import cadquery as cq
-from cq_enclosure_builder import Part
-from cq_enclosure_builder import Panel
-from cq_enclosure_builder import Face
+from cq_enclosure_builder import Part, Panel, Face
 
 def explode(pos_array, walls_explosion_factor=2.0):
     return [x * walls_explosion_factor for x in pos_array]
