@@ -43,6 +43,9 @@ class DefaultScrewBlock:
     
     @staticmethod
     def generic_screw(screw_size, block_thickness, screw_hole_depth, counter_sunk, fit):
+        if screw_size not in DefaultScrewBlock.SCREW_SIZE_REFERENCES or screw_size not in DefaultScrewBlock.BLOCK_SIZES:
+            raise ValueError("Unknown screw size '" + screw_size + "'")
+
         screw_size_reference = DefaultScrewBlock.SCREW_SIZE_REFERENCES[screw_size]
         fastener = DefaultScrewBlock.SCREW_CLASS(size=screw_size_reference, fastener_type=DefaultScrewBlock.SCREW_MODEL_NAME, length=20)
 
