@@ -33,7 +33,9 @@ class Panel:
                  wall_thickness,
                  color=None,
                  part_color=None,
-                 alpha=1.0):
+                 alpha=1.0,
+                 lid_size_error_margin=0.0  # if provided, panel will be smaller than mask
+        ):
         self.face = face
         self.size = PanelSize(top_view_width, top_view_length, wall_thickness, wall_thickness)
         self._color = color
@@ -54,6 +56,7 @@ class Panel:
         self.debug_assemblies["footprint_out"] = None
         self.debug_assemblies["other"] = None
         self.debug_assemblies["combined"] = cq.Assembly(None, name=self.face.label + " - Debug")
+        self.lid_size_error_margin = lid_size_error_margin
         self._alpha = alpha
         self._parts_to_add = []
 
@@ -80,7 +83,7 @@ class Panel:
         wall = (
             cq.Workplane("front")
                 .workplane()
-                .box(self.size.width, self.size.length, self.size.wall_thickness,
+                .box(self.size.width - self.lid_size_error_margin, self.size.length - self.lid_size_error_margin, self.size.wall_thickness,
                      centered=(True, True, False))
         )
         self.panel = cq.Assembly(None, name="Panel TOP")

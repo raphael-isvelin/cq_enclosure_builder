@@ -16,58 +16,96 @@
 
 import cadquery as cq
 from cq_enclosure_builder import Part, Panel, Face
+from typing import List
 
 def explode(pos_array, walls_explosion_factor=2.0):
     return [x * walls_explosion_factor for x in pos_array]
 
-class Enclosure:
+class EnclosureSize:
     def __init__(self, inner_width, inner_length, inner_thickness, wall_thickness):
+        self.inner_width = inner_width
+        self.inner_length = inner_length
+        self.inner_thickness = inner_thickness
+        self.wall_thickness = wall_thickness
+
+class Enclosure:
+    def __init__(
+        self,
+        size: EnclosureSize,
+        lid_on_faces: List[Face] = [Face.BOTTOM],
+        lid_panel_size_error_margin = 0.8,  # meaning the lid is `margin` smaller than the hole on both width and length
+        no_fillet_top = False,
+        no_fillet_bottom = False,
+    ):
         super().__init__()
+
+        inner_width = size.inner_width
+        inner_length = size.inner_length
+        inner_thickness = size.inner_thickness
+        wall_thickness = size.wall_thickness
+        self.size = size
+        self.no_fillet_top = no_fillet_top
+        self.no_fillet_bottom = no_fillet_bottom
+
+        if lid_on_faces != [Face.BOTTOM]:
+            # TODO: add support (upddate the correct face in panels_specs)
+            # TODO nice-to-have: also add support for multiple lids (faces)
+            raise ValueError("lid_on_faces: only value supported for now is [BOTTOM], got " + str(lid_on_faces))
 
         self.frame = (
             cq.Workplane("front")
-                .box(inner_width, inner_length, inner_thickness, centered=(True, True, False))
-                .faces("+Z")
+                .box(inner_width - 4, inner_length - 4, inner_thickness - 4, centered=(True, True, False))
+                #.faces("+Z")
                 .shell(wall_thickness)
                 #.translate([2, 2, 2])
         )
         self.panels_specs = [
-            (Face.TOP,    (inner_width,  inner_length,    wall_thickness),  [0, 0, inner_thickness],   0.9 ),
-            (Face.BOTTOM, (inner_width,  inner_length,    wall_thickness),  [0, 0, 0],    0.9 ),
-            (Face.FRONT,  (inner_width,  inner_thickness, wall_thickness),  [0, -(inner_length/2), inner_thickness/2], 0.9 ),
-            (Face.BACK,   (inner_width,  inner_thickness, wall_thickness),  [0, inner_length/2, inner_thickness/2],  0.9 ),
-            (Face.LEFT,   (inner_length, inner_thickness, wall_thickness),  [-(inner_width/2), 0, inner_thickness/2], 0.9 ),
-            (Face.RIGHT,  (inner_length, inner_thickness, wall_thickness),  [inner_width/2, 0, inner_thickness/2],  0.9 ),
+            (Face.TOP,    (inner_width-4,  inner_length-4,    wall_thickness),  [0, 0, inner_thickness - wall_thickness],   0.9 ),
+            (Face.BOTTOM, (inner_width-4,  inner_length-4,    wall_thickness),  [0, 0, -wall_thickness],    0.9 ),
+            (Face.FRONT,  (inner_width-4,  inner_thickness-4, wall_thickness),  [0, -(inner_length/2), inner_thickness/2 - wall_thickness], 0.9 ),
+            (Face.BACK,   (inner_width-4,  inner_thickness-4, wall_thickness),  [0, inner_length/2, inner_thickness/2 - wall_thickness],  0.9 ),
+            (Face.LEFT,   (inner_length-4, inner_thickness-4, wall_thickness),  [-(inner_width/2), 0, inner_thickness/2 - wall_thickness], 0.9 ),
+            (Face.RIGHT,  (inner_length-4, inner_thickness-4, wall_thickness),  [inner_width/2, 0, inner_thickness/2 - wall_thickness],  0.9 ),
         ]
+
         self.panels = {}
+        self.screws_specs = []
+        self.scews = []
 
         for info in self.panels_specs:
-            self.panels[info[0]] = Panel(info[0], *info[1], alpha=info[3])
+            lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
+            self.panels[info[0]] = Panel(info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin)
 
     def add_part_to_face(self, face: Face, part_label: str, part: Part, rel_pos=None, abs_pos=None):
         self.panels[face].add(part_label, part, rel_pos, abs_pos)
         return self
 
-    def assemble(self, walls_explosion_factor=1.0, bottom_wall_z_shift=0.0):
+    def add_screw_for_lid_panel(self, size: str = "m3", rel_pos = None, abs_pos = None):
+        # TODO add support abs_pos and validation
+        pass
+
+    def assemble(self, walls_explosion_factor=1.0, lid_panel_shift=0.0):
         for panel in self.panels.values():
             panel.assemble()
 
-        panels_assembly = self._build_assembly(walls_explosion_factor, bottom_wall_z_shift)
-        footprints_assembly = self._build_debug_assembly([("footprint_in", "I"), ("footprint_out", "O")], walls_explosion_factor, bottom_wall_z_shift)
-        holes_assembly = self._build_debug_assembly([("hole", "")], walls_explosion_factor, bottom_wall_z_shift)
-        other_debug_assembly = self._build_debug_assembly([("other", "")], walls_explosion_factor, bottom_wall_z_shift)
-        masks_assembly = self._build_debug_assembly([("mask", "")], walls_explosion_factor, bottom_wall_z_shift)
+        panels_assembly, panels_masks_assembly = self._build_panels_assembly(walls_explosion_factor, lid_panel_shift)
+        frame_assembly = self._build_frame_assembly(panels_masks_assembly)
+
+        footprints_assembly = self._build_debug_assembly([("footprint_in", "I"), ("footprint_out", "O")], walls_explosion_factor, lid_panel_shift)
+        holes_assembly = self._build_debug_assembly([("hole", "")], walls_explosion_factor, lid_panel_shift)
+        other_debug_assembly = self._build_debug_assembly([("other", "")], walls_explosion_factor, lid_panel_shift)
 
         self.debug = (
             cq.Assembly(None, name="Box")
                 .add(footprints_assembly, name="Footprints")
                 .add(holes_assembly, name="Holes")
                 .add(other_debug_assembly, name="Others")
-                .add(masks_assembly, name="Masks")
+                .add(panels_masks_assembly, name="Panels masks")
         )
         self.assembly = (
             cq.Assembly(None, name="Box")
                 .add(panels_assembly, name="Panels")
+                .add(frame_assembly, name="Frame")
                 .add(self.debug, name="Debug")
         )
         return self
@@ -77,29 +115,76 @@ class Enclosure:
             return panel.debug_assemblies[assembly_name]
         return None
 
-    def _build_assembly(self, walls_explosion_factor, bottom_wall_z_shift):
+    def _build_panels_assembly(self, walls_explosion_factor, lid_panel_shift):
         a = cq.Assembly(None)
+        masks_a = cq.Assembly(None)
         for face, size, position, alpha in self.panels_specs:
-            if face == Face.BOTTOM:
-                position = (position[0], position[1], position[2] - bottom_wall_z_shift)
             panel: Panel = self.panels[face]
+            translated_mask = panel.mask.translate(position)
+            masks_a.add(translated_mask, name=(face.label + " mask"), color=cq.Color(0, 1, 0))
+            if face == Face.BOTTOM:
+                position = (position[0], position[1], position[2] - lid_panel_shift)
             translated_panel = panel.panel.translate(explode(position, walls_explosion_factor))
             a.add(translated_panel, name=face.label)
-        return a
+        return (a, masks_a)
 
-    def _build_debug_assembly(self, assemblies_specs, walls_explosion_factor, bottom_wall_z_shift):
+    def _build_frame_assembly(self, panels_masks_assembly) -> cq.Workplane:
+        """
+        Get the frame of the enclosure (the masks of the panels will be .cut during the assembly).
+        In this implemenmtation, it's only possible to remove the fillet
+        on the top and bottom of the enclosure (TODO: better implementation needed when lid_on_faces != [Face.BOTTOM] allowed),
+        but you can to override the method if you need something more custom (and feel free to contribute ;) )
+        """
+        # TODO: when implementing the lid on other faces than BOTTOM, will have to remake that code better
+
+        wall_thickness = self.size.wall_thickness
+
+        shell_faces_filter = []
+        shell_size = [
+            self.size.inner_width - wall_thickness*2,
+            self.size.inner_length - wall_thickness*2,
+            self.size.inner_thickness - wall_thickness*2
+        ]
+        shell_translate_z = 0
+
+        if self.no_fillet_top:
+            shell_faces_filter.append("+Z")
+            shell_size[2] = shell_size[2] + wall_thickness
+            shell_translate_z = shell_translate_z# + wall_thickness
+        if self.no_fillet_bottom:
+            shell_faces_filter.append("-Z")
+            shell_size[2] = shell_size[2] + wall_thickness
+            shell_translate_z = shell_translate_z - wall_thickness
+
+        no_faces_filter = "+Z and -Z"  # as two faces cannot be true at once--cheeky way to avoid `.faces("")`
+        shell_faces = no_faces_filter if len(shell_faces_filter) == 0 else " or ".join(shell_faces_filter)
+
+        shell = (
+            cq.Workplane()
+                .box(*shell_size, centered=(True, True, False))
+                .faces(shell_faces)
+                .shell(wall_thickness)
+                .translate([0, 0, shell_translate_z])
+        )
+
+        return shell.cut(panels_masks_assembly.toCompound())
+
+    def _cut_panels_masks_from_frame(self, frame: cq.Workplane) -> cq.Workplane:
+        for face, size, position, alpha in self.panels_specs:
+            panel: Panel = self.panels[face]
+            translated_mask = panel.mask.translate(position)
+            frame = frame.cut(translated_mask)
+        return frame
+
+    def _build_debug_assembly(self, assemblies_specs, walls_explosion_factor, lid_panel_shift):
         a = cq.Assembly(None)
         for face, size, position, alpha in self.panels_specs:
             if face == Face.BOTTOM:
-                position = (position[0], position[1], position[2] - bottom_wall_z_shift)
+                position = (position[0], position[1], position[2] - lid_panel_shift)
             panel: Panel = self.panels[face]
             for assembly_type, assembly_name_suffix in assemblies_specs:
-                if assembly_type == "mask":
-                    translated_mask = panel.mask.translate(explode(position, walls_explosion_factor))
-                    a.add(translated_mask, name=(face.label))
-                else:
-                    debug_assembly = self._get_debug(panel, assembly_type)
-                    if debug_assembly != None:
-                        translated_debug = debug_assembly.translate(explode(position, walls_explosion_factor))
-                        a.add(translated_debug, name=(f"{face.label} {assembly_name_suffix}"))
+                debug_assembly = self._get_debug(panel, assembly_type)
+                if debug_assembly != None:
+                    translated_debug = debug_assembly.translate(explode(position, walls_explosion_factor))
+                    a.add(translated_debug, name=(f"{face.label} {assembly_name_suffix}"))
         return a
