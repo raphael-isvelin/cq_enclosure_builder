@@ -19,7 +19,7 @@ import math
 from cq_enclosure_builder.constants import DEFAULT_PART_COLOR
 from cq_enclosure_builder.part import Part, AssemblyPart
 from cq_enclosure_builder.parts_factory import register_part
-from cq_enclosure_builder.parts.common.default_screw_block import DefaultScrewBlock
+from cq_enclosure_builder.parts.common.screw_block import ScrewBlock
 from cq_enclosure_builder.utils.workplane_utils import scale
 
 def required_taper_for_x(x, x_resulting, h):
@@ -167,7 +167,7 @@ class Hdmi5InchXxxPart(Part):
 
     def build_screws_assembly(self, screw_thickness, enclosure_wall_thickness, screen_ramp_thickness, screen_w_ramp_size):
         screw_block_thickness = screen_ramp_thickness - enclosure_wall_thickness + screw_thickness
-        m4 = DefaultScrewBlock.m4(screw_block_thickness)
+        m4 = ScrewBlock().m4(screw_block_thickness)
 
         distance_between_screws_x = 108.3  #-0.8
         distance_between_screws_y = 84  #-0.6

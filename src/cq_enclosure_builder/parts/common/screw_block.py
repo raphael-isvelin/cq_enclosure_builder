@@ -1,0 +1,161 @@
+"""
+   Copyright 2023 Raphaël Isvelin
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+"""
+
+from typing import Dict, List, Tuple, Union
+from enum import Enum
+
+import cadquery as cq
+import cq_warehouse.extensions
+from .hole_type import HoleType
+from .screws_providers import DefaultFlatHeadScrewProvider, DefaultHeadSetScrewProvider
+
+class FitOptions(Enum):
+    CLOSE = "Close"
+    NORMAL = "Normal"
+    LOOSE = "Loose"
+
+class TaperOptions(Enum):
+    NO_TAPER = 1
+    TAPER_ANGLE = 2
+    TAPER_SIDE = 3
+
+class ScrewBlock:
+    DEFAULT_FIT: FitOptions = FitOptions.LOOSE
+    DEFAULT_IS_COUNTER_SUNK: bool = False
+    DEFAULT_SCREW_HOLE_DEPTH: Union[int, None] = None  # None -> fully go through
+
+    def __init__(
+        self,
+        screw_provider=DefaultFlatHeadScrewProvider,
+        counter_sunk_screw_provider=DefaultFlatHeadScrewProvider
+    ):
+        self.screw_provider = screw_provider
+        self.counter_sunk_screw_provider = counter_sunk_screw_provider
+        for size in self.get_available_screw_sizes():
+            method_name = size.replace('.', '_')
+            setattr(self, method_name, self._create_method_for_category(size))
+    
+    def get_available_screw_sizes(self) -> List[str]:
+        return list(self.screw_provider.SCREW_SIZE_REFERENCES.keys())
+
+    def build(
+        self,
+        block_thickness: float,
+        screw_size_category: str,
+        screw_hole_depth: Union[int, None],
+        is_counter_sunk: bool,
+        with_counter_sunk_block: bool,
+        fit: FitOptions,
+        taper: TaperOptions,
+        taper_rotation: float
+    ):
+        wall_thickness = 1.8
+
+        fastener, block_size, hole_type = self.screw_provider.build_fastener(screw_size_category)
+        cs_fastener = cs_block_size = None
+        if with_counter_sunk_block and self.counter_sunk_screw_provider is not None:
+            cs_fastener, cs_block_size = self.counter_sunk_screw_provider.build_counter_sunk_fastener(screw_size_category)
+        elif with_counter_sunk_block:
+                print("with_counter_sunk_block is true, but no counter_sunk_screw_provider given")
+
+        block_size = (*block_size, block_thickness)
+
+        if screw_hole_depth == None:
+            screw_hole_depth = block_size[2]
+
+        screw_block = (
+            cq.Workplane("XY")
+                .box(*block_size, centered=(True, True, False))
+                .faces(">Z").workplane().pushPoints([(0,0)])
+        )
+        if hole_type == HoleType.THREADED_HOLE:
+            screw_block = screw_block.threadedHole(fastener=fastener, depth=screw_hole_depth, fit=fit.value, counterSunk=is_counter_sunk)
+        elif hole_type == HoleType.INSERT_HOLE:
+            screw_block = screw_block.insertHole(fastener=fastener, depth=screw_hole_depth, fit=fit.value)
+        elif hole_type == HoleType.CLEARANCE_HOLE:
+            screw_block = screw_block.clearanceHole(fastener=fastener, depth=screw_hole_depth, fit=fit.value, counterSunk=is_counter_sunk)
+            
+        if taper == TaperOptions.TAPER_ANGLE:
+            screw_block.add(
+                cq.Workplane("XY")
+                    .rect(block_size[0]*2, block_size[1]*2)
+                    .extrude(block_size[0]*2, taper=45)
+                    .cut(cq.Workplane("XY").rect(block_size[0], block_size[1]).extrude(block_size[0]*2).translate([-(block_size[0]/2), -(block_size[1]/2), 0]))
+                    .cut(cq.Workplane("XY").rect(block_size[0], block_size[1]).extrude(block_size[0]*2).translate([-(block_size[0]/2), block_size[1]/2, 0]))
+                    .cut(cq.Workplane("XY").rect(block_size[0], block_size[1]).extrude(block_size[0]*2).translate([block_size[0]/2, -(block_size[1]/2), 0]))
+                    .translate([-(block_size[0]/2), -(block_size[1]/2), screw_hole_depth])
+                    .rotate((0, 0, 0), (0, 0, 1), -taper_rotation)
+            )
+        elif taper == TaperOptions.TAPER_SIDE:
+            screw_block.add(
+                cq.Workplane("XZ")
+                    .moveTo(0, 0)
+                    .lineTo(block_size[0], 0)
+                    .lineTo(0, block_size[0])
+                    .close()
+                    .extrude(block_size[1])
+                    .translate([-(block_size[0]/2), block_size[1]/2, screw_hole_depth])
+                    .rotate((0, 0, 0), (0, 0, 1), -taper_rotation)
+            )
+
+        mask = cq.Workplane("XY").box(*block_size, centered=(True, True, False))
+
+        cs_block = cs_mask = None
+        if with_counter_sunk_block and self.counter_sunk_screw_provider is not None:
+            try:
+                cs_block = (
+                    cq.Workplane("XY")
+                        .box(*cs_block_size, wall_thickness, centered=(True, True, False))
+                        .faces(">Z").workplane().pushPoints([(0,0)])
+                        .clearanceHole(fastener=cs_fastener, depth=wall_thickness, fit=fit.value, counterSunk=True)
+                        .translate([0, 0, block_thickness])
+                )
+                cs_mask = (
+                    cq.Workplane("XY")
+                        .box(*cs_block_size, wall_thickness, centered=(True, True, False))
+                        .translate([0, 0, block_thickness])
+                )
+            except Exception as e:
+                raise ValueError("Couldn't create counter-sunk; wall_thickness should be thickness than the screw head") from e
+
+        return {
+            "block": screw_block,
+            "counter_sunk_block": cs_block,
+            "mask": mask,
+            "counter_sunk_mask": cs_mask,
+            "size": block_size
+        }
+
+    def _create_method_for_category(self, screw_size_category):
+        def method(
+            block_thickness: float,
+            screw_hole_depth: Union[int, None] = ScrewBlock.DEFAULT_SCREW_HOLE_DEPTH, 
+            is_counter_sunk: bool = ScrewBlock.DEFAULT_IS_COUNTER_SUNK, 
+            with_counter_sunk_block: bool = False,
+            fit: FitOptions = ScrewBlock.DEFAULT_FIT, 
+            taper: TaperOptions = TaperOptions.NO_TAPER, 
+            taper_rotation: float = 0.0
+        ):
+            return self.build(
+                block_thickness,
+                screw_size_category,
+                screw_hole_depth,
+                is_counter_sunk,
+                with_counter_sunk_block,
+                fit,
+                taper,
+                taper_rotation)
+        return method
