@@ -14,9 +14,12 @@
    limitations under the License.
 """
 
+from typing import List
+
 import cadquery as cq
 from cq_enclosure_builder import Part, Panel, Face
-from typing import List
+from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
+from cq_enclosure_builder.parts.common.screws_providers import DefaultFlatHeadScrewProvider
 
 def explode(pos_array, walls_explosion_factor=2.0):
     return [x * walls_explosion_factor for x in pos_array]
@@ -34,6 +37,8 @@ class Enclosure:
         size: EnclosureSize,
         lid_on_faces: List[Face] = [Face.BOTTOM],
         lid_panel_size_error_margin = 0.8,  # meaning the lid is `margin` smaller than the hole on both width and length
+        lid_screws_thickness_error_margin = 0.4,
+        add_corner_lid_screws = True,
         no_fillet_top = False,
         no_fillet_bottom = False,
     ):
@@ -70,19 +75,78 @@ class Enclosure:
 
         self.panels = {}
         self.screws_specs = []
-        self.scews = []
+        self.screws = []
 
         for info in self.panels_specs:
             lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
             self.panels[info[0]] = Panel(info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin)
 
+        if add_corner_lid_screws:
+            self.add_corner_lid_screws(lid_screws_thickness_error_margin)
+
     def add_part_to_face(self, face: Face, part_label: str, part: Part, rel_pos=None, abs_pos=None):
         self.panels[face].add(part_label, part, rel_pos, abs_pos)
         return self
 
-    def add_screw_for_lid_panel(self, size: str = "m3", rel_pos = None, abs_pos = None):
-        # TODO add support abs_pos and validation
-        pass
+    def add_screw(
+        self,
+        screw_size_category: str = "m3",
+        rel_pos = None,
+        abs_pos = None,
+        pos_error_margin = 0,
+        taper: TaperOptions = TaperOptions.NO_TAPER,
+        taper_rotation: float = 0.0,
+        screw_provider = DefaultFlatHeadScrewProvider,
+        counter_sunk_screw_provider = DefaultFlatHeadScrewProvider
+    ):
+        # TODO support lid != Face.BOTTOM
+
+        pos = None
+        if rel_pos == None and abs_pos == None:
+            raise ValueError("Either rel_pos or abs_pos must be set.")
+        elif rel_pos == None:
+            pos = (
+                abs_pos[0] - self.size.inner_width/2,
+                abs_pos[1] - self.size.inner_length/2
+            )
+        elif abs_pos==None:
+            pos = rel_pos
+
+        screw = ScrewBlock(screw_provider, counter_sunk_screw_provider).build(
+            screw_size_category,
+            block_thickness=8,
+            taper=TaperOptions.TAPER_ANGLE,
+            taper_rotation=taper_rotation
+        )
+        screw_wp = screw["block"].translate([*pos, pos_error_margin])
+        self.screws.append(screw_wp)
+        return screw
+
+    def add_corner_lid_screws(self, lid_screws_thickness_error_margin):
+        # TODO support lid != Face.BOTTOM
+        screw_size_category = "m3"
+        screw_size = ScrewBlock().build(screw_size_category, 8)["size"]
+        pw = self.size.inner_width
+        pl = self.size.inner_length
+        sw = screw_size[0]
+        sl = screw_size[1]
+        wt = self.size.wall_thickness
+        corners = [
+            ( (0+sw/2+wt,  0+sl/2+wt),    0 ),
+            ( (0+sw/2+wt,  pl-sl/2-wt),  90 ),
+            ( (pw-sw/2-wt, pl-sl/2-wt), 180 ),
+            ( (pw-sw/2-wt, 0+sl/2+wt),  270 )
+        ]
+        for c in corners:
+            screw_pos = c[0]
+            screw_rotation = c[1]
+            self.add_screw(
+                screw_size_category=screw_size_category,
+                abs_pos=screw_pos,
+                pos_error_margin=lid_screws_thickness_error_margin,
+                taper=TaperOptions.TAPER_ANGLE,
+                taper_rotation=screw_rotation
+            )
 
     def assemble(self, walls_explosion_factor=1.0, lid_panel_shift=0.0):
         for panel in self.panels.values():
@@ -90,6 +154,7 @@ class Enclosure:
 
         panels_assembly, panels_masks_assembly = self._build_panels_assembly(walls_explosion_factor, lid_panel_shift)
         frame_assembly = self._build_frame_assembly(panels_masks_assembly)
+        lid_screws_assembly = self._build_lid_screws_assembly()
 
         footprints_assembly = self._build_debug_assembly([("footprint_in", "I"), ("footprint_out", "O")], walls_explosion_factor, lid_panel_shift)
         holes_assembly = self._build_debug_assembly([("hole", "")], walls_explosion_factor, lid_panel_shift)
@@ -106,6 +171,7 @@ class Enclosure:
             cq.Assembly(None, name="Box")
                 .add(panels_assembly, name="Panels")
                 .add(frame_assembly, name="Frame")
+                .add(lid_screws_assembly, name="Lid screws", color=cq.Color(0.6, 0.45, 0.8))
                 .add(self.debug, name="Debug")
         )
         return self
@@ -168,6 +234,12 @@ class Enclosure:
         )
 
         return shell.cut(panels_masks_assembly.toCompound())
+
+    def _build_lid_screws_assembly(self):
+        a = cq.Assembly(None)
+        for idx, s in enumerate(self.screws):
+            a.add(s, name=f"Screw #{idx}", color=cq.Color(0.6, 0.45, 0.8))
+        return a
 
     def _cut_panels_masks_from_frame(self, frame: cq.Workplane) -> cq.Workplane:
         for face, size, position, alpha in self.panels_specs:

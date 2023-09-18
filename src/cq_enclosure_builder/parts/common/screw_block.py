@@ -20,7 +20,7 @@ from enum import Enum
 import cadquery as cq
 import cq_warehouse.extensions
 from .hole_type import HoleType
-from .screws_providers import DefaultFlatHeadScrewProvider, DefaultHeadSetScrewProvider
+from .screws_providers import DefaultFlatHeadScrewProvider
 
 class FitOptions(Enum):
     CLOSE = "Close"
@@ -34,7 +34,9 @@ class TaperOptions(Enum):
 
 class ScrewBlock:
     DEFAULT_FIT: FitOptions = FitOptions.LOOSE
+    DEFAULT_TAPER: TaperOptions = TaperOptions.NO_TAPER
     DEFAULT_IS_COUNTER_SUNK: bool = False
+    DEFAULT_WITH_COUNTER_SUNK_BLOCK: bool = False
     DEFAULT_SCREW_HOLE_DEPTH: Union[int, None] = None  # None -> fully go through
 
     def __init__(
@@ -47,20 +49,20 @@ class ScrewBlock:
         for size in self.get_available_screw_sizes():
             method_name = size.replace('.', '_')
             setattr(self, method_name, self._create_method_for_category(size))
-    
+
     def get_available_screw_sizes(self) -> List[str]:
         return list(self.screw_provider.SCREW_SIZE_REFERENCES.keys())
 
     def build(
         self,
-        block_thickness: float,
         screw_size_category: str,
-        screw_hole_depth: Union[int, None],
-        is_counter_sunk: bool,
-        with_counter_sunk_block: bool,
-        fit: FitOptions,
-        taper: TaperOptions,
-        taper_rotation: float
+        block_thickness: float,
+        screw_hole_depth: Union[int, None] = DEFAULT_SCREW_HOLE_DEPTH,
+        is_counter_sunk: bool = DEFAULT_IS_COUNTER_SUNK,
+        with_counter_sunk_block: bool = DEFAULT_WITH_COUNTER_SUNK_BLOCK,
+        fit: FitOptions = DEFAULT_FIT,
+        taper: TaperOptions = DEFAULT_TAPER,
+        taper_rotation: float = 0.0
     ):
         wall_thickness = 1.8
 
@@ -87,7 +89,7 @@ class ScrewBlock:
             screw_block = screw_block.insertHole(fastener=fastener, depth=screw_hole_depth, fit=fit.value)
         elif hole_type == HoleType.CLEARANCE_HOLE:
             screw_block = screw_block.clearanceHole(fastener=fastener, depth=screw_hole_depth, fit=fit.value, counterSunk=is_counter_sunk)
-            
+
         if taper == TaperOptions.TAPER_ANGLE:
             screw_block.add(
                 cq.Workplane("XY")
@@ -142,16 +144,16 @@ class ScrewBlock:
     def _create_method_for_category(self, screw_size_category):
         def method(
             block_thickness: float,
-            screw_hole_depth: Union[int, None] = ScrewBlock.DEFAULT_SCREW_HOLE_DEPTH, 
-            is_counter_sunk: bool = ScrewBlock.DEFAULT_IS_COUNTER_SUNK, 
-            with_counter_sunk_block: bool = False,
-            fit: FitOptions = ScrewBlock.DEFAULT_FIT, 
-            taper: TaperOptions = TaperOptions.NO_TAPER, 
+            screw_hole_depth: Union[int, None] = ScrewBlock.DEFAULT_SCREW_HOLE_DEPTH,
+            is_counter_sunk: bool = ScrewBlock.DEFAULT_IS_COUNTER_SUNK,
+            with_counter_sunk_block: bool = ScrewBlock.DEFAULT_WITH_COUNTER_SUNK_BLOCK,
+            fit: FitOptions = ScrewBlock.DEFAULT_FIT,
+            taper: TaperOptions = ScrewBlock.DEFAULT_TAPER,
             taper_rotation: float = 0.0
         ):
             return self.build(
-                block_thickness,
                 screw_size_category,
+                block_thickness,
                 screw_hole_depth,
                 is_counter_sunk,
                 with_counter_sunk_block,
