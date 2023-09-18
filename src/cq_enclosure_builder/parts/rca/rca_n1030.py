@@ -18,12 +18,12 @@ import cadquery as cq
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedPart
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("rca", "XXX")
-class RcaXxxPart(GenericThreadedPart):
+@register_part("rca", "N1030")
+class RcaN1030Part(GenericThreadedPart):
     """
-    RCA connector XXX
+    RCA connector N1030
 
-    TODO
+    https://www.aliexpress.com/item/32838562208.html
     """
 
     def __init__(self, enclosure_wall_thickness):

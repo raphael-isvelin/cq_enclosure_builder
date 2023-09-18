@@ -1,1 +1,1 @@
-from . import spst_xxx
+from . import spst_pbs24b4

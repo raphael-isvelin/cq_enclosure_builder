@@ -18,12 +18,12 @@ import cadquery as cq
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedWithStopPart
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("encoder", "XXX")
-class EncoderXxxPart(GenericThreadedWithStopPart):
+@register_part("encoder", "EC11")
+class EncoderEc11Part(GenericThreadedWithStopPart):
     """
-    SPST connector XXX
+    SPST connector EC11
 
-    TODO
+    https://www.aliexpress.com/item/10000056483250.html
     """
 
     def __init__(self, enclosure_wall_thickness):

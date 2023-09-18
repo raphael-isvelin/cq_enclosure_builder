@@ -1,1 +1,1 @@
-from . import hdmi_5inch_xxx
+from . import hdmi_5inch_jrp5015

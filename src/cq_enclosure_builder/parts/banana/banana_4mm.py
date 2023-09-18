@@ -18,12 +18,12 @@ import cadquery as cq
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedPart
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("banana", "XXX")
-class BananaXxxPart(GenericThreadedPart):
+@register_part("banana", "4mm")
+class Banana4mmPart(GenericThreadedPart):
     """
-    Banana connector XXX
+    Banana connector 4mm
 
-    TODO
+    https://www.aliexpress.com/item/32889591732.html
     """
 
     def __init__(self, enclosure_wall_thickness):

@@ -18,12 +18,12 @@ import cadquery as cq
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedWithStopPart
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("button", "SPST XX")
-class ButtonSpstXxxPart(GenericThreadedWithStopPart):
+@register_part("button", "SPST PBS-24B-4")
+class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
     """
-    SPST connector XXX
+    SPST connector PBS-24B-4
 
-    TODO
+    https://www.aliexpress.com/item/1005004646906063.html
     """
 
     def __init__(self, enclosure_wall_thickness):

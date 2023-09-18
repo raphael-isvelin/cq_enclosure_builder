@@ -22,12 +22,12 @@ from cq_enclosure_builder.parts_factory import register_part
 
 M2_SIZE = 2
 
-@register_part("usb_c", "XXX")
-class UsbCXxxPart(Part):
+@register_part("usb_c", "ChengHaoRan E")
+class UsbCChengHaoRanEPart(Part):
     """
-    USB C female connector XXX
+    USB C female connector ChengHaoRan E
 
-    LINK_HERE
+    https://www.aliexpress.com/item/1005002320414960.html
     """
 
     # TODO refactor or rewrite!

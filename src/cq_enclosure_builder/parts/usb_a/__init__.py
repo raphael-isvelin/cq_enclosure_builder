@@ -1,1 +1,1 @@
-from . import usb_a_xxx
+from . import usb_a_30_vertical_cltgxdd

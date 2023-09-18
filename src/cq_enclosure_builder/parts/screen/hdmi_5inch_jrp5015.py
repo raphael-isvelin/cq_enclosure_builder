@@ -32,12 +32,12 @@ def tapered_dimensions(x, y, h, alpha):
     delta_y = h * math.tan(alpha_rad)
     return y + 2 * delta_y
 
-@register_part("screen", "HDMI 5 inch XXX")
-class Hdmi5InchXxxPart(Part):
+@register_part("screen", "HDMI 5 inch JRP5015")
+class Hdmi5InchJrp5015Part(Part):
     """
-    HDMI 5 inch screen
+    HDMI 5 inch screen JRP5015
 
-    LINK_HERE
+    https://www.aliexpress.com/item/1005004132936105.html
     """
 
     def __init__(self, enclosure_wall_thickness, center_is_outward_facing_hole=True):

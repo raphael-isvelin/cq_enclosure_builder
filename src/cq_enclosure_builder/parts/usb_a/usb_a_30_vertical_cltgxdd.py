@@ -19,12 +19,12 @@ from cq_warehouse.fastener import PanHeadScrew
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("usb_a", "XXX")
-class UsbAXxxPart(Part):
+@register_part("usb_a", "3.0 vertical cltgxdd")
+class UsbA30VerticalCltgxddPart(Part):
     """
-    USB A female connector XXX
+    USB A female connector 3.0 vertical cltgxdd
 
-    LINK_HERE
+    https://www.aliexpress.com/item/1005003329405836.html
     """
 
     def __init__(self, enclosure_wall_thickness, orientation_vertical=False, center_is_outward_facing_hole=True):

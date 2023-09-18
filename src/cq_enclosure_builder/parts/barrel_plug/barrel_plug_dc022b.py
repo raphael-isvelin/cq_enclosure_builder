@@ -18,12 +18,12 @@ import cadquery as cq
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedPart
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("barrel_plug", "XXX")
-class BarrelPlugXxxPart(GenericThreadedPart):
+@register_part("barrel_plug", "DC-022B")
+class BarrelPlugDc022bPart(GenericThreadedPart):
     """
-    Barrel plug connector XXX
+    Barrel plug connector DC-022B
 
-    TODO
+    https://www.aliexpress.com/item/33026528272.html
     """
 
     def __init__(self, enclosure_wall_thickness):
