@@ -14,6 +14,8 @@
    limitations under the License.
 """
 
+from typing import Dict, Union
+
 import cadquery as cq
 from cq_enclosure_builder import Face
 from cq_enclosure_builder.part import Part
@@ -36,28 +38,28 @@ class Panel:
                  alpha=1.0,
                  lid_size_error_margin=0.0  # if provided, panel will be smaller than mask
         ):
-        self.face = face
-        self.size = PanelSize(top_view_width, top_view_length, wall_thickness, wall_thickness)
+        self.face: Face = face
+        self.size: PanelSize = PanelSize(top_view_width, top_view_length, wall_thickness, wall_thickness)
         self._color = color
         if self._color == None:
             self._color = self.face.default_color
         self._part_color = part_color
         if self._part_color == None:
             self._part_color = self.face.default_part_color
-        self.panel = None
-        self.mask = self._rotate_to_face(
+        self.panel: cq.Workplane = None
+        self.mask: cq.Workplane = self._rotate_to_face(
             cq.Workplane("front")
                 .workplane()
                 .box(top_view_width, top_view_length, wall_thickness, centered=(True, True, False))
         )
-        self.debug_assemblies = {}
+        self.debug_assemblies: Dict[str, Union[Dict, cq.Workplane]] = {}
         self.debug_assemblies["hole"] = None
         self.debug_assemblies["footprint_in"] = None
         self.debug_assemblies["footprint_out"] = None
         self.debug_assemblies["other"] = None
         self.debug_assemblies["combined"] = cq.Assembly(None, name=self.face.label + " - Debug")
-        self.lid_size_error_margin = lid_size_error_margin
-        self._alpha = alpha
+        self.lid_size_error_margin: float = lid_size_error_margin
+        self._alpha: float = alpha
         self._parts_to_add = []
 
     def add(self, label: str, part: Part, rel_pos=None, abs_pos=None):

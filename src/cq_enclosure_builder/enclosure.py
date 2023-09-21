@@ -115,7 +115,7 @@ class Enclosure:
         screw = ScrewBlock(screw_provider, counter_sunk_screw_provider).build(
             screw_size_category,
             block_thickness=8,
-            taper=TaperOptions.TAPER_ANGLE,
+            taper=TaperOptions.Z_TAPER_ANGLE,
             taper_rotation=taper_rotation
         )
         screw_wp = screw["block"].translate([*pos, pos_error_margin])
@@ -144,7 +144,7 @@ class Enclosure:
                 screw_size_category=screw_size_category,
                 abs_pos=screw_pos,
                 pos_error_margin=lid_screws_thickness_error_margin,
-                taper=TaperOptions.TAPER_ANGLE,
+                taper=TaperOptions.Z_TAPER_ANGLE,
                 taper_rotation=screw_rotation
             )
 

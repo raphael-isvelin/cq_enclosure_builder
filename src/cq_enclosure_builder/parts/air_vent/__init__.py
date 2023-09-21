@@ -1,0 +1,1 @@
+from . import rect_air_vent_part

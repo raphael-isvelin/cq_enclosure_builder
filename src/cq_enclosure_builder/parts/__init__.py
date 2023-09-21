@@ -6,6 +6,7 @@ from . import potentiometer
 from . import usb_a
 from . import usb_c
 from . import screen
+from . import air_vent
 from . import banana
 from . import barrel_plug
 from . import rca

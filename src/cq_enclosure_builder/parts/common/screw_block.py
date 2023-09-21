@@ -29,15 +29,16 @@ class FitOptions(Enum):
 
 class TaperOptions(Enum):
     NO_TAPER = 1
-    TAPER_ANGLE = 2
-    TAPER_SIDE = 3
+    XY_TAPER = 2
+    Z_TAPER_ANGLE = 3
+    Z_TAPER_SIDE = 4
 
 class ScrewBlock:
     DEFAULT_FIT: FitOptions = FitOptions.LOOSE
     DEFAULT_TAPER: TaperOptions = TaperOptions.NO_TAPER
     DEFAULT_IS_COUNTER_SUNK: bool = False
     DEFAULT_WITH_COUNTER_SUNK_BLOCK: bool = False
-    DEFAULT_SCREW_HOLE_DEPTH: Union[int, None] = None  # None -> fully go through
+    DEFAULT_SCREW_HOLE_DEPTH: Union[float, None] = None  # None -> fully go through
 
     def __init__(
         self,
@@ -57,13 +58,14 @@ class ScrewBlock:
         self,
         screw_size_category: str,
         block_thickness: float,
-        screw_hole_depth: Union[int, None] = DEFAULT_SCREW_HOLE_DEPTH,
+        screw_hole_depth: Union[float, None] = DEFAULT_SCREW_HOLE_DEPTH,
         is_counter_sunk: bool = DEFAULT_IS_COUNTER_SUNK,
         with_counter_sunk_block: bool = DEFAULT_WITH_COUNTER_SUNK_BLOCK,
         fit: FitOptions = DEFAULT_FIT,
         taper: TaperOptions = DEFAULT_TAPER,
         taper_rotation: float = 0.0
     ):
+        # TODO improve taper: it can only taper on Z axis for now
         wall_thickness = 1.8
 
         fastener, block_size, hole_type = self.screw_provider.build_fastener(screw_size_category)
@@ -90,7 +92,7 @@ class ScrewBlock:
         elif hole_type == HoleType.CLEARANCE_HOLE:
             screw_block = screw_block.clearanceHole(fastener=fastener, depth=screw_hole_depth, fit=fit.value, counterSunk=is_counter_sunk)
 
-        if taper == TaperOptions.TAPER_ANGLE:
+        if taper == TaperOptions.Z_TAPER_ANGLE:
             screw_block.add(
                 cq.Workplane("XY")
                     .rect(block_size[0]*2, block_size[1]*2)
@@ -101,7 +103,7 @@ class ScrewBlock:
                     .translate([-(block_size[0]/2), -(block_size[1]/2), screw_hole_depth])
                     .rotate((0, 0, 0), (0, 0, 1), -taper_rotation)
             )
-        elif taper == TaperOptions.TAPER_SIDE:
+        elif taper == TaperOptions.Z_TAPER_SIDE:
             screw_block.add(
                 cq.Workplane("XZ")
                     .moveTo(0, 0)
@@ -110,6 +112,17 @@ class ScrewBlock:
                     .close()
                     .extrude(block_size[1])
                     .translate([-(block_size[0]/2), block_size[1]/2, screw_hole_depth])
+                    .rotate((0, 0, 0), (0, 0, 1), -taper_rotation)
+            )
+        elif taper == TaperOptions.XY_TAPER:
+            screw_block.add(
+                cq.Workplane("YZ")
+                    .moveTo(0, 0)
+                    .lineTo(block_size[2], 0)
+                    .lineTo(0, block_size[2])
+                    .close()
+                    .extrude(block_size[1])
+                    .translate([-(block_size[0]/2), block_size[1]/2, 0])
                     .rotate((0, 0, 0), (0, 0, 1), -taper_rotation)
             )
 

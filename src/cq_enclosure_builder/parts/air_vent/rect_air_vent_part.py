@@ -1,0 +1,188 @@
+"""
+   Copyright 2023 Raphaël Isvelin
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+"""
+
+import math
+from enum import Enum
+from typing import Union
+
+import cadquery as cq
+from cq_enclosure_builder.part import Part
+from cq_enclosure_builder.parts_factory import register_part
+from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
+
+class FanSize(Enum):
+    _40_MM = 1
+    _30_MM = 2
+    _25_MM = 3
+
+@register_part("air_vent", "basic rectangular")
+class RectAirVentPart(Part):
+    """
+    Class to make basic rectangular vents, with optional screws for fan.
+
+    Needs refactoring.
+    Hasn't been tested much besides the default parameters.
+    """
+    def __init__(
+        self,
+        enclosure_wall_thickness,
+        width = 25,
+        length = 20,
+        thickness = 5,
+        margin = 1,
+        hole_angle = 25,
+        hole_width = 1.6,
+        distance_between_holes = 3,
+        taper = True,
+        taper_margin = 2,
+        taper_angle = 35,
+        with_fan_screws: Union[FanSize, None] = FanSize._25_MM,
+        fan_screws_taper_mode: TaperOptions = TaperOptions.XY_TAPER,
+        fan_screws_taper_rotation: float = 0,
+        fan_screws_taper_on: str = "1100"  # TODO cleanup one day; sorry future self, just want to be done with it :shrug:
+    ):
+        super().__init__()
+
+        # Board
+        board = (
+            cq.Workplane("front")
+                .box(width, length, thickness, centered=(True, True, False))
+        )
+
+        # Add holes
+        single_hole = (
+            cq.Workplane("front")
+                .box(hole_width, length, thickness*6, centered=(True, True, False))
+                .translate([0, 0, -(thickness*3)])
+                .rotate((0, 0, 0), (0, 1, 0), hole_angle)
+        )
+
+        all_holes = cq.Assembly()
+        hole_x = 0
+        while hole_x < width/2:
+            all_holes.add(single_hole.translate([hole_x, 0, 0]))
+            all_holes.add(single_hole.translate([-hole_x, 0, 0]))
+            hole_x = hole_x + distance_between_holes
+
+        board = board.cut(all_holes.toCompound())
+
+        # Add frame
+        board = (
+            cq.Workplane("front")
+                .box(width + margin*2, length + margin*2, thickness, centered=(True, True, False))
+                .cut(cq.Workplane("front").box(width, length, thickness, centered=(True, True, False)))
+                .add(board)
+        )        
+
+        # Pyramid
+        if taper:
+            pyramid = (
+                cq.Workplane("front")
+                    .rect(width + margin*2 + taper_margin*2, length + margin*2 + taper_margin*2)
+                    .extrude(30, taper=taper_angle)
+                    .cut(cq.Workplane("front").rect(width + 4, length + 4).extrude(40).translate([0, 0, thickness - enclosure_wall_thickness]))
+                    .cut(cq.Workplane("front").rect(width, length).extrude(thickness - enclosure_wall_thickness).translate([0, 0, 0]))
+                    .translate([0, 0, enclosure_wall_thickness])
+            )
+            board = board.add(pyramid)
+
+        # Fan screws
+        if with_fan_screws is not None:
+            fan_screws_a = RectAirVentPart._get_fan_screws_blocks(
+                with_fan_screws,
+                block_thickness=thickness-1,
+                screw_block_taper_option=fan_screws_taper_mode,
+                screw_block_taper_rotation=fan_screws_taper_rotation,
+                screw_block_taper_on=fan_screws_taper_on
+            )
+            fan_screws = fan_screws_a["screws"].translate([0, 0, 1])
+            fan_masks = fan_screws_a["masks"].translate([0, 0, 1])
+
+            board = board.cut(fan_masks).add(fan_screws)
+
+        # Mask & footprint
+        mask = (
+            cq.Workplane("front")
+                .box(width, length, enclosure_wall_thickness, centered=(True, True, False))
+        )
+
+        self.part = board
+        self.mask = mask
+
+        self.size.width     = width
+        self.size.length    = length
+        self.size.thickness = thickness
+
+        self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_offset = (0, 0)
+        self.outside_footprint = (self.size.width, self.size.length)
+        inside_footprint_thickness = 4
+        footprint_in = (
+            cq.Workplane("front")
+                .rect(self.size.width, self.size.length)
+                .extrude(inside_footprint_thickness)
+                .translate([0, 0, enclosure_wall_thickness])
+        )
+        outside_footprint_thickness = 2
+        footprint_out = (
+            cq.Workplane("front")
+                .rect(*self.outside_footprint)
+                .extrude(outside_footprint_thickness)
+                .translate([-0, 0, -outside_footprint_thickness])
+        )
+        self.debug_objects.footprint.inside  = footprint_in
+        self.debug_objects.footprint.outside = footprint_out
+        
+        self.debug_objects.hole = all_holes.toCompound()
+
+    @staticmethod
+    def _get_fan_screws_blocks(
+        fan_size: FanSize,
+        block_thickness: float,
+        screw_block_taper_option: TaperOptions = TaperOptions.XY_TAPER,
+        screw_block_taper_rotation: float = 0,
+        screw_block_taper_on: str = "1111"  # should taper that specific screw block? same order as screws_pos
+    ):
+        screw = ScrewBlock().build("m2", block_thickness, screw_hole_depth=block_thickness-1.2, taper=screw_block_taper_option, taper_rotation=screw_block_taper_rotation)
+        screw_no_taper = ScrewBlock().build("m2", block_thickness, screw_hole_depth=block_thickness-1.2)
+
+        distance_between_screws = None  # center to center
+        if fan_size == FanSize._25_MM: distance_between_screws = 16.9 + 2.9
+        elif fan_size == FanSize._30_MM: distance_between_screws = 20.8 + 3.2
+        elif fan_size == FanSize._40_MM: distance_between_screws = 28.9 + 3.2
+        else: raise ValueError("Unknown FanSize")
+
+        hdbs = distance_between_screws/2
+
+        screws_pos = [
+            (-hdbs,  hdbs),  # TR
+            ( hdbs,  hdbs),  # TL
+            ( hdbs, -hdbs),  # BL
+            (-hdbs, -hdbs),  # BR
+        ]
+
+        screws = cq.Assembly()
+        masks = cq.Assembly()
+        for idx, sp in enumerate(screws_pos):
+            current_screw = screw if screw_block_taper_on[idx] == "1" else screw_no_taper  # see apologies in constructor :D
+            screws.add(current_screw["block"].translate([*sp, 0]))
+            masks.add(current_screw["mask"].translate([*sp, 0]))
+
+        return {
+            "screws": screws.toCompound(),
+            "masks": masks.toCompound(),
+            #"base_plate": base_plate.translate([0, 0, -enclosure_wall_thickness])
+        }
