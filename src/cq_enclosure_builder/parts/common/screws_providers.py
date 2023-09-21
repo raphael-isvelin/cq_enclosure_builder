@@ -73,6 +73,57 @@ class DefaultFlatHeadScrewProvider:
         )
 
 
+class TinyBlockFlatHeadScrewProvider:
+    SCREW_CLASS = FlatHeadScrew
+    SCREW_MODEL_NAME: str = "aliexpress"
+    SCREW_SIZE_REFERENCES: Dict[str, str] = {
+        "m1.4": "M1.4-0.3",
+        "m2": "M2-0.4",
+        "m3": "M3-0.5",
+        "m4": "M4-0.7",
+        "m5": "M5-0.8",
+    }
+    BLOCK_SIZES: Dict[str, Tuple[int, int]] = {
+        "m1.4": (2.4, 2.4),
+        "m2": (3.6, 3.6),
+        "m3": (4.8, 4.8),
+        "m4": (6, 6),
+        "m5": (7.2, 7.2),
+    }
+    COUNTER_SUNK_BLOCK_SIZES: Dict[str, Tuple[int, int]] = {
+        "m1.4": (3, 3),
+        "m2": (4.6, 4.6),
+        "m3": (6.8, 6.8),
+        "m4": (8.6, 8.6),
+        "m5": (10.4, 10.4),
+    }
+    HOLE_TYPE: HoleType = HoleType.THREADED_HOLE
+    INCLUDE_LENGTH_PARAM: bool = True
+
+    @classmethod
+    def build_fastener(cls, screw_size_category: str):
+        return GenericScrewProvider.build_fastener(
+            cls.SCREW_CLASS,
+            cls.SCREW_MODEL_NAME,
+            cls.SCREW_SIZE_REFERENCES,
+            cls.BLOCK_SIZES,
+            cls.HOLE_TYPE,
+            cls.INCLUDE_LENGTH_PARAM,
+            screw_size_category
+        )
+
+    @classmethod
+    def build_counter_sunk_fastener(cls, screw_size_category: str):
+        return GenericScrewProvider.build_counter_sunk_fastener(
+            cls.SCREW_CLASS,
+            cls.SCREW_MODEL_NAME,
+            cls.SCREW_SIZE_REFERENCES,
+            cls.COUNTER_SUNK_BLOCK_SIZES,
+            cls.INCLUDE_LENGTH_PARAM,
+            screw_size_category
+        )
+
+
 class DefaultHeadSetScrewProvider:
     SCREW_CLASS = HeatSetNut
     SCREW_MODEL_NAME: str = "Hilitchi"

@@ -38,7 +38,7 @@ class ScrewBlock:
     DEFAULT_TAPER: TaperOptions = TaperOptions.NO_TAPER
     DEFAULT_IS_COUNTER_SUNK: bool = False
     DEFAULT_WITH_COUNTER_SUNK_BLOCK: bool = False
-    DEFAULT_SCREW_HOLE_DEPTH: Union[float, None] = None  # None -> fully go through
+    DEFAULT_SCREW_HOLE_DEPTH: Union[float, None] = None  # None -> fully go through. If still going through, read comment for fill_pointy_bit.
 
     def __init__(
         self,
@@ -59,11 +59,14 @@ class ScrewBlock:
         screw_size_category: str,
         block_thickness: float,
         screw_hole_depth: Union[float, None] = DEFAULT_SCREW_HOLE_DEPTH,
+        fill_pointy_bit: bool = False,  # read comment where used
         is_counter_sunk: bool = DEFAULT_IS_COUNTER_SUNK,
         with_counter_sunk_block: bool = DEFAULT_WITH_COUNTER_SUNK_BLOCK,
         fit: FitOptions = DEFAULT_FIT,
         taper: TaperOptions = DEFAULT_TAPER,
-        taper_rotation: float = 0.0
+        taper_rotation: float = 0.0,
+        xy_taper_incline: float = 0.75,
+        xy_taper_from: float = 0  # useful to start your screw inside of a wall
     ):
         # TODO improve taper: it can only taper on Z axis for now
         wall_thickness = 1.8
@@ -92,6 +95,16 @@ class ScrewBlock:
         elif hole_type == HoleType.CLEARANCE_HOLE:
             screw_block = screw_block.clearanceHole(fastener=fastener, depth=screw_hole_depth, fit=fit.value, counterSunk=is_counter_sunk)
 
+        if fill_pointy_bit and screw_hole_depth != block_thickness:  # if the goal wasn't to pierce through the entire block
+            # With threadedHole, cq_warehouse digs deeper than screw_hole_depth to make space for the 'pointy tip' of the screw,
+            # leading the hole to pierce through; any better way to deal with that?
+            # Only filling half of the hole to give a bit of leeway.
+            filler_thickness = (block_thickness - screw_hole_depth) / 2
+            screw_block = screw_block.add(
+                cq.Workplane("XY")
+                    .box(block_size[0], block_size[1], filler_thickness, centered=(True, True, False))
+            )
+
         if taper == TaperOptions.Z_TAPER_ANGLE:
             screw_block.add(
                 cq.Workplane("XY")
@@ -117,8 +130,8 @@ class ScrewBlock:
         elif taper == TaperOptions.XY_TAPER:
             screw_block.add(
                 cq.Workplane("YZ")
-                    .moveTo(0, 0)
-                    .lineTo(block_size[2], 0)
+                    .moveTo(0, xy_taper_from)
+                    .lineTo((block_size[2]-xy_taper_from)*xy_taper_incline, xy_taper_from)
                     .lineTo(0, block_size[2])
                     .close()
                     .extrude(block_size[1])
@@ -158,19 +171,26 @@ class ScrewBlock:
         def method(
             block_thickness: float,
             screw_hole_depth: Union[int, None] = ScrewBlock.DEFAULT_SCREW_HOLE_DEPTH,
+            fill_pointy_bit: bool = False,  # read comment where used
             is_counter_sunk: bool = ScrewBlock.DEFAULT_IS_COUNTER_SUNK,
             with_counter_sunk_block: bool = ScrewBlock.DEFAULT_WITH_COUNTER_SUNK_BLOCK,
             fit: FitOptions = ScrewBlock.DEFAULT_FIT,
             taper: TaperOptions = ScrewBlock.DEFAULT_TAPER,
-            taper_rotation: float = 0.0
+            taper_rotation: float = 0.0,
+            xy_taper_incline: float = 0.75,
+            xy_taper_from: float = 0  # useful to start your screw inside of a wall
         ):
             return self.build(
                 screw_size_category,
                 block_thickness,
                 screw_hole_depth,
+                fill_pointy_bit,
                 is_counter_sunk,
                 with_counter_sunk_block,
                 fit,
                 taper,
-                taper_rotation)
+                taper_rotation,
+                xy_taper_incline,
+                xy_taper_from
+            )
         return method
