@@ -14,7 +14,6 @@
    limitations under the License.
 """
 
-import math
 from enum import Enum
 from typing import Union
 
@@ -146,7 +145,7 @@ class RectAirVentPart(Part):
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
         
-        self.debug_objects.hole = all_holes.toCompound()
+        self.debug_objects.hole = None
 
     @staticmethod
     def _get_fan_screws_blocks(

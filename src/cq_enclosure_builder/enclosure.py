@@ -17,7 +17,7 @@
 from typing import List
 
 import cadquery as cq
-from cq_enclosure_builder import Part, Panel, Face
+from cq_enclosure_builder import Part, Panel, Face, ProjectInfo
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
 from cq_enclosure_builder.parts.common.screws_providers import DefaultFlatHeadScrewProvider
 
@@ -35,6 +35,7 @@ class Enclosure:
     def __init__(
         self,
         size: EnclosureSize,
+        project_info: ProjectInfo = ProjectInfo(),
         lid_on_faces: List[Face] = [Face.BOTTOM],
         lid_panel_size_error_margin = 0.8,  # meaning the lid is `margin` smaller than the hole on both width and length
         lid_screws_thickness_error_margin = 0.4,
@@ -49,6 +50,7 @@ class Enclosure:
         inner_thickness = size.inner_thickness
         wall_thickness = size.wall_thickness
         self.size = size
+        self.project_info = project_info
         self.no_fillet_top = no_fillet_top
         self.no_fillet_bottom = no_fillet_bottom
 
@@ -79,7 +81,7 @@ class Enclosure:
 
         for info in self.panels_specs:
             lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
-            self.panels[info[0]] = Panel(info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin)
+            self.panels[info[0]] = Panel(info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin, project_info=self.project_info)
 
         if add_corner_lid_screws:
             self.add_corner_lid_screws(lid_screws_thickness_error_margin)

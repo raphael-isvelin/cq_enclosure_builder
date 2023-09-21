@@ -1,4 +1,5 @@
 from . import constants
+from .project_info import ProjectInfo
 from .part import Part
 from .parts_factory import PartFactory
 from .face import Face

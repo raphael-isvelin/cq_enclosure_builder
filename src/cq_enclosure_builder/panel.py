@@ -17,7 +17,7 @@
 from typing import Dict, Union
 
 import cadquery as cq
-from cq_enclosure_builder import Face
+from cq_enclosure_builder import Face, ProjectInfo
 from cq_enclosure_builder.part import Part
 
 class PanelSize:
@@ -28,15 +28,17 @@ class PanelSize:
         self.total_thickness = total_thickness
 
 class Panel:
-    def __init__(self,
-                 face: Face,
-                 top_view_width,
-                 top_view_length,
-                 wall_thickness,
-                 color=None,
-                 part_color=None,
-                 alpha=1.0,
-                 lid_size_error_margin=0.0  # if provided, panel will be smaller than mask
+    def __init__(
+            self,
+            face: Face,
+            top_view_width,
+            top_view_length,
+            wall_thickness,
+            color = None,
+            part_color = None,
+            alpha = 1.0,
+            lid_size_error_margin = 0.0,  # if provided, panel will be smaller than mask
+            project_info: ProjectInfo = ProjectInfo()
         ):
         self.face: Face = face
         self.size: PanelSize = PanelSize(top_view_width, top_view_length, wall_thickness, wall_thickness)
@@ -59,11 +61,12 @@ class Panel:
         self.debug_assemblies["other"] = None
         self.debug_assemblies["combined"] = cq.Assembly(None, name=self.face.label + " - Debug")
         self.lid_size_error_margin: float = lid_size_error_margin
+        self.project_info = project_info
         self._alpha: float = alpha
         self._parts_to_add = []
 
     def add(self, label: str, part: Part, rel_pos=None, abs_pos=None):
-        print(self.face.label + ": adding part '" + label + "'")
+        print(f"[{str(self.project_info)}] {self.face.label}: adding part '{label}'")
         pos = None
         if rel_pos == None and abs_pos == None:
             raise ValueError("Either rel_pos or abs_pos must be set.")
