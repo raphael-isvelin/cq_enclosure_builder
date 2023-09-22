@@ -167,7 +167,7 @@ class Hdmi5InchJrp5015Part(Part):
 
     def build_screws_assembly(self, screw_thickness, enclosure_wall_thickness, screen_ramp_thickness, screen_w_ramp_size):
         screw_block_thickness = screen_ramp_thickness - enclosure_wall_thickness + screw_thickness
-        m4 = ScrewBlock().m4(screw_block_thickness)
+        m4 = ScrewBlock().m4(screw_block_thickness, enclosure_wall_thickness)
 
         distance_between_screws_x = 108.3  #-0.8
         distance_between_screws_y = 84  #-0.6

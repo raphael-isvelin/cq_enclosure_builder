@@ -58,6 +58,7 @@ class ScrewBlock:
         self,
         screw_size_category: str,
         block_thickness: float,
+        enclosure_wall_thickness: float,
         screw_hole_depth: Union[float, None] = DEFAULT_SCREW_HOLE_DEPTH,
         fill_pointy_bit: bool = False,  # read comment where used
         is_counter_sunk: bool = DEFAULT_IS_COUNTER_SUNK,
@@ -68,9 +69,6 @@ class ScrewBlock:
         xy_taper_incline: float = 0.75,
         xy_taper_from: float = 0  # useful to start your screw inside of a wall
     ):
-        # TODO improve taper: it can only taper on Z axis for now
-        wall_thickness = 1.8
-
         fastener, block_size, hole_type = self.screw_provider.build_fastener(screw_size_category)
         cs_fastener = cs_block_size = None
         if with_counter_sunk_block and self.counter_sunk_screw_provider is not None:
@@ -146,18 +144,18 @@ class ScrewBlock:
             try:
                 cs_block = (
                     cq.Workplane("XY")
-                        .box(*cs_block_size, wall_thickness, centered=(True, True, False))
+                        .box(*cs_block_size, enclosure_wall_thickness, centered=(True, True, False))
                         .faces(">Z").workplane().pushPoints([(0,0)])
-                        .clearanceHole(fastener=cs_fastener, depth=wall_thickness, fit=fit.value, counterSunk=True)
+                        .clearanceHole(fastener=cs_fastener, depth=enclosure_wall_thickness, fit=fit.value, counterSunk=True)
                         .translate([0, 0, block_thickness])
                 )
                 cs_mask = (
                     cq.Workplane("XY")
-                        .box(*cs_block_size, wall_thickness, centered=(True, True, False))
+                        .box(*cs_block_size, enclosure_wall_thickness, centered=(True, True, False))
                         .translate([0, 0, block_thickness])
                 )
             except Exception as e:
-                raise ValueError("Couldn't create counter-sunk; wall_thickness should be thickness than the screw head") from e
+                raise ValueError("Couldn't create counter-sunk; enclosure_wall_thickness should be thickness than the screw head") from e
 
         return {
             "block": screw_block,
@@ -170,6 +168,7 @@ class ScrewBlock:
     def _create_method_for_category(self, screw_size_category):
         def method(
             block_thickness: float,
+            enclosure_wall_thickness: float = 2,
             screw_hole_depth: Union[int, None] = ScrewBlock.DEFAULT_SCREW_HOLE_DEPTH,
             fill_pointy_bit: bool = False,  # read comment where used
             is_counter_sunk: bool = ScrewBlock.DEFAULT_IS_COUNTER_SUNK,
@@ -183,6 +182,7 @@ class ScrewBlock:
             return self.build(
                 screw_size_category,
                 block_thickness,
+                enclosure_wall_thickness,
                 screw_hole_depth,
                 fill_pointy_bit,
                 is_counter_sunk,

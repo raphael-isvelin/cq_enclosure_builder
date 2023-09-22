@@ -39,7 +39,6 @@ class GenericScrewProvider:
             raise ValueError(f"Unknown screw size category '{screw_size_category}'; available: {str(list(screw_size_references))}")
             
         screw_size_reference = screw_size_references[screw_size_category]
-        print("Building CS cat " + screw_size_category + " - ref " + screw_size_reference)
         cs_fastener = None
         # TODO refactor - need to see more examples of screw constructors
         if include_length_param:

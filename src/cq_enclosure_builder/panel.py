@@ -64,6 +64,7 @@ class Panel:
         self.project_info = project_info
         self._alpha: float = alpha
         self._parts_to_add = []
+        self._screw_counter_sunks = []
 
     def add(self, label: str, part: Part, rel_pos=None, abs_pos=None):
         print(f"[{str(self.project_info)}] {self.face.label}: adding part '{label}'")
@@ -83,6 +84,9 @@ class Panel:
             "pos": pos
         })
         return self
+
+    def add_screw_counter_sunk(self, block: cq.Workplane, mask: cq.Workplane):
+        self._screw_counter_sunks.append((block, mask))
 
     def assemble(self):
         wall = (
@@ -111,6 +115,8 @@ class Panel:
                 )
             if part_obj.size.thickness > self.size.total_thickness:
                 self.size.total_thickness = part_obj.size.thickness
+        for screw_cs in self._screw_counter_sunks:
+            wall = wall.cut(screw_cs[1]).add(screw_cs[0])
         self.panel = self.panel.add(self._rotate_to_face(wall), name="Wall", color=cq.Color(*self._color, self._alpha))
         self.debug_assemblies["combined"] = self._build_combined_debug_assembly()
         return self

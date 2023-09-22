@@ -34,18 +34,18 @@ class RectAirVentPart(Part):
     def __init__(
         self,
         enclosure_wall_thickness,
-        width = 25,
-        length = 20,
+        width = 30,
+        length = 25,
         thickness = 6,
         margin = 0.5,
         hole_angle = 25,
         hole_width = 1.6,
-        distance_between_holes = 3,
+        distance_between_holes = 4,
         taper = True,
         taper_margin = 3,
         taper_angle = 35,
-        with_fan_screws: Union[FanSize, None] = FanSize._25_MM,
-        fan_screws_size: str = "m2",
+        with_fan_screws: Union[FanSize, None] = FanSize._30_MM,
+        fan_screws_size: str = "m3",
         fan_screws_taper_mode: TaperOptions = TaperOptions.XY_TAPER,
         fan_screws_taper_rotation: float = 0,
         fan_screws_taper_incline: float = 0.75,
@@ -163,10 +163,10 @@ class RectAirVentPart(Part):
         screw_block_hole_distance_to_wall: float = 0.8
     ):
         screw = ScrewBlock(screw_provider=TinyBlockFlatHeadScrewProvider).build(
-            screw_size, block_thickness, screw_hole_depth=block_thickness-screw_block_hole_distance_to_wall, fill_pointy_bit=True,
+            screw_size, block_thickness, enclosure_wall_thickness, screw_hole_depth=block_thickness-screw_block_hole_distance_to_wall, fill_pointy_bit=True,
             taper=screw_block_taper_option, taper_rotation=screw_block_taper_rotation, xy_taper_incline=screw_block_taper_incline, xy_taper_from=enclosure_wall_thickness)
         screw_no_taper = ScrewBlock(screw_provider=TinyBlockFlatHeadScrewProvider).build(
-            screw_size, block_thickness, screw_hole_depth=block_thickness-screw_block_hole_distance_to_wall, fill_pointy_bit=True)
+            screw_size, block_thickness, enclosure_wall_thickness, screw_hole_depth=block_thickness-screw_block_hole_distance_to_wall, fill_pointy_bit=True)
 
         distance_between_screws = None  # center to center
         if fan_size == FanSize._25_MM: distance_between_screws = 16.9 + 2.9

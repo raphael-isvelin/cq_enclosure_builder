@@ -124,7 +124,7 @@ class TinyBlockFlatHeadScrewProvider:
         )
 
 
-class DefaultHeadSetScrewProvider:
+class DefaultHeatSetScrewProvider:
     SCREW_CLASS = HeatSetNut
     SCREW_MODEL_NAME: str = "Hilitchi"
     SCREW_SIZE_REFERENCES: Dict[str, str] = {
