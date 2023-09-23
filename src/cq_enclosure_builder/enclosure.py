@@ -17,6 +17,7 @@
 from typing import List
 
 import cadquery as cq
+from cadquery import exporters
 from cq_enclosure_builder import Part, Panel, Face, ProjectInfo
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
 from cq_enclosure_builder.parts.common.screws_providers import DefaultFlatHeadScrewProvider, DefaultHeatSetScrewProvider
@@ -35,9 +36,14 @@ class EnclosureSize:
 
 
 class Enclosure:
+    EXPORT_FOLDER = "stls"
+
+    PRINTABLE_FRAME = "frame"
+
     def __init__(
         self,
         size: EnclosureSize,
+        project_info: ProjectInfo = ProjectInfo(),
         lid_on_faces: List[Face] = [Face.BOTTOM],
         lid_panel_size_error_margin = 0.8,  # meaning the lid is `margin` smaller than the hole on both width and length
         lid_screws_thickness_error_margin = 0.4,
@@ -53,6 +59,7 @@ class Enclosure:
         inner_thickness = size.inner_thickness
         wall_thickness = size.wall_thickness
         self.size = size
+        self.project_info = project_info
         self.no_fillet_top = no_fillet_top
         self.no_fillet_bottom = no_fillet_bottom
 
@@ -61,13 +68,7 @@ class Enclosure:
             # TODO nice-to-have: also add support for multiple lids (faces)
             raise ValueError("lid_on_faces: only value supported for now is [BOTTOM], got " + str(lid_on_faces))
 
-        self.frame = (
-            cq.Workplane("front")
-                .box(inner_width - 4, inner_length - 4, inner_thickness - 4, centered=(True, True, False))
-                #.faces("+Z")
-                .shell(wall_thickness)
-                #.translate([2, 2, 2])
-        )
+        self.frame: Union[cq.Assembly, None] = None
         self.panels_specs = [
             (Face.TOP,    (inner_width-4,  inner_length-4,    wall_thickness),  [0, 0, inner_thickness - wall_thickness],   0.9 ),
             (Face.BOTTOM, (inner_width-4,  inner_length-4,    wall_thickness),  [0, 0, -wall_thickness],    0.9 ),
@@ -83,10 +84,35 @@ class Enclosure:
 
         for info in self.panels_specs:
             lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
-            self.panels[info[0]] = Panel(info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin)
+            self.panels[info[0]] = Panel(
+                info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin, project_info=self.project_info)
 
         if add_corner_lid_screws:
             self.add_corner_lid_screws(lid_screws_thickness_error_margin, heat_set=lid_screws_heat_set)
+
+        self.main_printables_config: Dict[str, List[Union[Face, str]]] = {
+            "box": [Face.TOP, Face.LEFT, Face.RIGHT, Face.FRONT, Face.BACK, Enclosure.PRINTABLE_FRAME],
+            "lid": [Face.BOTTOM],
+        }
+        self.printables: Dict[str, cq.Workplane] = {}
+
+    def export_printables(self):
+        for name, elements in self.main_printables_config.items():
+            printable_a = cq.Assembly()
+            for e in elements:
+                if isinstance(e, Face.FaceInfo):
+                    printable_a.add(self.panels[e].panel, name=str(e.label))
+                elif e == Enclosure.PRINTABLE_FRAME:
+                    printable_a.add(self.frame, name=e)
+                else:
+                    raise ValueError("Unknown printable element " + str(e))
+            self.printables[name] = printable_a.toCompound()
+            show(printable_a)
+            input("enter for next")
+        for name, wp in self.printables.items():
+            file_path = self._build_printable_file_path(name)
+            print(f"Exporting '{name}' to '{file_path}'")
+            exporters.export(wp, file_path)
 
     def add_part_to_face(self, face: Face, part_label: str, part: Part, rel_pos=None, abs_pos=None):
         self.panels[face].add(part_label, part, rel_pos, abs_pos)
@@ -182,7 +208,7 @@ class Enclosure:
             panel.assemble()
 
         panels_assembly, panels_masks_assembly = self._build_panels_assembly(walls_explosion_factor, lid_panel_shift)
-        frame_assembly = self._build_frame_assembly(panels_masks_assembly)
+        self.frame = self._build_frame_assembly(panels_masks_assembly)
         lid_screws_assembly = self._build_lid_screws_assembly()
 
         footprints_assembly = self._build_debug_assembly([("footprint_in", "I"), ("footprint_out", "O")], walls_explosion_factor, lid_panel_shift)
@@ -199,17 +225,22 @@ class Enclosure:
         self.assembly = (
             cq.Assembly(None, name="Box")
                 .add(panels_assembly, name="Panels")
-                .add(frame_assembly, name="Frame")
+                .add(self.frame, name="Frame")
                 .add(lid_screws_assembly, name="Lid screws", color=cq.Color(0.6, 0.45, 0.8))
                 .add(self.debug, name="Debug")
         )
         self.printable_assembly = (
             cq.Assembly(None, name="Box")
                 .add(panels_assembly, name="Panels")
-                .add(frame_assembly, name="Frame")
+                .add(self.frame, name="Frame")
                 .add(lid_screws_assembly, name="Lid screws", color=cq.Color(0.6, 0.45, 0.8))
         )
         return self
+
+    def _build_printable_file_path(self, printable_name: str):
+        project_name = self.project_info.name.lower().replace(" ", "_")
+        version = self.project_info.version
+        return f"{Enclosure.EXPORT_FOLDER}/{project_name}-{printable_name}-v{version}.stl"
 
     def _get_debug(self, panel: Panel, assembly_name="combined"):
         if assembly_name in panel.debug_assemblies:
