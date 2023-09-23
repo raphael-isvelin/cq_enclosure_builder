@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-from typing import List
+from typing import List, Dict, Union
 
 import cadquery as cq
 from cadquery import exporters
@@ -107,8 +107,6 @@ class Enclosure:
                 else:
                     raise ValueError("Unknown printable element " + str(e))
             self.printables[name] = printable_a.toCompound()
-            show(printable_a)
-            input("enter for next")
         for name, wp in self.printables.items():
             file_path = self._build_printable_file_path(name)
             print(f"Exporting '{name}' to '{file_path}'")
