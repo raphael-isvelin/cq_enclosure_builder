@@ -103,6 +103,14 @@ class RectAirVentPart(Part):
                 .box(width, length, enclosure_wall_thickness, centered=(True, True, False))
         )
 
+        inside_footprint_thickness = 4
+        footprint_in = (
+            cq.Workplane("front")
+                .rect(width, length)
+                .extrude(inside_footprint_thickness)
+                .translate([0, 0, enclosure_wall_thickness])
+        )
+
         # Fan screws
         if with_fan_screws is not None:
             fan_screws_a = RectAirVentPart._get_fan_screws_blocks(
@@ -117,6 +125,7 @@ class RectAirVentPart(Part):
             )
             fan_screws = fan_screws_a["screws"]  #.translate([0, 0, enclosure_wall_thickness])
             fan_masks = fan_screws_a["masks"]  #.translate([0, 0, enclosure_wall_thickness])
+            footprint_in = footprint_in.add(fan_screws_a["footprint_in"])
 
             board = board.cut(fan_masks).add(fan_screws)
             mask = mask.add(fan_masks)
@@ -124,20 +133,14 @@ class RectAirVentPart(Part):
         self.part = board
         self.mask = mask
 
-        self.size.width     = width
-        self.size.length    = length
+        self.size.width     = width + margin*2 + taper_margin*2
+        self.size.length    = length + margin*2 + taper_margin*2
         self.size.thickness = thickness
 
-        self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint = (self.size.width, self.size.length)  # TODO should account for the screw blocks (incl. taper)
         self.inside_footprint_offset = (0, 0)
         self.outside_footprint = (self.size.width, self.size.length)
-        inside_footprint_thickness = 4
-        footprint_in = (
-            cq.Workplane("front")
-                .rect(self.size.width, self.size.length)
-                .extrude(inside_footprint_thickness)
-                .translate([0, 0, enclosure_wall_thickness])
-        )
+        footprint_in = footprint_in.add(board)
         outside_footprint_thickness = 2
         footprint_out = (
             cq.Workplane("front")
@@ -169,10 +172,23 @@ class RectAirVentPart(Part):
             screw_size, block_thickness, enclosure_wall_thickness, screw_hole_depth=block_thickness-screw_block_hole_distance_to_wall, fill_pointy_bit=True)
 
         distance_between_screws = None  # center to center
-        if fan_size == FanSize._25_MM: distance_between_screws = 16.9 + 2.9
-        elif fan_size == FanSize._30_MM: distance_between_screws = 20.8 + 3.2
-        elif fan_size == FanSize._40_MM: distance_between_screws = 28.9 + 3.2
-        else: raise ValueError("Unknown FanSize")
+        footprint_size = None
+        footprint_thickness = None
+        # TODO Refactor when needed
+        if fan_size == FanSize._25_MM:
+            distance_between_screws = 16.9 + 2.9
+            footprint_size = 25
+            footprint_thickness = 7
+        elif fan_size == FanSize._30_MM:
+            distance_between_screws = 20.8 + 3.2
+            footprint_size = 30
+            footprint_thickness = 8
+        elif fan_size == FanSize._40_MM:
+            distance_between_screws = 28.9 + 3.2
+            footprint_size = 40
+            footprint_thickness = 10.8
+        else:
+            raise ValueError("Unknown FanSize")
 
         hdbs = distance_between_screws/2
 
@@ -190,8 +206,16 @@ class RectAirVentPart(Part):
             screws.add(current_screw["block"].translate([*sp, 0]))
             masks.add(current_screw["mask"].translate([*sp, 0]))
 
+        footprint_in = (
+            cq.Workplane("front")
+                .rect(footprint_size, footprint_size)
+                .extrude(footprint_thickness)
+                .translate([0, 0, block_thickness])
+        )
+
         return {
             "screws": screws.toCompound(),
             "masks": masks.toCompound(),
+            "footprint_in": footprint_in,
             #"base_plate": base_plate.translate([0, 0, -enclosure_wall_thickness])
         }
