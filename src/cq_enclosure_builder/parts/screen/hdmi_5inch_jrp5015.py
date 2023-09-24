@@ -14,8 +14,9 @@
    limitations under the License.
 """
 
-import cadquery as cq
 import math
+
+import cadquery as cq
 from cq_enclosure_builder.constants import DEFAULT_PART_COLOR
 from cq_enclosure_builder.part import Part, AssemblyPart
 from cq_enclosure_builder.parts_factory import register_part
@@ -121,21 +122,10 @@ class Hdmi5InchJrp5015Part(Part):
 
         screws = list(map(mirror_and_translate, screws))
 
-        assembly_parts = [AssemblyPart(screen_panel, "Screen", cq.Color(*DEFAULT_PART_COLOR))]
-        for idx, screw in enumerate(screws):
-            assembly_parts.append(AssemblyPart(screw, f"Screw {idx}", cq.Color(0.7, 0.3, 0.8)))
-
         debug_screen_block = (  # screw blocks shouldn't collide with that
             cq.Workplane("front")
                 .box(*screen_w_bevel_size, part_thickness, centered=(True, True, False))
         )
-
-        if center_is_outward_facing_hole:
-            print("TODO Need to move all workplanes so the hole's center is at 0,0")
-
-        self.assembly_parts = assembly_parts
-        self.part = self.assembly_parts_to_cq_assembly().toCompound()
-        self.mask = mask
 
         self.size.width     = screen_board_size[0]
         self.size.length    = screen_board_size[1]
@@ -146,18 +136,34 @@ class Hdmi5InchJrp5015Part(Part):
         self.outside_footprint = (screen_w_ramp_width, screen_w_ramp_length)
         footprint_in = (
             cq.Workplane("front")
-                .rect(self.size.width, self.size.length)
+                .rect(*self.inside_footprint)
                 .extrude(10)
                 .translate([0, 0, enclosure_wall_thickness])
         )
         outside_footprint_thickness = 3
         footprint_out = (
             cq.Workplane("front")
-                .rect(screen_w_ramp_width, screen_w_ramp_length)
+                .rect(*self.outside_footprint)
                 .extrude(outside_footprint_thickness)
                 .translate([*viewing_area_offset, -outside_footprint_thickness])
         )
-        self.debug_objects.footprint.inside  =  footprint_in
+
+        if center_is_outward_facing_hole:
+            translate_by_viewing_area_offset = lambda obj: obj.translate([-viewing_area_offset[0], -viewing_area_offset[1], 0])
+
+            screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole = list(map(translate_by_viewing_area_offset,
+                    [screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole]))
+
+            screws = list(map(translate_by_viewing_area_offset, screws))
+
+        assembly_parts = [AssemblyPart(screen_panel, "Screen", cq.Color(*DEFAULT_PART_COLOR))]
+        for idx, screw in enumerate(screws):
+            assembly_parts.append(AssemblyPart(screw, f"Screw {idx}", cq.Color(0.7, 0.3, 0.8)))
+
+        self.assembly_parts = assembly_parts
+        self.part = self.assembly_parts_to_cq_assembly().toCompound()
+        self.mask = mask
+        self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
 
         self.debug_objects.hole = viewing_area_hole
