@@ -21,6 +21,7 @@ from cadquery import exporters
 from cq_enclosure_builder import Part, Panel, Face, ProjectInfo
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
 from cq_enclosure_builder.parts.common.screws_providers import DefaultFlatHeadScrewProvider, DefaultHeatSetScrewProvider
+from cq_enclosure_builder.parts.support.skirt import SkirtPart
 
 
 def explode(pos_array, walls_explosion_factor=2.0):
@@ -39,6 +40,8 @@ class Enclosure:
     EXPORT_FOLDER = "stls"
 
     PRINTABLE_FRAME = "frame"
+    PRINTABLE_SCREWS = "screws"
+    PRINTABLE_LID_SUPPORT = "lid_support"
 
     def __init__(
         self,
@@ -46,8 +49,9 @@ class Enclosure:
         project_info: ProjectInfo = ProjectInfo(),
         lid_on_faces: List[Face] = [Face.BOTTOM],
         lid_panel_size_error_margin = 0.8,  # meaning the lid is `margin` smaller than the hole on both width and length
-        lid_screws_thickness_error_margin = 0.4,
+        lid_thickness_error_margin = 0.4,  # if >0, the lid screws and support will be slightly sunk in the enclosure
         add_corner_lid_screws = True,
+        add_lid_support = True,
         lid_screws_heat_set = True,
         no_fillet_top = False,
         no_fillet_bottom = False,
@@ -70,33 +74,44 @@ class Enclosure:
 
         self.frame: Union[cq.Assembly, None] = None
         self.panels_specs = [
-            (Face.TOP,    (inner_width-4,  inner_length-4,    wall_thickness),  [0, 0, inner_thickness - wall_thickness],   0.9 ),
-            (Face.BOTTOM, (inner_width-4,  inner_length-4,    wall_thickness),  [0, 0, -wall_thickness],    0.9 ),
-            (Face.FRONT,  (inner_width-4,  inner_thickness-4, wall_thickness),  [0, -(inner_length/2), inner_thickness/2 - wall_thickness], 0.9 ),
-            (Face.BACK,   (inner_width-4,  inner_thickness-4, wall_thickness),  [0, inner_length/2, inner_thickness/2 - wall_thickness],  0.9 ),
-            (Face.LEFT,   (inner_length-4, inner_thickness-4, wall_thickness),  [-(inner_width/2), 0, inner_thickness/2 - wall_thickness], 0.9 ),
-            (Face.RIGHT,  (inner_length-4, inner_thickness-4, wall_thickness),  [inner_width/2, 0, inner_thickness/2 - wall_thickness],  0.9 ),
+            (Face.TOP,    (inner_width-wall_thickness*2,  inner_length-wall_thickness*2,    wall_thickness),  [0, 0, inner_thickness - wall_thickness],   0.9 ),
+            (Face.BOTTOM, (inner_width-wall_thickness*2,  inner_length-wall_thickness*2,    wall_thickness),  [0, 0, -wall_thickness],    0.9 ),
+            (Face.FRONT,  (inner_width-wall_thickness*2,  inner_thickness-wall_thickness*2, wall_thickness),  [0, -(inner_length/2), inner_thickness/2 - wall_thickness], 0.9 ),
+            (Face.BACK,   (inner_width-wall_thickness*2,  inner_thickness-wall_thickness*2, wall_thickness),  [0, inner_length/2, inner_thickness/2 - wall_thickness],  0.9 ),
+            (Face.LEFT,   (inner_length-wall_thickness*2, inner_thickness-wall_thickness*2, wall_thickness),  [-(inner_width/2), 0, inner_thickness/2 - wall_thickness], 0.9 ),
+            (Face.RIGHT,  (inner_length-wall_thickness*2, inner_thickness-wall_thickness*2, wall_thickness),  [inner_width/2, 0, inner_thickness/2 - wall_thickness],  0.9 ),
         ]
 
         self.panels = {}
         self.screws_specs = []
         self.screws = []
+        self.lid_screws_assembly: cq.Assembly = None
+        self.lid_support: cq.Workplane = None
 
         for info in self.panels_specs:
             lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
-            self.panels[info[0]] = Panel(
-                info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin, project_info=self.project_info)
+            self.panels[info[0]] = Panel(info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin, project_info=self.project_info)
 
+        # Lid should be created before the screws are added (cut the screws' masks from the lid)
+        if add_lid_support:
+            self._build_lid_support(lid_thickness_error_margin)
         if add_corner_lid_screws:
-            self.add_corner_lid_screws(lid_screws_thickness_error_margin, heat_set=lid_screws_heat_set)
+            self.add_corner_lid_screws(lid_thickness_error_margin, heat_set=lid_screws_heat_set)
 
         self.main_printables_config: Dict[str, List[Union[Face, str]]] = {
-            "box": [Face.TOP, Face.LEFT, Face.RIGHT, Face.FRONT, Face.BACK, Enclosure.PRINTABLE_FRAME],
+            "box": [Face.TOP, Face.LEFT, Face.RIGHT, Face.FRONT, Face.BACK,
+                    Enclosure.PRINTABLE_FRAME, Enclosure.PRINTABLE_SCREWS, Enclosure.PRINTABLE_LID_SUPPORT],
             "lid": [Face.BOTTOM],
         }
         self.printables: Dict[str, cq.Workplane] = {}
 
     def export_printables(self):
+        for name, wp in self.printables.items():
+            file_path = self._build_printable_file_path(name)
+            print(f"Exporting '{name}' to '{file_path}'")
+            exporters.export(wp, file_path)
+
+    def _assemble_printables(self):
         for name, elements in self.main_printables_config.items():
             printable_a = cq.Assembly()
             for e in elements:
@@ -104,13 +119,13 @@ class Enclosure:
                     printable_a.add(self.panels[e].panel, name=str(e.label))
                 elif e == Enclosure.PRINTABLE_FRAME:
                     printable_a.add(self.frame, name=e)
+                elif e == Enclosure.PRINTABLE_SCREWS:
+                    printable_a.add(self.lid_screws_assembly, name=e)
+                elif e == Enclosure.PRINTABLE_LID_SUPPORT:
+                    printable_a.add(self.lid_support, name=e)
                 else:
                     raise ValueError("Unknown printable element " + str(e))
             self.printables[name] = printable_a.toCompound()
-        for name, wp in self.printables.items():
-            file_path = self._build_printable_file_path(name)
-            print(f"Exporting '{name}' to '{file_path}'")
-            exporters.export(wp, file_path)
 
     def add_part_to_face(self, face: Face, part_label: str, part: Part, rel_pos=None, abs_pos=None):
         self.panels[face].add(part_label, part, rel_pos, abs_pos)
@@ -157,11 +172,12 @@ class Enclosure:
             screw["counter_sunk_block"] = screw["counter_sunk_block"].translate([*pos, pos_error_margin])
             screw["counter_sunk_mask"] = screw["counter_sunk_mask"].translate([*pos, pos_error_margin])
         self.screws.append(screw)
+        self.lid_support = self.lid_support.cut(screw["mask"])
         return screw
 
     def add_corner_lid_screws(
         self,
-        lid_screws_thickness_error_margin,
+        lid_thickness_error_margin,
         screw_size_category: str = "m2",
         heat_set: bool = False
     ):
@@ -190,16 +206,25 @@ class Enclosure:
                 screw_size_category=screw_size_category,
                 block_thickness=lid_screws_thickness,
                 abs_pos=screw_pos,
-                pos_error_margin=lid_screws_thickness_error_margin,
+                pos_error_margin=lid_thickness_error_margin,
                 taper=TaperOptions.Z_TAPER_ANGLE,
                 taper_rotation=screw_rotation,
                 with_counter_sunk_block=True,
                 screw_provider=screw_provider
             )
-            translate_z = screw["size"][2] + lid_screws_thickness_error_margin + self.size.wall_thickness
+            translate_z = screw["size"][2] + lid_thickness_error_margin + self.size.wall_thickness
             cs_block = screw["counter_sunk_block"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
             cs_mask = screw["counter_sunk_mask"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
             self.panels[Face.BOTTOM].add_screw_counter_sunk(cs_block, cs_mask)
+
+    def _build_lid_support(self, lid_thickness_error_margin):
+        width = self.size.inner_width - self.size.wall_thickness*2
+        length = self.size.inner_length - self.size.wall_thickness*2
+        self.lid_support = (
+            SkirtPart(self.size.wall_thickness, width, length, skirt_size=(2, 2), base_size=1)
+                .part
+                .translate([0, 0, -self.size.wall_thickness + lid_thickness_error_margin])
+        )
 
     def assemble(self, walls_explosion_factor=1.0, lid_panel_shift=0.0):
         for panel in self.panels.values():
@@ -207,11 +232,16 @@ class Enclosure:
 
         panels_assembly, panels_masks_assembly = self._build_panels_assembly(walls_explosion_factor, lid_panel_shift)
         self.frame = self._build_frame_assembly(panels_masks_assembly)
-        lid_screws_assembly = self._build_lid_screws_assembly()
+        self.lid_screws_assembly = self._build_lid_screws_assembly()
 
         footprints_assembly = self._build_debug_assembly([("footprint_in", "I"), ("footprint_out", "O")], walls_explosion_factor, lid_panel_shift)
         holes_assembly = self._build_debug_assembly([("hole", "")], walls_explosion_factor, lid_panel_shift)
         other_debug_assembly = self._build_debug_assembly([("other", "")], walls_explosion_factor, lid_panel_shift)
+
+        self._assemble_printables();
+        printables_debug_assembly = cq.Assembly()
+        for name, wp in self.printables.items():
+            printables_debug_assembly.add(wp, name=name)
 
         self.debug = (
             cq.Assembly(None, name="Box")
@@ -219,19 +249,15 @@ class Enclosure:
                 .add(holes_assembly, name="Holes")
                 .add(other_debug_assembly, name="Others")
                 .add(panels_masks_assembly, name="Panels masks")
+                .add(printables_debug_assembly, name="Printables")
         )
         self.assembly = (
             cq.Assembly(None, name="Box")
                 .add(panels_assembly, name="Panels")
                 .add(self.frame, name="Frame")
-                .add(lid_screws_assembly, name="Lid screws", color=cq.Color(0.6, 0.45, 0.8))
+                .add(self.lid_screws_assembly, name="Lid screws", color=cq.Color(0.6, 0.45, 0.8))
+                .add(self.lid_support, name="Lid support", color=cq.Color(0.65, 0.5, 0.85))
                 .add(self.debug, name="Debug")
-        )
-        self.printable_assembly = (
-            cq.Assembly(None, name="Box")
-                .add(panels_assembly, name="Panels")
-                .add(self.frame, name="Frame")
-                .add(lid_screws_assembly, name="Lid screws", color=cq.Color(0.6, 0.45, 0.8))
         )
         return self
 
