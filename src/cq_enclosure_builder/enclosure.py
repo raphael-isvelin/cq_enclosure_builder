@@ -29,9 +29,9 @@ def explode(pos_array, walls_explosion_factor=2.0):
 
 
 class EnclosureSize:
-    def __init__(self, inner_width, inner_length, inner_thickness, wall_thickness):
-        self.inner_width = inner_width
-        self.inner_length = inner_length
+    def __init__(self, outer_width, outer_length, inner_thickness, wall_thickness):
+        self.outer_width = outer_width
+        self.outer_length = outer_length
         self.inner_thickness = inner_thickness
         self.wall_thickness = wall_thickness
 
@@ -58,8 +58,8 @@ class Enclosure:
     ):
         super().__init__()
 
-        inner_width = size.inner_width
-        inner_length = size.inner_length
+        outer_width = size.outer_width
+        outer_length = size.outer_length
         inner_thickness = size.inner_thickness
         wall_thickness = size.wall_thickness
         self.size = size
@@ -74,12 +74,12 @@ class Enclosure:
 
         self.frame: Union[cq.Assembly, None] = None
         self.panels_specs = [
-            (Face.TOP,    (inner_width-wall_thickness*2,  inner_length-wall_thickness*2,    wall_thickness),  [0, 0, inner_thickness - wall_thickness],   0.9 ),
-            (Face.BOTTOM, (inner_width-wall_thickness*2,  inner_length-wall_thickness*2,    wall_thickness),  [0, 0, -wall_thickness],    0.9 ),
-            (Face.FRONT,  (inner_width-wall_thickness*2,  inner_thickness-wall_thickness*2, wall_thickness),  [0, -(inner_length/2), inner_thickness/2 - wall_thickness], 0.9 ),
-            (Face.BACK,   (inner_width-wall_thickness*2,  inner_thickness-wall_thickness*2, wall_thickness),  [0, inner_length/2, inner_thickness/2 - wall_thickness],  0.9 ),
-            (Face.LEFT,   (inner_length-wall_thickness*2, inner_thickness-wall_thickness*2, wall_thickness),  [-(inner_width/2), 0, inner_thickness/2 - wall_thickness], 0.9 ),
-            (Face.RIGHT,  (inner_length-wall_thickness*2, inner_thickness-wall_thickness*2, wall_thickness),  [inner_width/2, 0, inner_thickness/2 - wall_thickness],  0.9 ),
+            (Face.TOP,    (outer_width-wall_thickness*2,  outer_length-wall_thickness*2,    wall_thickness),  [0, 0, inner_thickness - wall_thickness],   0.9 ),
+            (Face.BOTTOM, (outer_width-wall_thickness*2,  outer_length-wall_thickness*2,    wall_thickness),  [0, 0, -wall_thickness],    0.9 ),
+            (Face.FRONT,  (outer_width-wall_thickness*2,  inner_thickness-wall_thickness*2, wall_thickness),  [0, -(outer_length/2), inner_thickness/2 - wall_thickness], 0.9 ),
+            (Face.BACK,   (outer_width-wall_thickness*2,  inner_thickness-wall_thickness*2, wall_thickness),  [0, outer_length/2, inner_thickness/2 - wall_thickness],  0.9 ),
+            (Face.LEFT,   (outer_length-wall_thickness*2, inner_thickness-wall_thickness*2, wall_thickness),  [-(outer_width/2), 0, inner_thickness/2 - wall_thickness], 0.9 ),
+            (Face.RIGHT,  (outer_length-wall_thickness*2, inner_thickness-wall_thickness*2, wall_thickness),  [outer_width/2, 0, inner_thickness/2 - wall_thickness],  0.9 ),
         ]
 
         self.panels = {}
@@ -151,8 +151,8 @@ class Enclosure:
             raise ValueError("Either rel_pos or abs_pos must be set.")
         elif rel_pos == None:
             pos = (
-                abs_pos[0] - self.size.inner_width/2,
-                abs_pos[1] - self.size.inner_length/2
+                abs_pos[0] - self.size.outer_width/2,
+                abs_pos[1] - self.size.outer_length/2
             )
         elif abs_pos==None:
             pos = rel_pos
@@ -188,8 +188,8 @@ class Enclosure:
         screw_provider = DefaultHeatSetScrewProvider if heat_set else DefaultFlatHeadScrewProvider
 
         screw_size = ScrewBlock(screw_provider).build(screw_size_category, lid_screws_thickness, self.size.wall_thickness)["size"]  # refactor to avoid this
-        pw = self.size.inner_width
-        pl = self.size.inner_length
+        pw = self.size.outer_width
+        pl = self.size.outer_length
         sw = screw_size[0]
         sl = screw_size[1]
         wt = self.size.wall_thickness
@@ -218,8 +218,8 @@ class Enclosure:
             self.panels[Face.BOTTOM].add_screw_counter_sunk(cs_block, cs_mask)
 
     def _build_lid_support(self, lid_thickness_error_margin):
-        width = self.size.inner_width - self.size.wall_thickness*2
-        length = self.size.inner_length - self.size.wall_thickness*2
+        width = self.size.outer_width - self.size.wall_thickness*2
+        length = self.size.outer_length - self.size.wall_thickness*2
         self.lid_support = (
             SkirtPart(self.size.wall_thickness, width, length, skirt_size=(2, 2), base_size=1)
                 .part
@@ -297,8 +297,8 @@ class Enclosure:
 
         shell_faces_filter = []
         shell_size = [
-            self.size.inner_width - wall_thickness*2,
-            self.size.inner_length - wall_thickness*2,
+            self.size.outer_width - wall_thickness*2,
+            self.size.outer_length - wall_thickness*2,
             self.size.inner_thickness - wall_thickness*2
         ]
         shell_translate_z = 0
