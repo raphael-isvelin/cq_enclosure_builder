@@ -30,15 +30,20 @@ class SkirtPart(Part):
         enclosure_wall_thickness,
         width,
         length,
-        skirt_size: Tuple[float, float] = (4, 4)
+        skirt_size: Tuple[float, float] = (4, 4),
+        base_size: float = None
     ):
         super().__init__()
+
+        if base_size is None:
+            base_size = 0.000001
 
         width_bar = (
             cq.Workplane("XY")
                 .moveTo(0, 0)
                 .lineTo(-skirt_size[1], 0)
-                .lineTo(0, -skirt_size[0])
+                .lineTo(-skirt_size[1], -base_size)
+                .lineTo(0, -skirt_size[0] - base_size)
                 .close()
                 .extrude(width)
                 .rotate((0, 0, 0), (1, 0, 0), 90)
@@ -48,7 +53,8 @@ class SkirtPart(Part):
             cq.Workplane("XY")
                 .moveTo(0, 0)
                 .lineTo(-skirt_size[1], 0)
-                .lineTo(0, -skirt_size[0])
+                .lineTo(-skirt_size[1], -base_size)
+                .lineTo(0, -skirt_size[0] - base_size)
                 .close()
                 .extrude(length)
                 .rotate((0, 0, 0), (1, 0, 0), 90)
