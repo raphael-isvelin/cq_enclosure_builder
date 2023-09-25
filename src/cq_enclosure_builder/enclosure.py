@@ -43,6 +43,10 @@ class Enclosure:
     PRINTABLE_SCREWS = "screws"
     PRINTABLE_LID_SUPPORT = "lid_support"
 
+    LID_SCREWS_COLOR = cq.Color(0.6, 0.45, 0.8)
+    LID_SUPPORT_COLOR = cq.Color(0.65, 0.5, 0.85)
+    TOP_PANEL_SUPPORT_COLOR = cq.Color(0.65, 0.5, 0.85)
+
     def __init__(
         self,
         size: EnclosureSize,
@@ -104,7 +108,7 @@ class Enclosure:
                 enclosure_wall_thickness=size.wall_thickness,
                 width=(size.outer_width - size.wall_thickness*2),
                 length=(size.outer_length - size.wall_thickness*2))
-            self.add_part_to_face(Face.TOP, "Skirt", skirt, rel_pos=(0, 0))
+            self.add_part_to_face(Face.TOP, "Skirt", skirt, rel_pos=(0, 0), color=Enclosure.TOP_PANEL_SUPPORT_COLOR)
 
         self.main_printables_config: Dict[str, List[Union[Face, str]]] = {
             "box": [Face.TOP, Face.LEFT, Face.RIGHT, Face.FRONT, Face.BACK,
@@ -135,8 +139,8 @@ class Enclosure:
                     raise ValueError("Unknown printable element " + str(e))
             self.printables[name] = printable_a.toCompound()
 
-    def add_part_to_face(self, face: Face, part_label: str, part: Part, rel_pos=None, abs_pos=None):
-        self.panels[face].add(part_label, part, rel_pos, abs_pos)
+    def add_part_to_face(self, face: Face, part_label: str, part: Part, rel_pos=None, abs_pos=None, color:cq.Color=None):
+        self.panels[face].add(part_label, part, rel_pos, abs_pos, color)
         return self
 
     def add_screw(
@@ -263,8 +267,8 @@ class Enclosure:
             cq.Assembly(None, name="Box")
                 .add(panels_assembly, name="Panels")
                 .add(self.frame, name="Frame")
-                .add(self.lid_screws_assembly, name="Lid screws", color=cq.Color(0.6, 0.45, 0.8))
-                .add(self.lid_support, name="Lid support", color=cq.Color(0.65, 0.5, 0.85))
+                .add(self.lid_screws_assembly, name="Lid screws", color=Enclosure.LID_SCREWS_COLOR)
+                .add(self.lid_support, name="Lid support", color=Enclosure.LID_SUPPORT_COLOR)
                 .add(self.debug, name="Debug")
         )
         return self

@@ -66,7 +66,7 @@ class Panel:
         self._parts_to_add = []
         self._screw_counter_sunks = []
 
-    def add(self, label: str, part: Part, rel_pos=None, abs_pos=None):
+    def add(self, label: str, part: Part, rel_pos=None, abs_pos=None, color:cq.Color=None):
         print(f"[{str(self.project_info)}] {self.face.label}: adding part '{label}'")
         pos = None
         if rel_pos == None and abs_pos == None:
@@ -81,7 +81,8 @@ class Panel:
         self._parts_to_add.append({
             "part": part,
             "label": label,
-            "pos": pos
+            "pos": pos,
+            "color": color,
         })
         return self
 
@@ -111,7 +112,7 @@ class Panel:
                     self._rotate_to_face(
                         part_obj.part.translate([*part_to_add["pos"], 0])),
                     name=part_to_add["label"],
-                    color=cq.Color(*self._part_color, 1.0)
+                    color=cq.Color(*self._part_color, 1.0) if part_to_add["color"] is None else part_to_add["color"],
                 )
             if part_obj.size.thickness > self.size.total_thickness:
                 self.size.total_thickness = part_obj.size.thickness
