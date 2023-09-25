@@ -18,7 +18,11 @@ from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.panel import Panel
 
 class LayoutElement:
-    def __init__(self, label: str, part: Part):
+    def __init__(
+        self,
+        label: str,
+        part: Part,
+    ):
         self.part = part
         self.label = label
         self.pos = (0, 0)
@@ -32,12 +36,37 @@ class LayoutElement:
         self.is_aligned_center_x = False
         self.is_aligned_center_y = False
 
+    def set_inside_footprint_x(self, inside_footprint_x):
+        self.inside_footprint = (inside_footprint_x, self.inside_footprint[1])
+        self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0], self.total_footprint[1])
+
+    def set_outside_footprint_x(self, outside_footprint_x):
+        self.outside_footprint = (outside_footprint_x, self.outside_footprint[1])
+        self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0], self.total_footprint[1])
+
+    def set_footprints_x(self, footprint_x):
+        self.inside_footprint = (footprint_x, self.inside_footprint[1])
+        self.outside_footprint = (footprint_x, self.outside_footprint[1])
+        self.total_footprint = (footprint_x, self.total_footprint[1])
+
+    def set_inside_footprint_y(self, inside_footprint_y):
+        self.inside_footprint = (self.inside_footprint[0], inside_footprint_y)
+        self.total_footprint = (self.total_footprint[0], self.inside_footprint[1] if self.inside_footprint[1] > self.outside_footprint[1] else self.outside_footprint[1])
+
+    def set_outside_footprint_y(self, outside_footprint_y):
+        self.outside_footprint = (self.outside_footprint[0], outside_footprint_y)
+        self.total_footprint = (self.total_footprint[0], self.inside_footprint[1] if self.inside_footprint[1] > self.outside_footprint[1] else self.outside_footprint[1])
+
+    def set_footprints_y(self, footprint_y):
+        self.inside_footprint = (self.inside_footprint[0], footprint_y)
+        self.outside_footprint = (self.outside_footprint[0], footprint_y)
+        self.total_footprint = (self.total_footprint[0], footprint_y)
+
     def move_to(self, pos):
         self.pos = pos
         return self
 
     def translate(self, pos):
-        # print("MOVE elem " + self.label + " -> " + str(self.pos) + " + " + str(pos))
         self.pos = (self.pos[0] + pos[0], self.pos[1] + pos[1])
         return self
 
@@ -49,19 +78,16 @@ class LayoutElement:
         length = panel.size.length
         return (width/2 + self.pos[0], length/2 + self.pos[1])
 
-    # TODO def remaining_space_on_left|right|top|bottom (panel, inside|outside|total_footprint)
-    #      use it to get the screen to 0,0 and and button 
-        
     def align_center_x(self):
         correct_x = self.total_footprint_offset[0]
-        self.translate((-offset_x, 0))
+        self.translate((-correct_x, 0))
         self.total_footprint_offset = (0, self.total_footprint_offset[1])
         self.is_aligned_center_x = True
         return self
     
     def align_center_y(self):
         correct_y = self.total_footprint_offset[1]
-        self.translate((0, -offset_y))
+        self.translate((0, -correct_y))
         self.total_footprint_offset = (self.total_footprint_offset[0], 0)
         self.is_aligned_center_y = True
         return self

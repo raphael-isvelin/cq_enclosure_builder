@@ -28,6 +28,7 @@ class LayoutGroup(LayoutElement):
         self.total_footprint_offset = total_footprint_offset
         self.is_aligned_center_x = False
         self.is_aligned_center_y = False
+        self.pos = (0, 0)
         if (isinstance(group_center_at_0_0, bool) and group_center_at_0_0) or (isinstance(group_center_at_0_0, str) and "x" in group_center_at_0_0):
             self.align_center_x()
         if (isinstance(group_center_at_0_0, bool) and group_center_at_0_0) or (isinstance(group_center_at_0_0, str) and "y" in group_center_at_0_0):
@@ -41,11 +42,11 @@ class LayoutGroup(LayoutElement):
     def translate(self, pos):
         for elem in self.elements:
             elem.translate((pos[0], pos[1]))
-        self.total_footprint_offset = (self.total_footprint_offset[0] + pos[0], self.total_footprint_offset[1] + pos[1])
+        self.pos = (self.pos[0] + pos[0], self.pos[1] + pos[1])
         return self
 
     def get_pos(self):
-        return self.total_footprint_offset
+        return self.pos
 
     def get_elements(self):
         elems = []
@@ -58,16 +59,14 @@ class LayoutGroup(LayoutElement):
     
     def align_center_x(self):
         correct_x = self.total_footprint_offset[0]
-        for elem in self.elements:
-            elem.translate((-correct_x, 0))
+        self.translate((-correct_x, 0))
         self.total_footprint_offset = (0, self.total_footprint_offset[1])
         self.is_aligned_center_x = True
         return self
     
     def align_center_y(self):
         correct_y = self.total_footprint_offset[1]
-        for elem in self.elements:
-            elem.translate((0, -correct_y))
+        self.translate((0, -correct_y))
         self.total_footprint_offset = (self.total_footprint_offset[0], 0)
         self.is_aligned_center_y = True
         return self
@@ -81,29 +80,25 @@ class LayoutGroup(LayoutElement):
     def extreme_point_in_footprint(elements, in_inside_footprint, direction, operation):
         extreme_point = -99999999 if operation == max else 99999999
         for elem in elements:
-            if isinstance(elem, LayoutGroup):
-                method_name = f'{direction}most_point_in_footprint'
-                point = getattr(LayoutGroup, method_name)(elem.elements, in_inside_footprint)
-            else:
-                method_name = f'{direction}most_point_in_footprint'
-                point = getattr(elem, method_name)(in_inside_footprint)
+            method_name = f'{direction}most_point_in_footprint'
+            point = getattr(elem, method_name)(in_inside_footprint)
             extreme_point = operation(extreme_point, point)
         return extreme_point
 
     @staticmethod
-    def leftmost_point_in_footprint(elements, in_inside_footprint):
+    def leftmost_point_in_footprints_of_elements(elements, in_inside_footprint):
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'left', min)
 
     @staticmethod
-    def rightmost_point_in_footprint(elements, in_inside_footprint):
+    def rightmost_point_in_footprints_of_elements(elements, in_inside_footprint):
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'right', max)
 
     @staticmethod
-    def topmost_point_in_footprint(elements, in_inside_footprint):
+    def topmost_point_in_footprints_of_elements(elements, in_inside_footprint):
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'top', max)
 
     @staticmethod
-    def bottommost_point_in_footprint(elements, in_inside_footprint):
+    def bottommost_point_in_footprints_of_elements(elements, in_inside_footprint):
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'bottom', min)
 
     @staticmethod
@@ -184,33 +179,18 @@ class LayoutGroup(LayoutElement):
             else:
                 pos_in_line = pos_in_line + e.total_footprint[index_of_size]/2
 
-        e0 = elements[0]
-        e9 = elements[len(elements)-1]
-        # print("GROUP | Inside | Rightmost: " + str( LayoutGroup.rightmost_point_in_footprint(elements, True) ))
-        # print("GROUP | Inside | Leftmost: " + str( LayoutGroup.leftmost_point_in_footprint(elements, True) ))
-        # print("GROUP | Inside | Topmost: " + str( LayoutGroup.topmost_point_in_footprint(elements, True) ))
-        # print("GROUP | Inside | Bottommost: " + str( LayoutGroup.bottommost_point_in_footprint(elements, True) ))
-        # print("GROUP | OutsidE | Rightmost: " + str( LayoutGroup.rightmost_point_in_footprint(elements, False) ))
-        # print("GROUP | OutsidE | Leftmost: " + str( LayoutGroup.leftmost_point_in_footprint(elements, False) ))
-        # print("GROUP | OutsidE | Topmost: " + str( LayoutGroup.topmost_point_in_footprint(elements, False) ))
-        # print("GROUP | OutsidE | Bottommost: " + str( LayoutGroup.bottommost_point_in_footprint(elements, False) ))
         inside_footprint = (
-            (LayoutGroup.rightmost_point_in_footprint(elements, True) - LayoutGroup.leftmost_point_in_footprint(elements, True)),
-            (LayoutGroup.topmost_point_in_footprint(elements, True) - LayoutGroup.bottommost_point_in_footprint(elements, True))
+            (LayoutGroup.rightmost_point_in_footprints_of_elements(elements, True) - LayoutGroup.leftmost_point_in_footprints_of_elements(elements, True)),
+            (LayoutGroup.topmost_point_in_footprints_of_elements(elements, True) - LayoutGroup.bottommost_point_in_footprints_of_elements(elements, True))
         )
         outside_footprint = (
-            (LayoutGroup.rightmost_point_in_footprint(elements, False) - LayoutGroup.leftmost_point_in_footprint(elements, False)),
-            (LayoutGroup.topmost_point_in_footprint(elements, False) - LayoutGroup.bottommost_point_in_footprint(elements, False))
+            (LayoutGroup.rightmost_point_in_footprints_of_elements(elements, False) - LayoutGroup.leftmost_point_in_footprints_of_elements(elements, False)),
+            (LayoutGroup.topmost_point_in_footprints_of_elements(elements, False) - LayoutGroup.bottommost_point_in_footprints_of_elements(elements, False))
         )
-        # print(f"e0 | pos: {str(e0.get_pos())} ; outside f: {str(e0.outside_footprint)} ; total f: {str(e0.total_footprint)} ; offset: {str(e0.total_footprint_offset)}")
-        # print(f"e9 | pos: {str(e9.get_pos())} ; outside f: {str(e9.outside_footprint)} ; total f: {str(e9.total_footprint)} ; offset: {str(e9.total_footprint_offset)}")
-        # print(f"Footprints | in: {str(inside_footprint)} ; out {str(outside_footprint)}")
+
         used_fp = outside_footprint if align_to_outside_footprint else inside_footprint
-        return LayoutGroup(elements,
-                           inside_footprint, outside_footprint,
-                           (used_fp[0]/2 + 0*initial_pos_in_line, 0) if horizontal else (0, used_fp[1]/2 + 0*initial_pos_in_line),
-                           group_center_at_0_0)
-            
+        total_footprint_offset = (used_fp[0]/2 + 0*initial_pos_in_line, 0) if horizontal else (0, used_fp[1]/2 + 0*initial_pos_in_line)
+        return LayoutGroup(elements, inside_footprint, outside_footprint, total_footprint_offset, group_center_at_0_0)
 
     @staticmethod
     def line_of_parts(parts, margin=5, horizontal=True, group_center_at_0_0=True, elements_centers_at_0_0=True, align_start_to_outside_footprint=False, align_to_outside_footprint=False):
