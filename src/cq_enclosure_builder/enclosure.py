@@ -52,6 +52,7 @@ class Enclosure:
         lid_thickness_error_margin = 0.4,  # if >0, the lid screws and support will be slightly sunk in the enclosure
         add_corner_lid_screws = True,
         add_lid_support = True,
+        add_top_support = True,
         lid_screws_heat_set = True,
         no_fillet_top = False,
         no_fillet_bottom = False,
@@ -97,6 +98,13 @@ class Enclosure:
             self._build_lid_support(lid_thickness_error_margin)
         if add_corner_lid_screws:
             self.add_corner_lid_screws(lid_thickness_error_margin, heat_set=lid_screws_heat_set)
+
+        if add_top_support:
+            skirt = SkirtPart(
+                enclosure_wall_thickness=size.wall_thickness,
+                width=(size.outer_width - size.wall_thickness*2),
+                length=(size.outer_length - size.wall_thickness*2))
+            self.add_part_to_face(Face.TOP, "Skirt", skirt, rel_pos=(0, 0))
 
         self.main_printables_config: Dict[str, List[Union[Face, str]]] = {
             "box": [Face.TOP, Face.LEFT, Face.RIGHT, Face.FRONT, Face.BACK,
