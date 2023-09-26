@@ -9,5 +9,3 @@ from . import parts
 from . import screws
 from . import utils
 from . import layout_builder
-from .knob_or_cap import KnobOrCap
-from . import knobs_and_caps

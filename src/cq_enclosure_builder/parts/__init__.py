@@ -11,3 +11,4 @@ from . import banana
 from . import barrel_plug
 from . import rca
 from . import support
+from . import toggle
