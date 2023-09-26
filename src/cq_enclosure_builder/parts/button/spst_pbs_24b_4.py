@@ -17,6 +17,7 @@
 import cadquery as cq
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedWithStopPart
 from cq_enclosure_builder.parts_factory import register_part
+from cq_enclosure_builder.parts.common.knobs_and_caps import CAP_23_75_x_11_9
 
 @register_part("button", "SPST PBS-24B-4")
 class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
@@ -26,7 +27,7 @@ class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
     https://www.aliexpress.com/item/1005004646906063.html
     """
 
-    def __init__(self, enclosure_wall_thickness):
+    def __init__(self, enclosure_wall_thickness, button_cap = CAP_23_75_x_11_9):
         super().__init__(
             enclosure_wall_thickness,
 
@@ -39,19 +40,14 @@ class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
 
             washer_thickness=0.75,
             nut_thickness=2.13,
-            margin_after_nut=0.0,
+            margin_after_nut=0.62,
 
             pyramid_taper=5
         )
 
         footprint_in_length = 30.8
-        footprint_out_button_cap_diameter = 24
-        footprint_out_button_cap_thickness = 12
-
         self.inside_footprint = (self.width, footprint_in_length)
         self.inside_footprint_offset = (0, -4.8)
-        self.outside_footprint = (footprint_out_button_cap_diameter, footprint_out_button_cap_diameter)
-
         footprint_in = (
             cq.Workplane("front")
                 .box(*self.inside_footprint, 16 - enclosure_wall_thickness, centered=(True, True, False))
@@ -62,20 +58,28 @@ class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
                         .translate([0, 0, -9])
                 ))
         )
+
+        self.outside_footprint = (self.thread_diameter, self.thread_diameter)
+        footprint_out_thickness_without_knob = 25.8 - self.block_thickness - self.enclosure_wall_thickness
         footprint_out = (
             cq.Workplane("front")
                 .circle(self.thread_diameter/2)
                 .extrude(15)
                 .translate([0, 0, enclosure_wall_thickness])
-                .add((
-                    cq.Workplane("front")
-                        .circle(footprint_out_button_cap_diameter/2)
-                        .extrude(footprint_out_button_cap_thickness)
-                        .translate([0, 0, enclosure_wall_thickness + 6.6])
-                        .edges("front")
-                        .fillet(1)
-                ))
         )
+
+        if button_cap is not None:
+            self.outside_footprint = (button_cap.diameter, button_cap.diameter)
+            knob_wp = (
+                cq.Workplane("front")
+                    .circle(button_cap.diameter/2)
+                    .extrude(button_cap.thickness)
+                    .translate([0, 0, enclosure_wall_thickness])
+                    .translate([0, 0, footprint_out_thickness_without_knob - button_cap.inner_depth])
+            )
+            if button_cap.fillet > 0:
+                knob_wp = knob_wp.edges("front").fillet(button_cap.fillet)
+            footprint_out = footprint_out.add(knob_wp)
 
         footprint_in = self.mirror_and_translate(footprint_in)
         footprint_out = self.mirror_and_translate(footprint_out)
