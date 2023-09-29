@@ -68,6 +68,8 @@ class Part:
         #   `assembly_parts_to_cq_assembly(assembly_parts).toCompound()` or equivalent.
         self.assembly_parts: List[AssemblyPart] = None
 
+        self.additional_printables = None
+
         self.size = PartSize()
         self.inside_footprint = None  # used by the layout builder  # TODO
         self.outside_footprint = None  # used by the layout builder

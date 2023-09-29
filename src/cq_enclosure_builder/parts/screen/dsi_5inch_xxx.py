@@ -33,22 +33,36 @@ def tapered_dimensions(x, y, h, alpha):
     delta_y = h * math.tan(alpha_rad)
     return y + 2 * delta_y
 
-@register_part("screen", "HDMI 5 inch JRP5015")
-class Hdmi5InchJrp5015Part(Part):
+@register_part("screen", "DSI 5 inch XXX")
+class Dsi5InchXxxPart(Part):
     """
-    HDMI 5 inch screen JRP5015
+    DSI 5 inch screen XXX
 
-    https://www.aliexpress.com/item/1005004132936105.html
+    Screen doesn't have screw holes sticking out of the PCB, so we're also printing some strips to press it in place.
+    screw_block_thickness should the same height as the screw on the PCB, or can be made taller, if strip_extra_thickness
+    is set to the difference; in which case, the strip won't be flat, but have a part sticking out, to press on the screen [screws].
+
+    TODO link
     """
+
+    DISTANCE_BETWEEN_SCREWS_X = 110.8 - 1.0
+    DISTANCE_BETWEEN_OUTER_SCREWS_Y = 67.6 + 24
+    DISTANCE_BETWEEN_INNER_SCREWS_Y = 67.6
 
     def __init__(
         self,
         enclosure_wall_thickness: float,
-        screw_block_thickness: float = 6,
+        screw_block_thickness: float = 11.6 + 1.4,
+        strip_extra_thickness: float = 1.4,  # strips are pressing the screen in place
         center_is_outward_facing_hole: bool = True,
         ramp_width_l_plus_r = 2.8,   # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
         ratio_bevel_lr_to_bt = 1.5,  # N times less than ^ for top and bottom, careful with slopes >35 degrees
     ):
+        # TODO refactor, it's copy/pasted from HDMI will little modifications:
+        # - default screw_block_thickness
+        # - DISTANCE_BETWEEN_SCREWS_X/y
+        # - additional prints
+
         super().__init__()
 
         screen_viewing_area_size = (108.8-0.8, 65.6-0.8)
@@ -66,7 +80,7 @@ class Hdmi5InchJrp5015Part(Part):
         )
         screen_board_size = (
             screen_w_bevel_size[0] +  4, # magic number, TODO calculate margin from screw size
-            screen_w_bevel_size[1] + 26  # space for screws TODO unhardcode for HDMI v. DSI
+            screen_w_bevel_size[1] + 28  # space for screws TODO unhardcode for HDMI v. DSI
         )
 
         screen_w_ramp_width = screen_viewing_area_size[0] + ramp_width_l_plus_r
@@ -77,7 +91,7 @@ class Hdmi5InchJrp5015Part(Part):
         alpha = required_taper_for_x(ratioed_screen_width, ratioed_screen_w_ramp_width, ramp_slope_thickness)
 
         screen_w_ramp_length = tapered_dimensions(ratioed_screen_width, screen_viewing_area_size[1], ramp_slope_thickness, alpha)
-        #print("TAPER ANGLE: " + str(alpha) + "for depth " + str(screw_block_thickness))
+        print(f"TAPER ANGLE: {str(alpha)} for ramp {str(ramp_width_l_plus_r)} ratio {str(ratio_bevel_lr_to_bt)}")
 
         # otherwise, the tapered extrusion won't actually be `ramp_slope_thickness`
         tapered_thickness = ramp_slope_thickness / math.cos(math.radians(alpha))
@@ -130,19 +144,22 @@ class Hdmi5InchJrp5015Part(Part):
                 .box(*screen_w_bevel_size, part_thickness, centered=(True, True, False))
         )
 
+        strip, strip_split = self.build_strips(enclosure_wall_thickness, strip_extra_thickness)
+
         self.size.width     = screen_board_size[0]
         self.size.length    = screen_board_size[1]
         self.size.thickness = part_thickness
 
         self.inside_footprint = (self.size.width, self.size.length)
         self.inside_footprint_offset = (0, 0)
-        self.outside_footprint = (screen_w_ramp_width, screen_w_ramp_length)
         footprint_in = (
             cq.Workplane("front")
                 .rect(*self.inside_footprint)
                 .extrude(10)
                 .translate([0, 0, enclosure_wall_thickness])
         )
+
+        self.outside_footprint = (screen_w_ramp_width, screen_w_ramp_length)
         outside_footprint_thickness = 3
         footprint_out = (
             cq.Workplane("front")
@@ -154,8 +171,8 @@ class Hdmi5InchJrp5015Part(Part):
         if center_is_outward_facing_hole:
             translate_by_viewing_area_offset = lambda obj: obj.translate([-viewing_area_offset[0], -viewing_area_offset[1], 0])
 
-            screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole = list(map(translate_by_viewing_area_offset,
-                    [screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole]))
+            strip, strip_split, screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole = list(map(translate_by_viewing_area_offset,
+                    [strip, strip_split, screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole]))
 
             screws = list(map(translate_by_viewing_area_offset, screws))
 
@@ -163,13 +180,24 @@ class Hdmi5InchJrp5015Part(Part):
         for idx, screw in enumerate(screws):
             assembly_parts.append(AssemblyPart(screw, f"Screw {idx}", cq.Color(0.7, 0.3, 0.8)))
 
+        footprint_in = (footprint_in
+            .add(strip.rotate((0, 0, 0), (0, 1, 0), 180).translate([54.1, 0, 16.6 + 2]))
+            .add(strip_split.rotate((0, 0, 0), (0, 1, 0), 180).translate([-55.7, 0, 16.6 + 2]))
+        )
+
         self.assembly_parts = assembly_parts
         self.part = self.assembly_parts_to_cq_assembly().toCompound()
         self.mask = mask
+
+        self.additional_printables = [
+            ("screen-strip-1", strip),
+            ("screen-strip-2", strip_split),
+        ]
+
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
 
-        self.debug_objects.hole = viewing_area_hole
+        self.debug_objects.hole = None #viewing_area_hole
         self.debug_objects.others["screen_block"] = debug_screen_block
         self.debug_objects.others["screws_mask"] = screws_mask
         self.debug_objects.others["screen_with_ramps_hole"] = screen_w_ramps_hole
@@ -178,13 +206,11 @@ class Hdmi5InchJrp5015Part(Part):
         screw_block_thickness = screen_ramp_thickness - enclosure_wall_thickness + screw_thickness
         m4 = ScrewBlock().m4(screw_block_thickness, enclosure_wall_thickness)
 
-        distance_between_screws_x = 112.6
-        distance_between_screws_y = 87.6
         screws_pos = [
-            (  -(distance_between_screws_x/2),  +(distance_between_screws_y/2)  ),  # TL
-            (  +(distance_between_screws_x/2),  +(distance_between_screws_y/2)  ),  # TR
-            (  -(distance_between_screws_x/2),  -(distance_between_screws_y/2)  ),  # BL
-            (  +(distance_between_screws_x/2),  -(distance_between_screws_y/2)  ),  # BR
+            (  -(Dsi5InchXxxPart.DISTANCE_BETWEEN_SCREWS_X/2),  +(Dsi5InchXxxPart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)  ),  # TL
+            (  +(Dsi5InchXxxPart.DISTANCE_BETWEEN_SCREWS_X/2),  +(Dsi5InchXxxPart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)  ),  # TR
+            (  -(Dsi5InchXxxPart.DISTANCE_BETWEEN_SCREWS_X/2),  -(Dsi5InchXxxPart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)  ),  # BL
+            (  +(Dsi5InchXxxPart.DISTANCE_BETWEEN_SCREWS_X/2),  -(Dsi5InchXxxPart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)  ),  # BR
         ]
 
         screws = []
@@ -197,3 +223,37 @@ class Hdmi5InchJrp5015Part(Part):
             screws.append(m4_block)
 
         return (screws, screws_mask)
+
+    def build_strips(self, enclosure_wall_thickness, strip_extra_thickness):
+        outer_screws_pos = [
+            (0, -(Dsi5InchXxxPart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)),
+            (0, +(Dsi5InchXxxPart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)),
+        ]
+        inner_screws_pos = [
+            (0, -(Dsi5InchXxxPart.DISTANCE_BETWEEN_INNER_SCREWS_Y/2)),
+            (0, +(Dsi5InchXxxPart.DISTANCE_BETWEEN_INNER_SCREWS_Y/2)),
+        ]
+
+        strip = (
+            cq.Workplane("front")
+                .rect(10, 103.6)
+                .extrude(enclosure_wall_thickness)
+                .add(
+                    cq.Workplane("front")
+                        .rect(10, Dsi5InchXxxPart.DISTANCE_BETWEEN_INNER_SCREWS_Y + 10)
+                        .extrude(enclosure_wall_thickness + strip_extra_thickness)
+                )
+                .faces(">Z").workplane()
+                .pushPoints(outer_screws_pos)
+                .hole(4.3)
+                .pushPoints(inner_screws_pos)
+                .hole(2.7)
+        )
+
+        strip_split = strip.cut(
+            cq.Workplane("front")
+                .rect(10, Dsi5InchXxxPart.DISTANCE_BETWEEN_INNER_SCREWS_Y - 12)
+                .extrude(enclosure_wall_thickness + strip_extra_thickness)
+        )
+
+        return (strip, strip_split)

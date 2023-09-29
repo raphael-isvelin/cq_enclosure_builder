@@ -242,6 +242,10 @@ class Enclosure:
         for panel in self.panels.values():
             panel.assemble()
 
+            for printable in panel.additional_printables:
+                printable_name = printable[0]
+                self.printables[printable_name] = printable[1]
+
         panels_assembly, panels_masks_assembly = self._build_panels_assembly(walls_explosion_factor, lid_panel_shift)
         self.frame = self._build_frame_assembly(panels_masks_assembly)
         self.lid_screws_assembly = self._build_lid_screws_assembly()

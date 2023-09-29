@@ -62,6 +62,7 @@ class Panel:
         self.debug_assemblies["combined"] = cq.Assembly(None, name=self.face.label + " - Debug")
         self.lid_size_error_margin: float = lid_size_error_margin
         self.project_info = project_info
+        self.additional_printables = []
         self._alpha: float = alpha
         self._parts_to_add = []
         self._screw_counter_sunks = []
@@ -99,6 +100,8 @@ class Panel:
         self.panel = cq.Assembly(None, name="Panel TOP")
         for part_to_add in self._parts_to_add:
             part_obj = part_to_add["part"]
+            if part_obj.additional_printables is not None:
+                self.additional_printables.extend(part_obj.additional_printables)
             self._add_part_to_debug_assemblies(part_to_add)
             wall = wall.cut(
                 part_obj.mask.translate([*part_to_add["pos"], 0])
