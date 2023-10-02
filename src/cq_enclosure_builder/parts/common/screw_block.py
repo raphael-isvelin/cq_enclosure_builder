@@ -58,7 +58,7 @@ class ScrewBlock:
         self,
         screw_size_category: str,
         block_thickness: float,
-        enclosure_wall_thickness: float,
+        enclosure_wall_thickness: float,  # TOD move parameter before block_thickness for consistency
         screw_hole_depth: Union[float, None] = DEFAULT_SCREW_HOLE_DEPTH,
         fill_pointy_bit: bool = False,  # read comment where used
         is_counter_sunk: bool = DEFAULT_IS_COUNTER_SUNK,

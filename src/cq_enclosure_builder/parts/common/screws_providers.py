@@ -28,21 +28,27 @@ class DefaultFlatHeadScrewProvider:
     SCREW_SIZE_REFERENCES: Dict[str, str] = {
         "m1.4": "M1.4-0.3",
         "m2": "M2-0.4",
+        "m2.5": "M2.5-0.45",
         "m3": "M3-0.5",
+        "m3.5": "M3.5-0.6",
         "m4": "M4-0.7",
         "m5": "M5-0.8",
     }
     BLOCK_SIZES: Dict[str, Tuple[int, int]] = {
         "m1.4": (5, 5),
         "m2": (6, 6),
+        "m2.5": (7, 7),
         "m3": (8, 8),
+        "m3.5": (9, 9),
         "m4": (10, 10),
         "m5": (12, 12),
     }
     COUNTER_SUNK_BLOCK_SIZES: Dict[str, Tuple[int, int]] = {
         "m1.4": (3, 3),
         "m2": (4.6, 4.6),
+        "m2.5": (5.6, 5.6),  # TODO double-check once delivered
         "m3": (6.8, 6.8),
+        "m3.5": (7.8, 7.8),  # TODO double-check once delivered
         "m4": (8.6, 8.6),
         "m5": (10.4, 10.4),
     }
@@ -79,21 +85,27 @@ class TinyBlockFlatHeadScrewProvider:
     SCREW_SIZE_REFERENCES: Dict[str, str] = {
         "m1.4": "M1.4-0.3",
         "m2": "M2-0.4",
+        "m2.5": "M2.5-0.45",
         "m3": "M3-0.5",
+        "m3.5": "M3.5-0.6",
         "m4": "M4-0.7",
         "m5": "M5-0.8",
     }
     BLOCK_SIZES: Dict[str, Tuple[int, int]] = {
         "m1.4": (2.4, 2.4),
         "m2": (3.6, 3.6),
+        "m2.5": (4.2, 4.2),
         "m3": (4.8, 4.8),
+        "m3.5": (5.4, 5.4),
         "m4": (6, 6),
         "m5": (7.2, 7.2),
     }
     COUNTER_SUNK_BLOCK_SIZES: Dict[str, Tuple[int, int]] = {
         "m1.4": (3, 3),
         "m2": (4.6, 4.6),
+        "m2.5": (5.6, 5.6),
         "m3": (6.8, 6.8),
+        "m3.5": (7.8, 7.8),
         "m4": (8.6, 8.6),
         "m5": (10.4, 10.4),
     }
@@ -129,6 +141,7 @@ class DefaultHeatSetScrewProvider:
     SCREW_MODEL_NAME: str = "Hilitchi"
     SCREW_SIZE_REFERENCES: Dict[str, str] = {
         "m2": "M2-0.4-8",
+        "m2.5": "M2.5-0.45-8",  # TODO check if exists for Hilitchi
         "m3": "M3-0.5-10",
         "m4": "M4-0.7-10",
         "m5": "M5-0.8-10",
@@ -136,6 +149,7 @@ class DefaultHeatSetScrewProvider:
     }
     BLOCK_SIZES: Dict[str, Tuple[int, int]] = {
         "m2": (6, 6),
+        "m2.5": (7, 7),
         "m3": (8, 8),
         "m4": (10, 10),
         "m5": (12, 12),

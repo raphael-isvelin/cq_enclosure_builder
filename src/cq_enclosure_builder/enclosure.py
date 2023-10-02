@@ -92,6 +92,7 @@ class Enclosure:
         self.screws = []
         self.lid_screws_assembly: cq.Assembly = None
         self.lid_support: cq.Workplane = None
+        self.add_lid_support: bool = add_lid_support
 
         for info in self.panels_specs:
             lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
@@ -184,7 +185,8 @@ class Enclosure:
             screw["counter_sunk_block"] = screw["counter_sunk_block"].translate([*pos, pos_error_margin])
             screw["counter_sunk_mask"] = screw["counter_sunk_mask"].translate([*pos, pos_error_margin])
         self.screws.append(screw)
-        self.lid_support = self.lid_support.cut(screw["mask"])
+        if self.add_lid_support:
+            self.lid_support = self.lid_support.cut(screw["mask"])
         return screw
 
     def add_corner_lid_screws(
