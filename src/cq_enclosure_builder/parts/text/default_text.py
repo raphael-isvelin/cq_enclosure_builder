@@ -40,6 +40,7 @@ class TextPart(Part):
         fontsize = 6,
         width = 40,
         length = 18,
+        outside = False,
         halign = "center",
         valign = "center",
     ):
@@ -64,6 +65,11 @@ class TextPart(Part):
                     )
             )
 
+        if outside:
+            text_wp = text_wp.mirror("XY")
+        else:
+            text_wp = text_wp.mirror("YZ")
+
         mask = (
             cq.Workplane()
                 .box(width, length, enclosure_wall_thickness, centered=(True, True, False))
@@ -79,7 +85,7 @@ class TextPart(Part):
         self.inside_footprint = (self.size.width, self.size.length)  # text isn't taken into account (can be more or less)
         self.inside_footprint_offset = (0, 0)
 
-        self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint = (self.size.width, self.size.length)  # text isn't taken into account (can be more or less)
 
-        self.debug_objects.footprint.inside  = text
-        self.debug_objects.footprint.outside = None
+        self.debug_objects.footprint.inside  = None if outside else text_wp
+        self.debug_objects.footprint.outside = text_wp if outside else None
