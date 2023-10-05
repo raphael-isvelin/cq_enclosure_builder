@@ -47,6 +47,7 @@ class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
 
         footprint_in_length = 30.8
         self.inside_footprint = (self.width, footprint_in_length)
+        self.inside_footprint_thickness = 23
         self.inside_footprint_offset = (0, -4.8)
         footprint_in = (
             cq.Workplane("front")

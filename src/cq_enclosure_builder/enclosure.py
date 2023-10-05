@@ -277,6 +277,11 @@ class Enclosure:
                 .add(self.lid_support, name="Lid support", color=Enclosure.LID_SUPPORT_COLOR)
                 #.add(self.debug, name="Debug")
         )
+        self.assembly_with_debug = (
+            cq.Assembly()
+                .add(self.assembly, name="Assembly")
+                .add(self.debug, name="Debug")
+        )
         return self
 
     def _build_printable_file_path(self, printable_name: str):

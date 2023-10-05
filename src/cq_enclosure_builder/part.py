@@ -72,8 +72,10 @@ class Part:
 
         self.size = PartSize()
         self.inside_footprint = None  # used by the layout builder  # TODO
-        self.outside_footprint = None  # used by the layout builder
+        self.inside_footprint_thickness = None
         self.inside_footprint_offset = None  # how far is it from 0,0
+        self.outside_footprint = None  # used by the layout builder
+        self.outside_footprint_thickness = None
         self.outside_footprint_offset = (0, 0)  # currently, it is assumed the center of the outside-facing side of the part is at 0,0
 
         self.debug_objects = DebugObjects()
