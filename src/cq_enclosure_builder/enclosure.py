@@ -275,7 +275,7 @@ class Enclosure:
                 .add(self.frame, name="Frame")
                 .add(self.lid_screws_assembly, name="Lid screws", color=Enclosure.LID_SCREWS_COLOR)
                 .add(self.lid_support, name="Lid support", color=Enclosure.LID_SUPPORT_COLOR)
-                .add(self.debug, name="Debug")
+                #.add(self.debug, name="Debug")
         )
         return self
 
