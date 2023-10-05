@@ -151,7 +151,7 @@ class LayoutGroup(LayoutElement):
         if len(elements) == 0:
             raise ValueError("Cannot create a line with 0 element")
         if group_center_at_0_0 and align_start_to_outside_footprint:
-            print("Using both group_center_at_0_0=True and align_start_to_outside_footprint=True causes unexpected behaviours.")
+            print("WARNING: Using both group_center_at_0_0=True and align_start_to_outside_footprint=True causes unexpected behaviours.")
 
         total_footprint_width = total_footprint_length = 0
         pos_in_line = 0
@@ -195,4 +195,4 @@ class LayoutGroup(LayoutElement):
     @staticmethod
     def line_of_parts(parts, margin=5, horizontal=True, group_center_at_0_0=True, elements_centers_at_0_0=True, align_start_to_outside_footprint=False, align_to_outside_footprint=False):
         elements = [LayoutElement(part[0] if isinstance(part, tuple) else str(uuid.uuid4()), part[1] if isinstance(part, tuple) else part) for part in parts]
-        return LayoutGroup.line_of_elements(elements, margin, horizontal, group_center_at_0_0, elements_centers_at_0_0, align_start_to_outside_footprint)
+        return LayoutGroup.line_of_elements(elements, margin, horizontal, group_center_at_0_0, elements_centers_at_0_0, align_start_to_outside_footprint, align_to_outside_footprint)

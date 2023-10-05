@@ -111,5 +111,5 @@ class LayoutElement:
 
     def _point_in_footprint(self, in_inside_footprint, axis, operation):
         fp = self.inside_footprint if in_inside_footprint else self.outside_footprint
-        offset = self.total_footprint_offset[1] if in_inside_footprint else 0
+        offset = self.total_footprint_offset[axis] if in_inside_footprint else 0
         return self.pos[axis] + offset + operation(fp[axis] / 2)
