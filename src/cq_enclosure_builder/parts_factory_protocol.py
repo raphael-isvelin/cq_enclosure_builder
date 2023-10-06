@@ -24,34 +24,34 @@ class PartsFactoryProtocol:
     The class should ideally contain a set of methods for each category in `PartsFactory.list_categories()`.
     When registering a new category, feel free to add the appropriate methods here (optional):
     - build_<category>
-    - list_available_types_of_<category>
+    - list_types_of_<category>
     - list_parameters_for_<category>
     """
 
     @classmethod
     def build_jack(cls, *args, **kwargs) -> Part: pass
     @classmethod
-    def list_available_types_of_jack(cls, *args) -> List[str]: pass
+    def list_types_of_jack(cls, *args) -> List[str]: pass
     @classmethod
     def list_parameters_for_jack(cls, *args, **kwargs) -> List[Dict[str, any]]: pass
 
     @classmethod
     def build_usb_a(cls, *args, **kwargs) -> Part: pass
     @classmethod
-    def list_available_types_of_usb_a(cls, *args) -> List[str]: pass
+    def list_types_of_usb_a(cls, *args) -> List[str]: pass
     @classmethod
     def list_parameters_for_usb_a(cls, *args, **kwargs) -> List[Dict[str, any]]: pass
 
     @classmethod
     def build_usb_c(cls, *args, **kwargs) -> Part: pass
     @classmethod
-    def list_available_types_of_usb_c(cls, *args) -> List[str]: pass
+    def list_types_of_usb_c(cls, *args) -> List[str]: pass
     @classmethod
     def list_parameters_for_usb_c(cls, *args, **kwargs) -> List[Dict[str, any]]: pass
 
     @classmethod
     def build_x(cls, *args, **kwargs) -> Part: pass
     @classmethod
-    def list_available_types_of_x(cls, *args) -> List[str]: pass
+    def list_types_of_x(cls, *args) -> List[str]: pass
     @classmethod
     def list_parameters_for_x(cls, *args, **kwargs) -> List[Dict[str, any]]: pass

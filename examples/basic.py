@@ -5,7 +5,7 @@ from cq_enclosure_builder import PartFactory as pf
 
 print("available categories: " + str(pf.list_categories()))
 
-print("types of jacks: " + str(pf.list_available_types_of_jack()))
+print("types of jacks: " + str(pf.list_types_of_jack()))
 
 print("\n> trying to list parameters for jack without specifying part_type")
 try: pf.list_parameters_for_jack()

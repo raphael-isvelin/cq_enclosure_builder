@@ -194,7 +194,22 @@ For more details, see below.
 <a name="available-parts-list-builtins"></a>
 ### Built-in categories and part types
 
-**TODO!** list currently available categories and parts.
+- **jack**: '6.35mm PJ-612A', '3.5mm XXX'
+- **button**: 'SPST PBS-24B-4', 'DPDT PBS-24-212SP', 'PBS 11-A', 'PBS-110'
+- **encoder**: 'EC11'
+- **potentiometer**: 'WH148'
+- **usb_a**: '3.0 vertical cltgxdd'
+- **usb_c**: 'ChengHaoRan E'
+- **screen**: 'HDMI 5 inch JRP5015', 'DSI 5 inch XXX'
+- **air_vent**: 'basic rectangular'
+- **banana**: '4mm'
+- **barrel_plug**: 'DC-022B'
+- **rca**: 'N1030'
+- **support**: 'pyramid', 'skirt'
+- **toggle**: 'MTS-103'
+- **midi**: 'SD-50SN'
+- **holder**: 'RPi 4B', 'Protoboard'
+- **text**: 'default'
 
 <a name="available-parts-add-new"></a>
 ### Adding a new Part
@@ -218,7 +233,6 @@ You'll now be able to use your part:
 from cq_enclosure_builder import PartsFactory as pf
 
 my_part = pf.build_<category>(part_type="<part_type>")
-# ^ s
 ```
 
 **Note 1:** set your part as default for this category with `PartsFactory#set_default_types`.
@@ -228,13 +242,13 @@ my_part = pf.build_<category>(part_type="<part_type>")
 ---
 
 <a name="strength-test"></a>
-## Strength tests
+## Strength test
 
 The enclosures should be strong enough for most enclosure needs, including guitar pedals (which endure stomping!)
 
 I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [here](./examples/strength_test_enclosures.py)):
 - the first one was made with nothing supporting the SPST;
-- the second one had a small 'pillar' underneath it (see example 13 above), making it very solid with reasonable use. (If you PCB design is flexible, you can plan for a small hole to allow the pillar to support the bottom of the SPST.)
+- the second one had a small 'pillar' underneath it (see [example 13](#example-13) above), making it very solid with reasonable use. (If you PCB design is flexible, you can plan for a small hole to allow the pillar to support the bottom of the SPST.)
 
 
 | ![TODO!](./docs/img/strength-test-with-support.jpg) | ![TODO!](./docs/img/strength-test-without-support.jpg) |
