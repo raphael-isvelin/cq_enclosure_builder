@@ -13,7 +13,7 @@ cv = open_viewer("Assembly", anchor="right")  # sets default viewer
 
 objects_to_hide = [
     "/Mask",
-    "/Panel masks"
+    "/Panels masks"
 ]
 
 def hide_objects_matching_strings(strings, keep_edges=True, cv=cv):
