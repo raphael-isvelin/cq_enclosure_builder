@@ -14,9 +14,8 @@
    limitations under the License.
 """
 
+import os
 import cadquery as cq
-import cq_warehouse.extensions
-from cq_warehouse.fastener import PanHeadScrew
 
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock
@@ -30,7 +29,8 @@ class Pi4HolderPart(Part):
     def __init__(
         self,
         enclosure_wall_thickness,
-        screw_block_thickness = 4
+        screw_block_thickness = 4,
+        add_pi_to_footprint = True,
     ):
         super().__init__()
 
@@ -53,15 +53,19 @@ class Pi4HolderPart(Part):
         board_width = distance_between_screws_x + screw_size[0]
         board_length = distance_between_screws_y + screw_size[1]
 
+        screws_a = cq.Assembly()
+        for screw_pos in screws_pos:
+            screws_a.add(screw.translate(screw_pos))
+
         board = (
             cq.Workplane("front")
                 .box(board_width, board_length, enclosure_wall_thickness, centered=(True, True, False))
+                .add(screws_a.toCompound())
         )
-        mask = board
-        for screw_pos in screws_pos:
-            board = board.add(
-                screw.translate(screw_pos)
-            )
+        mask = (
+            cq.Workplane("front")
+                .box(board_width, board_length, enclosure_wall_thickness, centered=(True, True, False))
+        )
 
         self.part = board
         self.mask = mask
@@ -71,15 +75,22 @@ class Pi4HolderPart(Part):
         self.size.thickness = enclosure_wall_thickness
 
         self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness = screw_block_thickness
         self.inside_footprint_offset = (0, 0)
-        footprint_in = (
-            cq.Workplane("front")
-                .rect(self.size.width, self.size.length)
-                .extrude(screw_block_thickness)
-                .translate([0, 0, enclosure_wall_thickness])
-        )
 
         self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint_thickness = 0
+
+        footprint_in = screws_a.toCompound()
+        if add_pi_to_footprint:
+            model_path = f"{os.path.dirname(__file__)}/rpi_4b_light.stp"
+            pi_footprint = (
+                cq.importers.importStep(model_path)
+                    .translate([-(board_width/2), -(board_length/2), enclosure_wall_thickness + screw_block_thickness])
+                    .translate([screw_size[0]/2, screw_size[1]/2, 0])
+            )
+            footprint_in = pi_footprint.add(screws_a.toCompound())
+            self.inside_footprint_thickness = screw_block_thickness + 20.1 - 1.8
 
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = None

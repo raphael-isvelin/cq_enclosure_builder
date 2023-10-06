@@ -3,8 +3,11 @@
 # to view the examples: it will make it way easier for you to naviguate through the enclosure:
 # interract with the models, hide parts, view the debug assemblies more easily, and much more.
 
+# WARNING
+# This example takes a bit of time to render, and cq-editor fully freezes while rendering
+
 import sys
-sys.path.append("cq_enclosure_builder/src")
+sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
 from cq_enclosure_builder import Panel, Face

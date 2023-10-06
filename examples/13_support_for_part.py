@@ -4,7 +4,7 @@
 # interract with the models, hide parts, view the debug assemblies more easily, and much more.
 
 import sys
-sys.path.append("cq_enclosure_builder/src")
+sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
 from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo

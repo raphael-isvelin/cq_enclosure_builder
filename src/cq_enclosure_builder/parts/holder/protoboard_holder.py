@@ -15,8 +15,6 @@
 """
 
 import cadquery as cq
-import cq_warehouse.extensions
-from cq_warehouse.fastener import PanHeadScrew
 
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock
@@ -39,6 +37,8 @@ class ProtoboardHolderPart(Part):
         screws_pos = None,  # default: one per corner
         screw_provider = TinyBlockFlatHeadScrewProvider,  # use regular screw blocks for parts with stress
         hole_distance = HOLE_DISTANCE,
+        board_thickness = 2,
+        add_board_to_footprint = True,
     ):
         super().__init__()
 
@@ -85,16 +85,22 @@ class ProtoboardHolderPart(Part):
         self.mask = mask
 
         self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness = screw_block_thickness
         self.inside_footprint_offset = (0, 0)
-        footprint_in = (
-            cq.Workplane("front")
-                .rect(self.inside_footprint[0], self.inside_footprint[1])
-                .extrude(screw_block_thickness)
-                .translate([0, 0, enclosure_wall_thickness])
-                .add(screws_a.toCompound())
-        )
 
         self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint_thickness = 0
+
+        footprint_in = screws_a.toCompound()
+        if add_board_to_footprint:
+            protoboard = (
+                cq.Workplane("front")
+                    .rect(self.inside_footprint[0], self.inside_footprint[1])
+                    .extrude(board_thickness)
+                    .translate([0, 0, enclosure_wall_thickness + screw_block_thickness])
+            )
+            footprint_in = protoboard.add(screws_a.toCompound())
+            self.inside_footprint_thickness = screw_block_thickness + board_thickness
 
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = None
