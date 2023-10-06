@@ -9,8 +9,7 @@ sys.path.append("../src")
 from cq_enclosure_builder import PartFactory as pf
 from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo
 
-enclosure_size = EnclosureSize(180, 90, 38, 2)
-enclosure = Enclosure(enclosure_size)
+panel = Panel(Face.TOP, 180, 90, 2)
 
 pf.set_default_types({"text": 'default'})
 pf.set_default_parameters({"enclosure_wall_thickness": 2})
@@ -26,12 +25,12 @@ cut_text = pf.build_text(
     fontsize = 8,
     width = 30,
     length = 9,
-    outside = True,
+    outside = False,
 )
 
-enclosure.add_part_to_face(Face.TOP, "Extruded", extruded_text, rel_pos=(0, -6))
-enclosure.add_part_to_face(Face.TOP, "Cut", cut_text, rel_pos=(0, 10))
+panel.add("Extruded", extruded_text, rel_pos=(0, -6))
+panel.add("Cut", cut_text, rel_pos=(0, 10))
 
-enclosure.assemble(lid_panel_shift=200)
+panel.assemble()
 
-show_object(enclosure.assembly)
+show_object(panel.panel)

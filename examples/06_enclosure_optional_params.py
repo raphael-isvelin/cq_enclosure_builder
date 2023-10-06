@@ -22,8 +22,8 @@ enclosure = Enclosure(
     add_lid_support=True,     # adds a rim all around the enclosure to prevent the lid from sinking in
     add_top_support=True,     # small support rim on the enclosure to provide additional strength
     lid_screws_heat_set=True, # use heat set inserts instead of printed threads
-    no_fillet_top=False,      # removed the fillet (rounded edges) on the top of the enclosure
-    no_fillet_bottom=False,   # removed the fillet (rounded edges) on the bottom of the enclosure
+    no_fillet_top=True,       # removed the fillet (rounded edges) on the top of the enclosure
+    no_fillet_bottom=True,    # removed the fillet (rounded edges) on the bottom of the enclosure
 )
 
 enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), abs_pos=(40, 10))

@@ -15,16 +15,36 @@
 """
 
 import cadquery as cq
+
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("CAT", "TYPE")
+@register_part("<category>", "<part_type>")
 class XxxPart(Part):
     """
-    SOME_DEFINITION
+    <some definition for the part>
 
-    LINK_HERE
+    <link to part here>
     """
+    def __init__(
+        self,
+        enclosure_wall_thickness: float,  # can be removed if unused
+    ) -> None:
+        super().__init__()
 
-    def __init__(self, width: int, height: int, thickness: int, test = None) -> None:
-        pass
+        self.part = None  # TODO (required)
+        self.mask = None  # TODO (required)
+
+        self.size.width     = None  # TODO (required)
+        self.size.length    = None  # TODO (required)
+        self.size.thickness = None  # TODO (required)
+
+        self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness = None  # TODO (required for supports)
+        self.inside_footprint_offset = (0, 0)
+
+        self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint_thickness = None  # TODO (optional)
+
+        self.debug_objects.footprint.inside  = None  # TODO (optional)
+        self.debug_objects.footprint.outside = None  # TODO (optional)
