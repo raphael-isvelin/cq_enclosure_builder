@@ -29,10 +29,10 @@ def explode(pos_array, walls_explosion_factor=2.0):
 
 
 class EnclosureSize:
-    def __init__(self, outer_width, outer_length, inner_thickness, wall_thickness):
+    def __init__(self, outer_width, outer_length, outer_thickness, wall_thickness):
         self.outer_width = outer_width
         self.outer_length = outer_length
-        self.inner_thickness = inner_thickness
+        self.outer_thickness = outer_thickness
         self.wall_thickness = wall_thickness
 
 
@@ -65,7 +65,7 @@ class Enclosure:
 
         outer_width = size.outer_width
         outer_length = size.outer_length
-        inner_thickness = size.inner_thickness
+        outer_thickness = size.outer_thickness
         wall_thickness = size.wall_thickness
         self.size = size
         self.project_info = project_info
@@ -79,12 +79,12 @@ class Enclosure:
 
         self.frame: Union[cq.Assembly, None] = None
         self.panels_specs = [
-            (Face.TOP,    (outer_width-wall_thickness*2,  outer_length-wall_thickness*2,    wall_thickness),  [0, 0, inner_thickness - wall_thickness],   0.9 ),
+            (Face.TOP,    (outer_width-wall_thickness*2,  outer_length-wall_thickness*2,    wall_thickness),  [0, 0, outer_thickness - wall_thickness],   0.9 ),
             (Face.BOTTOM, (outer_width-wall_thickness*2,  outer_length-wall_thickness*2,    wall_thickness),  [0, 0, -wall_thickness],    0.9 ),
-            (Face.FRONT,  (outer_width-wall_thickness*2,  inner_thickness-wall_thickness*2, wall_thickness),  [0, -(outer_length/2), inner_thickness/2 - wall_thickness], 0.9 ),
-            (Face.BACK,   (outer_width-wall_thickness*2,  inner_thickness-wall_thickness*2, wall_thickness),  [0, outer_length/2, inner_thickness/2 - wall_thickness],  0.9 ),
-            (Face.LEFT,   (outer_length-wall_thickness*2, inner_thickness-wall_thickness*2, wall_thickness),  [-(outer_width/2), 0, inner_thickness/2 - wall_thickness], 0.9 ),
-            (Face.RIGHT,  (outer_length-wall_thickness*2, inner_thickness-wall_thickness*2, wall_thickness),  [outer_width/2, 0, inner_thickness/2 - wall_thickness],  0.9 ),
+            (Face.FRONT,  (outer_width-wall_thickness*2,  outer_thickness-wall_thickness*2, wall_thickness),  [0, -(outer_length/2), outer_thickness/2 - wall_thickness], 0.9 ),
+            (Face.BACK,   (outer_width-wall_thickness*2,  outer_thickness-wall_thickness*2, wall_thickness),  [0, outer_length/2, outer_thickness/2 - wall_thickness],  0.9 ),
+            (Face.LEFT,   (outer_length-wall_thickness*2, outer_thickness-wall_thickness*2, wall_thickness),  [-(outer_width/2), 0, outer_thickness/2 - wall_thickness], 0.9 ),
+            (Face.RIGHT,  (outer_length-wall_thickness*2, outer_thickness-wall_thickness*2, wall_thickness),  [outer_width/2, 0, outer_thickness/2 - wall_thickness],  0.9 ),
         ]
 
         self.panels = {}
@@ -322,7 +322,7 @@ class Enclosure:
         shell_size = [
             self.size.outer_width - wall_thickness*2,
             self.size.outer_length - wall_thickness*2,
-            self.size.inner_thickness - wall_thickness*2
+            self.size.outer_thickness - wall_thickness*2
         ]
         shell_translate_z = 0
 
