@@ -21,8 +21,8 @@ button = pf.build_button(
 )
 
 panel.add("SPST", button, rel_pos=(10, 0))
-panel.add("SPST corner", button, abs_pos=(0, 0))
+panel.add("SPST corner", button, abs_pos=(WIDTH, LENGTH))
 
 panel.assemble()
 
-show_object(panel.panel)
+show_object(panel.panel_with_debug)

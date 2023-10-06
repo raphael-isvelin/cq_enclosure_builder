@@ -48,4 +48,4 @@ for idx, elem in enumerate(group.get_elements()):
 
 panel.assemble()
 
-show_object(panel.panel.add(panel.debug_assemblies["combined"]))
+show_object(panel.panel_with_debug)

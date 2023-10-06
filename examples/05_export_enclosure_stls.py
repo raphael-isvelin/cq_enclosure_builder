@@ -19,7 +19,11 @@ enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), abs_pos=(40, 10)
 
 enclosure.assemble()
 
-show_object(enclosure.assembly)
+show_object(enclosure.assembly_with_debug)
+
+# `enclosure.debug` (and `enclosure.assembly_with_debug`) will show
+#   the 'printables' (you'll want to use Jupyter-CadQuery to hide individual parts and see them more easily)
+#   they can then be exported
 
 # Exports ready-to-print STLs in the 'stls/' folder
 #   - my_project-box-v1.0.0.stl

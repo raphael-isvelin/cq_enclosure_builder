@@ -27,4 +27,4 @@ jacks_grid = LayoutGroup.grid_of_part(
 for idx, elem in enumerate(jacks_grid.get_elements()):
     panel.add(elem.label, elem.part, rel_pos=elem.get_pos())
 panel.assemble()
-show_object(panel.panel.add(panel.debug_assemblies["combined"]))
+show_object(panel.panel_with_debug)

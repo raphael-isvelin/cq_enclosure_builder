@@ -27,4 +27,4 @@ all_jacks = LayoutGroup.fixed_width_line_of_elements(
 for idx, elem in enumerate(all_jacks.get_elements()):
     panel.add(elem.label, elem.part, rel_pos=elem.get_pos())
 panel.assemble()
-show_object(panel.panel.add(panel.debug_assemblies["combined"]))
+show_object(panel.panel_with_debug)

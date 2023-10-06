@@ -123,6 +123,11 @@ class Panel:
             wall = wall.cut(screw_cs[1]).add(screw_cs[0])
         self.panel = self.panel.add(self._rotate_to_face(wall), name="Wall", color=cq.Color(*self._color, self._alpha))
         self.debug_assemblies["combined"] = self._build_combined_debug_assembly()
+        self.panel_with_debug = (
+            cq.Assembly()
+                .add(self.panel, name="Panel")
+                .add(self.debug_assemblies["combined"], name="Debug")
+        )
         return self
 
     def _rotate_to_face(self, wp):

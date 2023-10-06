@@ -46,4 +46,4 @@ group.translate([0, LENGTH/2, 0])
 for idx, elem in enumerate(group.get_elements()):
     panel.add(elem.label, elem.part, abs_pos=elem.get_pos())
 panel.assemble()
-show_object(panel.panel.add(panel.debug_assemblies["combined"]))
+show_object(panel.panel_with_debug)
