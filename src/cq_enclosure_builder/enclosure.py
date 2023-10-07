@@ -14,7 +14,8 @@
    limitations under the License.
 """
 
-from typing import List, Dict, Union, Tuple, Self
+from typing import List, Dict, Union, Tuple
+from typing_extensions import Self
 
 import cadquery as cq
 from cadquery import exporters
@@ -38,15 +39,15 @@ class EnclosureSize:
 
 
 class Enclosure:
-    EXPORT_FOLDER = "stls"
+    EXPORT_FOLDER: str = "stls"
 
-    PRINTABLE_FRAME = "frame"
-    PRINTABLE_SCREWS = "screws"
-    PRINTABLE_LID_SUPPORT = "lid_support"
+    PRINTABLE_FRAME: str = "frame"
+    PRINTABLE_SCREWS: str = "screws"
+    PRINTABLE_LID_SUPPORT: str = "lid_support"
 
-    LID_SCREWS_COLOR = cq.Color(0.6, 0.45, 0.8)
-    LID_SUPPORT_COLOR = cq.Color(0.65, 0.5, 0.85)
-    TOP_PANEL_SUPPORT_COLOR = cq.Color(0.65, 0.5, 0.85)
+    LID_SCREWS_COLOR: Tuple[float, float, float] = (0.6, 0.45, 0.8)
+    LID_SUPPORT_COLOR: Tuple[float, float, float] = (0.65, 0.5, 0.85)
+    TOP_PANEL_SUPPORT_COLOR: Tuple[float, float, float] = (0.65, 0.5, 0.85)
 
     def __init__(
         self,
@@ -148,9 +149,10 @@ class Enclosure:
         part: Part,
         rel_pos: Tuple[float, float] = None,
         abs_pos: Tuple[float, float] = None,
-        color: cq.Color = None
+        color: Tuple[float, float, float] = None,
+        alpha: float = 1.0,
     ) -> Self:
-        self.panels[face].add(part_label, part, rel_pos, abs_pos, color)
+        self.panels[face].add(part_label, part, rel_pos, abs_pos, color, alpha)
         return self
 
     def add_screw(
@@ -286,8 +288,8 @@ class Enclosure:
             cq.Assembly(None, name="Box")
                 .add(panels_assembly, name="Panels")
                 .add(self.frame, name="Frame")
-                .add(self.lid_screws_assembly, name="Lid screws", color=Enclosure.LID_SCREWS_COLOR)
-                .add(self.lid_support, name="Lid support", color=Enclosure.LID_SUPPORT_COLOR)
+                .add(self.lid_screws_assembly, name="Lid screws", color=cq.Color(*Enclosure.LID_SCREWS_COLOR))
+                .add(self.lid_support, name="Lid support", color=cq.Color(*Enclosure.LID_SUPPORT_COLOR))
         )
         self.assembly_with_debug = (
             cq.Assembly()

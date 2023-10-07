@@ -7,7 +7,7 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo
+from cq_enclosure_builder import Panel, Face
 
 panel = Panel(Face.TOP, 180, 90, 2)
 
@@ -25,7 +25,7 @@ cut_text = pf.build_text(
     fontsize = 8,
     width = 30,
     length = 9,
-    outside = False,
+    outside = True,
 )
 
 panel.add("Extruded", extruded_text, rel_pos=(0, -6))

@@ -10,6 +10,7 @@ from cq_enclosure_builder import PartFactory as pf
 from cq_enclosure_builder import Part, Panel, Face
 from cq_enclosure_builder.parts_factory import register_part
 
+
 @register_part("cool_thing", "ABC-45")  # only required to use the PartsFactory (see below)
 class Abc45Part(Part):
     def __init__(
@@ -48,9 +49,7 @@ class Abc45Part(Part):
                 .box(*part_size, thing_poking_out_thickness, centered=(True, True, False))
                 .translate([0, 0, -thing_poking_out_thickness])
         )
-        
-from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo
+
 
 panel = Panel(Face.TOP, 60, 30, 2)
 

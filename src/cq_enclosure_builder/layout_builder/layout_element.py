@@ -14,7 +14,8 @@
    limitations under the License.
 """
 
-from typing import Tuple, Callable, Self
+from typing import Tuple, Callable
+from typing_extensions import Self
 
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.panel import Panel

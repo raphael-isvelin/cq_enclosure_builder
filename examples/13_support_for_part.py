@@ -9,8 +9,7 @@ sys.path.append("../src")
 from cq_enclosure_builder import PartFactory as pf
 from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo
 
-enclosure_size = EnclosureSize(180, 90, 38, 2)
-enclosure = Enclosure(enclosure_size)
+enclosure = Enclosure(EnclosureSize(180, 90, 38, 2))
 
 pf.set_default_types({
     "button": 'SPST PBS-24B-4',

@@ -91,7 +91,7 @@ class Dsi5InchXxxPart(Part):
         alpha = required_taper_for_x(ratioed_screen_width, ratioed_screen_w_ramp_width, ramp_slope_thickness)
 
         screen_w_ramp_length = tapered_dimensions(ratioed_screen_width, screen_viewing_area_size[1], ramp_slope_thickness, alpha)
-        print(f"TAPER ANGLE: {str(alpha)} for ramp {str(ramp_width_l_plus_r)} ratio {str(ratio_bevel_lr_to_bt)}")
+        #print(f"TAPER ANGLE: {str(alpha)} for ramp {str(ramp_width_l_plus_r)} ratio {str(ratio_bevel_lr_to_bt)}")
 
         # otherwise, the tapered extrusion won't actually be `ramp_slope_thickness`
         tapered_thickness = ramp_slope_thickness / math.cos(math.radians(alpha))

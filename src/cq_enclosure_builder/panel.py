@@ -14,7 +14,8 @@
    limitations under the License.
 """
 
-from typing import Dict, Union, Tuple, Self
+from typing import Dict, Union, Tuple
+from typing_extensions import Self
 
 import cadquery as cq
 from cq_enclosure_builder import Face, ProjectInfo

@@ -15,7 +15,8 @@
 """
 
 import uuid
-from typing import Union, List, Tuple, Self
+from typing import Union, List, Tuple
+from typing_extensions import Self
 
 from cq_enclosure_builder.layout_builder.layout_element import LayoutElement
 from cq_enclosure_builder.part import Part
