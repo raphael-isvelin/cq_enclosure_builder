@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 
 import cadquery as cq
 from cadquery import exporters
@@ -52,14 +52,14 @@ class Enclosure:
         size: EnclosureSize,
         project_info: ProjectInfo = ProjectInfo(),
         lid_on_faces: List[Face] = [Face.BOTTOM],
-        lid_panel_size_error_margin = 0.8,  # meaning the lid is `margin` smaller than the hole on both width and length
-        lid_thickness_error_margin = 0.4,  # if >0, the lid screws and support will be slightly sunk in the enclosure
-        add_corner_lid_screws = True,
-        add_lid_support = True,
-        add_top_support = True,
-        lid_screws_heat_set = True,
-        no_fillet_top = False,
-        no_fillet_bottom = False,
+        lid_panel_size_error_margin: float = 0.8,  # meaning the lid is `margin` smaller than the hole on both width and length
+        lid_thickness_error_margin: float = 0.4,  # if >0, the lid screws and support will be slightly sunk in the enclosure
+        add_corner_lid_screws: bool = True,
+        add_lid_support: bool = True,
+        add_top_support: bool = True,
+        lid_screws_heat_set: bool = True,
+        no_fillet_top: bool = False,
+        no_fillet_bottom: bool = False,
     ):
         super().__init__()
 
@@ -140,7 +140,15 @@ class Enclosure:
                     raise ValueError("Unknown printable element " + str(e))
             self.printables[name] = printable_a.toCompound()
 
-    def add_part_to_face(self, face: Face, part_label: str, part: Part, rel_pos=None, abs_pos=None, color:cq.Color=None):
+    def add_part_to_face(
+        self,
+        face: Face,
+        part_label: str,
+        part: Part,
+        rel_pos: Tuple[float, float] = None,
+        abs_pos: Tuple[float, float] = None,
+        color: cq.Color = None
+    ):
         self.panels[face].add(part_label, part, rel_pos, abs_pos, color)
         return self
 
@@ -148,14 +156,14 @@ class Enclosure:
         self,
         screw_size_category: str = "m3",
         block_thickness: float = 8,
-        rel_pos = None,
-        abs_pos = None,
-        pos_error_margin = 0,
+        rel_pos: Tuple[float, float] = None,
+        abs_pos: Tuple[float, float] = None,
+        pos_error_margin: float = 0,
         taper: TaperOptions = TaperOptions.NO_TAPER,
         taper_rotation: float = 0.0,
         screw_provider = DefaultFlatHeadScrewProvider,
         counter_sunk_screw_provider = DefaultFlatHeadScrewProvider,
-        with_counter_sunk_block = True
+        with_counter_sunk_block: bool = True
     ):
         # TODO support lid != Face.BOTTOM + refactor
 
@@ -240,7 +248,11 @@ class Enclosure:
                 .translate([0, 0, -self.size.wall_thickness + lid_thickness_error_margin])
         )
 
-    def assemble(self, walls_explosion_factor=1.0, lid_panel_shift=0.0):
+    def assemble(
+        self,
+        walls_explosion_factor: float = 1.0,
+        lid_panel_shift: float = 0.0
+    ):
         for panel in self.panels.values():
             panel.assemble()
 
@@ -275,7 +287,6 @@ class Enclosure:
                 .add(self.frame, name="Frame")
                 .add(self.lid_screws_assembly, name="Lid screws", color=Enclosure.LID_SCREWS_COLOR)
                 .add(self.lid_support, name="Lid support", color=Enclosure.LID_SUPPORT_COLOR)
-                #.add(self.debug, name="Debug")
         )
         self.assembly_with_debug = (
             cq.Assembly()

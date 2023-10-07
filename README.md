@@ -263,16 +263,22 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 
 <a name="api-reference-enclosure"></a>
 ### class: [Enclosure](./src/cq_enclosure_builder/enclosure.py)
-
-| Method Name | Parameters | Description |
+| Method or Value Name | Parameters | Description |
 |-------------|------------|-------------|
-| `__init__`  | - `param1`: Type Description<br>- `param2`: Type Description | Constructor |
+| `__init__`  | - `size: EnclosureSize`<br>- `project_info: ProjectInfo` (default: `ProjectInfo()`)<br/>- `lid_on_faces: List[Face]` (default: `[Face.BOTTOM]`): which side of the enclosure has a screwable lid. Only `BOTTOM` is supported as of now.<br/>- `lid_panel_size_error_margin: float` (default: `0.8`): how small the lid panel is on both width and length compared to the lid hole.<br/>- `lid_thickness_error_margin: float` (default: `0.4`): if >0, the lid screws and support will be slightly sunk in the enclosure.<br/>- `add_corner_lid_screws: bool` (default: `True`)<br/>- `add_lid_support: bool` (default: `True`): add a rim around the enclosure to prevent the lid from sinking in.<br/>- `add_top_support: bool` (default: `True`): small support 'skirt' to add some strength to the top of the enclosure.<br/>- `lid_screws_heat_set: bool` (default: `True`): use heat-set inserts instead of printing a screw threads for the lid corner screws.<br/>- `no_fillet_top: bool` (default: `False`)<br/>- `no_fillet_bottom: bool` (default: `False`) |  |
+| `add_part_to_face` | - `face: Face`<br/>- `part_label: str`: will be shown in the tree when using e.g. [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery).<br/>- `part`: [Part](#api-reference-part)<br/>- `rel_pos: Tuple[float, float]` (default: `None`; one of `rel_pos`/`abs_pos` needs to be set): position relative to the centre of the [Panel](#api-reference-panel).<br/>- `abs_pos: Tuple[float, float]` (default: `None`; one of `rel_pos`/`abs_pos` needs to be set): position from one corner of the [Panel](#api-reference-panel).<br/>- `color: cq.Color` (default: `None`; defaults to [Panel](#api-reference-panel)'s default) | |
+| `assemble` | - `walls_explosion_factor: float` (default: `1.0`): a value >1 will move the enclosure's walls aways, giving a better inside view.<br/>- `lid_panel_shift: float` (default: `0.0`): move the lid panel (`BOTTOM`) away from the enclosure. | Needs to be called before calling `export_printables` or using the `assembly`. |
+| `export_printables` | *none* | Export one STL per printable. By default, one for the `lid` and for the `box`. Some parts can require additional prints; any element added to `Part#additional_printables` will also be exported.  |
+| `add_corner_lid_screws` | *see code* | Called by the constructor if `add_corner_lid_screws` is `True`. |
+| `add_screw` | *see code* | If you want to add more screws than the four corner screw than can be added automatically. |
+| `assembly` (value) | *N/A* | Contains a displayable assembly with the panels (incl. parts), frame, lid screws, and lid support.
+| `debug` (value) | *N/A* | Debug elements: footprints, holes, panels masks, printables, and other debug elements added by the parts (`Part#debug_objects`).
+| `assembly_with_debug` (value) | *N/A* | Assembly containing the two previous assemblies.
 
 ---
 
 <a name="api-reference-parts-factory"></a>
-### class: [PartsFactory](./src/cq_enclosure_builder/parts_factory.py) (layout builder)
-
+### class: [PartsFactory](./src/cq_enclosure_builder/parts_factory.py)
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|
 | `__init__`  | - `param1`: Type Description<br>- `param2`: Type Description | Constructor |
