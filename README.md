@@ -293,7 +293,7 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 ---
 
 <a name="api-reference-layout-group"></a>
-### class: [LayoutGroup](./src/cq_enclosure_builder/layout_builder/layout_group.py) (layout builder)
+### class: [LayoutGroup](./src/cq_enclosure_builder/layout_builder/layout_group.py) (layout builder), inherits [LayoutElement](./src/cq_enclosure_builder/layout_builder/layout_element.py)
 
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|

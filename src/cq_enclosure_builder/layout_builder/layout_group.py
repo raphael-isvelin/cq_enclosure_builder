@@ -15,11 +15,20 @@
 """
 
 import uuid
-from .layout_element import LayoutElement
+from typing import Union, List, Tuple
+
+from cq_enclosure_builder.layout_builder.layout_element import LayoutElement
 from cq_enclosure_builder.part import Part
 
 class LayoutGroup(LayoutElement):
-    def __init__(self, elements, inside_footprint, outside_footprint, total_footprint_offset, group_center_at_0_0):
+    def __init__(
+        self,
+        elements: List[LayoutElement],
+        inside_footprint: Tuple[float, float],
+        outside_footprint: Tuple[float, float],
+        total_footprint_offset: Tuple[float, float],
+        group_center_at_0_0: bool
+    ):
         self.elements = elements
         self.inside_footprint = inside_footprint
         self.outside_footprint = outside_footprint
@@ -34,12 +43,12 @@ class LayoutGroup(LayoutElement):
         if (isinstance(group_center_at_0_0, bool) and group_center_at_0_0) or (isinstance(group_center_at_0_0, str) and "y" in group_center_at_0_0):
             self.align_center_y()
 
-    def move_to(self, pos):
+    def move_to(self, pos: Tuple[float, float]):
         for elem in self.elements:
             elem.move_to(pos)
         return self
 
-    def translate(self, pos):
+    def translate(self, pos: Tuple[float, float]):
         for elem in self.elements:
             elem.translate((pos[0], pos[1]))
         self.pos = (self.pos[0] + pos[0], self.pos[1] + pos[1])
@@ -77,7 +86,12 @@ class LayoutGroup(LayoutElement):
         return self
 
     @staticmethod
-    def extreme_point_in_footprint(elements, in_inside_footprint, direction, operation):
+    def extreme_point_in_footprint(
+        elements: List[LayoutElement],
+        in_inside_footprint: bool,
+        direction: str,  # left, right, top, or bottom
+        operation  # a method, min or max
+    ):
         extreme_point = -99999999 if operation == max else 99999999
         for elem in elements:
             method_name = f'{direction}most_point_in_footprint'
@@ -86,23 +100,30 @@ class LayoutGroup(LayoutElement):
         return extreme_point
 
     @staticmethod
-    def leftmost_point_in_footprints_of_elements(elements, in_inside_footprint):
+    def leftmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool):
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'left', min)
 
     @staticmethod
-    def rightmost_point_in_footprints_of_elements(elements, in_inside_footprint):
+    def rightmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool):
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'right', max)
 
     @staticmethod
-    def topmost_point_in_footprints_of_elements(elements, in_inside_footprint):
+    def topmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool):
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'top', max)
 
     @staticmethod
-    def bottommost_point_in_footprints_of_elements(elements, in_inside_footprint):
+    def bottommost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool):
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'bottom', min)
 
     @staticmethod
-    def grid_of_part(label: str, part: Part, rows: int, cols: int, margin_rows=5, margin_cols=5):
+    def grid_of_part(
+        label: str,
+        part: Part,
+        rows: int,
+        cols: int,
+        margin_rows: float = 5,
+        margin_cols: float = 5
+    ):
         row_groups = []
         for i in range(0, rows):
             parts = []
@@ -112,7 +133,15 @@ class LayoutGroup(LayoutElement):
         return LayoutGroup.line_of_elements(row_groups, margin=margin_rows, horizontal=False)
 
     @staticmethod
-    def fixed_width_line_of_elements(size, elements, horizontal=True, add_margin_on_sides=True, group_center_at_0_0=True, elements_centers_at_0_0=True, align_to_outside_footprint=False):
+    def fixed_width_line_of_elements(
+        size: float,
+        elements: List[LayoutElement],
+        horizontal: bool = True,
+        add_margin_on_sides: bool = True,
+        group_center_at_0_0: bool = True,
+        elements_centers_at_0_0: bool = True,
+        align_to_outside_footprint: bool = False
+    ):
         if len(elements) == 0:
             raise ValueError("Cannot create a line with 0 element")
 
@@ -140,14 +169,28 @@ class LayoutGroup(LayoutElement):
         return group
 
     @staticmethod
-    def fixed_width_line_of_parts(size, parts, horizontal=True, add_margin_on_sides=True, group_center_at_0_0=True, elements_centers_at_0_0=True, align_to_outside_footprint=False):
+    def fixed_width_line_of_parts(
+        size: float,
+        parts: Union[Part, Tuple[str, Part]],
+        horizontal: bool = True,
+        add_margin_on_sides: bool = True,
+        group_center_at_0_0: bool = True,
+        elements_centers_at_0_0: bool = True,
+        align_to_outside_footprint: bool = False
+    ):
         elements = [LayoutElement(part[0] if isinstance(part, tuple) else str(uuid.uuid4()), part[1] if isinstance(part, tuple) else part) for part in parts]
         return LayoutGroup.fixed_width_line_of_elements(size, elements, horizontal, add_margin_on_sides, group_center_at_0_0, elements_centers_at_0_0, align_to_outside_footprint)
 
     @staticmethod
-    def line_of_elements(elements, margin=5, horizontal=True,
-                         group_center_at_0_0=True, elements_centers_at_0_0=True,
-                         align_start_to_outside_footprint=False, align_to_outside_footprint=False):
+    def line_of_elements(
+        elements: List[LayoutElement],
+        margin: float = 5,
+        horizontal: bool =True,
+        group_center_at_0_0: bool = True,
+        elements_centers_at_0_0: bool = True,
+        align_start_to_outside_footprint: bool = False,
+        align_to_outside_footprint: bool = False
+    ):
         if len(elements) == 0:
             raise ValueError("Cannot create a line with 0 element")
         if group_center_at_0_0 and align_start_to_outside_footprint:
@@ -193,6 +236,14 @@ class LayoutGroup(LayoutElement):
         return LayoutGroup(elements, inside_footprint, outside_footprint, total_footprint_offset, group_center_at_0_0)
 
     @staticmethod
-    def line_of_parts(parts, margin=5, horizontal=True, group_center_at_0_0=True, elements_centers_at_0_0=True, align_start_to_outside_footprint=False, align_to_outside_footprint=False):
+    def line_of_parts(
+        parts: Union[Part, Tuple[str, Part]],
+        margin: float = 5,
+        horizontal: bool = True,
+        group_center_at_0_0: bool = True,
+        elements_centers_at_0_0: bool = True,
+        align_start_to_outside_footprint: bool = False,
+        align_to_outside_footprint: bool = False
+    ):
         elements = [LayoutElement(part[0] if isinstance(part, tuple) else str(uuid.uuid4()), part[1] if isinstance(part, tuple) else part) for part in parts]
         return LayoutGroup.line_of_elements(elements, margin, horizontal, group_center_at_0_0, elements_centers_at_0_0, align_start_to_outside_footprint, align_to_outside_footprint)

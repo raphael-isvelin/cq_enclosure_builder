@@ -14,6 +14,8 @@
    limitations under the License.
 """
 
+from typing import Tuple, Callable
+
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.panel import Panel
 
@@ -36,37 +38,37 @@ class LayoutElement:
         self.is_aligned_center_x = False
         self.is_aligned_center_y = False
 
-    def set_inside_footprint_x(self, inside_footprint_x):
+    def set_inside_footprint_x(self, inside_footprint_x: bool):
         self.inside_footprint = (inside_footprint_x, self.inside_footprint[1])
         self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0], self.total_footprint[1])
 
-    def set_outside_footprint_x(self, outside_footprint_x):
+    def set_outside_footprint_x(self, outside_footprint_x: bool):
         self.outside_footprint = (outside_footprint_x, self.outside_footprint[1])
         self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0], self.total_footprint[1])
 
-    def set_footprints_x(self, footprint_x):
+    def set_footprints_x(self, footprint_x: float):
         self.inside_footprint = (footprint_x, self.inside_footprint[1])
         self.outside_footprint = (footprint_x, self.outside_footprint[1])
         self.total_footprint = (footprint_x, self.total_footprint[1])
 
-    def set_inside_footprint_y(self, inside_footprint_y):
+    def set_inside_footprint_y(self, inside_footprint_y: float):
         self.inside_footprint = (self.inside_footprint[0], inside_footprint_y)
         self.total_footprint = (self.total_footprint[0], self.inside_footprint[1] if self.inside_footprint[1] > self.outside_footprint[1] else self.outside_footprint[1])
 
-    def set_outside_footprint_y(self, outside_footprint_y):
+    def set_outside_footprint_y(self, outside_footprint_y: float):
         self.outside_footprint = (self.outside_footprint[0], outside_footprint_y)
         self.total_footprint = (self.total_footprint[0], self.inside_footprint[1] if self.inside_footprint[1] > self.outside_footprint[1] else self.outside_footprint[1])
 
-    def set_footprints_y(self, footprint_y):
+    def set_footprints_y(self, footprint_y: float):
         self.inside_footprint = (self.inside_footprint[0], footprint_y)
         self.outside_footprint = (self.outside_footprint[0], footprint_y)
         self.total_footprint = (self.total_footprint[0], footprint_y)
 
-    def move_to(self, pos):
+    def move_to(self, pos: Tuple[float, float]):
         self.pos = pos
         return self
 
-    def translate(self, pos):
+    def translate(self, pos: Tuple[float, float]):
         self.pos = (self.pos[0] + pos[0], self.pos[1] + pos[1])
         return self
 
@@ -97,19 +99,24 @@ class LayoutElement:
         self.align_center_y()
         return self
 
-    def leftmost_point_in_footprint(self, in_inside_footprint):
+    def leftmost_point_in_footprint(self, in_inside_footprint: bool):
         return self._point_in_footprint(in_inside_footprint, 0, lambda x: -x)
 
-    def rightmost_point_in_footprint(self, in_inside_footprint):
+    def rightmost_point_in_footprint(self, in_inside_footprint: bool):
         return self._point_in_footprint(in_inside_footprint,  0, lambda x: x)
 
-    def topmost_point_in_footprint(self, in_inside_footprint):
+    def topmost_point_in_footprint(self, in_inside_footprint: bool):
         return self._point_in_footprint(in_inside_footprint, 1, lambda x: x)
 
-    def bottommost_point_in_footprint(self, in_inside_footprint):
+    def bottommost_point_in_footprint(self, in_inside_footprint: bool):
         return self._point_in_footprint(in_inside_footprint, 1, lambda x: -x)
 
-    def _point_in_footprint(self, in_inside_footprint, axis, operation):
+    def _point_in_footprint(
+        self,
+        in_inside_footprint: bool,
+        axis: int,  # 0 for X, 1 for Y
+        operation: Callable[[float], float]  # a method, either identity or reverse sign
+    ):
         fp = self.inside_footprint if in_inside_footprint else self.outside_footprint
         offset = self.total_footprint_offset[axis] if in_inside_footprint else 0
         return self.pos[axis] + offset + operation(fp[axis] / 2)
