@@ -15,8 +15,10 @@
 """
 
 import cadquery as cq
+
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
+
 
 @register_part("midi", "SD-50SN")
 class MidiSd50SnPart(Part):
@@ -27,7 +29,10 @@ class MidiSd50SnPart(Part):
     https://eu.mouser.com/ProductDetail/CUI-Devices/SD-50SN?qs=WyjlAZoYn50pT1yyPY7AcA%3D%3D
     """
 
-    def __init__(self, enclosure_wall_thickness):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float
+    ):
         super().__init__()
 
         width = 19.2
@@ -62,17 +67,13 @@ class MidiSd50SnPart(Part):
         self.size.length    = length
         self.size.thickness = enclosure_wall_thickness
 
-        self.inside_footprint = (hole_diameter, hole_diameter)
+        self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness = 19.4
         self.inside_footprint_offset = (0, 0)
-        inside_footprint_thickness = 19.4
 
-        footprint_in = (
-            cq.Workplane("front")
-                .rect(self.size.width, self.size.length)
-                .extrude(inside_footprint_thickness - enclosure_wall_thickness)
-                .translate([0, 0, enclosure_wall_thickness])
-        )
-        
+        self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint_thickness = 2.2
+
         # Front panel (very rough estimation--should normally follow the curves of the holes)
         hwx = (width / 2) + 0.2
         hlx = (length / 2) + 1.6
@@ -81,13 +82,17 @@ class MidiSd50SnPart(Part):
             cq.Workplane("XY")
                 .moveTo(*points[0]).lineTo(*points[1]).lineTo(*points[2]).lineTo(*points[3])
                 .close()
-                .extrude(2)
+                .extrude(self.outside_footprint_thickness)
         )
         rounded_diamond = diamond.edges("|Z").fillet(2.0)
 
-        self.outside_footprint = (self.size.width, self.size.length)
-        outside_footprint_thickness = 2.2
-        footprint_out = rounded_diamond.translate([0, 0, -outside_footprint_thickness])
+        footprint_in = (
+            cq.Workplane("front")
+                .rect(*self.inside_footprint)
+                .extrude(self.inside_footprint_thickness - enclosure_wall_thickness)
+                .translate([0, 0, enclosure_wall_thickness])
+        )
+        footprint_out = rounded_diamond.translate([0, 0, -self.outside_footprint_thickness])
 
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out

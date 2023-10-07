@@ -34,13 +34,14 @@ class EncoderEc11Part(GenericThreadedWithStopPart):
         enclosure_wall_thickness: float,
         encoder_knob: KnobOrCap = KNOB_16_4_x_14_8
     ):
+        thread_diameter = 6.8
         super().__init__(
             enclosure_wall_thickness,
 
             width=12.05,
             length=15,
 
-            thread_diameter=6.8,
+            thread_diameter=thread_diameter,
             thread_diameter_error_margin=0.6,
             thread_depth=6.5,
 

@@ -14,6 +14,8 @@
    limitations under the License.
 """
 
+from typing import Literal
+
 import cadquery as cq
 
 from cq_enclosure_builder.part import Part
@@ -25,6 +27,7 @@ from cq_enclosure_builder.parts_factory import register_part
 # MD: 40 18 6
 # SM: 20 10 3  (not great even with 0.15 layer height)
 
+
 @register_part("text", "default")
 class TextPart(Part):
     """
@@ -33,16 +36,16 @@ class TextPart(Part):
 
     def __init__(
         self,
-        enclosure_wall_thickness,
-        text = "Sample text\nLine 2",
-        thickness = 1.4,
-        cut = False,
-        fontsize = 6,
-        width = 40,
-        length = 18,
-        outside = False,
-        halign = "center",
-        valign = "center",
+        enclosure_wall_thickness: float,
+        text: str = "Sample text\nLine 2",
+        thickness: float = 1.4,
+        cut: bool = False,
+        fontsize: int = 6,
+        width: float = 40,
+        length: float = 18,
+        outside: bool = False,
+        halign: Literal['center', 'left', 'right'] = "center",
+        valign: Literal['center', 'left', 'right'] = "center",
     ):
         super().__init__()
 
@@ -83,9 +86,11 @@ class TextPart(Part):
         self.size.thickness = enclosure_wall_thickness + thickness
 
         self.inside_footprint = (self.size.width, self.size.length)  # text isn't taken into account (can be more or less)
+        self.inside_footprint_thickness = 0 if outside else thickness
         self.inside_footprint_offset = (0, 0)
 
         self.outside_footprint = (self.size.width, self.size.length)  # text isn't taken into account (can be more or less)
+        self.outside_footprint_thickness = thickness if outside else 0
 
-        self.debug_objects.footprint.inside  = None if outside else text_wp
-        self.debug_objects.footprint.outside = text_wp if outside else None
+        self.debug_objects.footprint.inside  = None if outside else text_wp.cut(mask)
+        self.debug_objects.footprint.outside = text_wp.cut(mask) if outside else None
