@@ -32,7 +32,8 @@ Easily generate printable enclosures for your projects in just a few lines of co
     - **[13 – Support for parts](#example-13)**
     - **[14 – Holders for Raspberry Pi and protoboard](#example-14)**
     - **[15 – Add a new Part](#example-15)**
-    - **[16 – All parts](#example-16)**
+    - **[16 – Add a new Part from a STL/STEP file](#example-17)**
+    - **[17 – All parts](#example-16)**
 - **[Available parts](#available-parts)**
     - **[List of built-in parts](#available-parts-list-builtins)**
     - **[Adding a new Part](#available-parts-add-new)**
@@ -194,7 +195,17 @@ See [Adding a new Part](#available-parts-add-new) for more details.
 <sub><p align="center">[15_add_new_part.py](./examples/15_add_new_part.py)</p></sub>
 
 <a name="example-16"></a>
-### 16 – All parts
+### 16 – Add a new Part from a STL/STEP file
+
+In this example, I've made a model using Tinkercad, which I exported as a STL. Fusion 360 then allowed me to convert it to STEP. (You can also use online converters, though I've had some format issues with these.)
+
+After creating a new [Part](#api-reference-part) and filling a few fields (size, etc.), you'll be able to add it to your enclosure.
+
+![Add a new Part from a STL/STEP file](./docs/img/16.jpg)
+<sub><p align="center">[16_add_new_part_from_step.py](./examples/16_add_new_part_from_step.py)</p></sub>
+
+<a name="example-17"></a>
+### 17 – All parts
 
 Show all available parts.
 
@@ -202,8 +213,8 @@ For a detailed list, scroll down to [List of built-in parts](#available-parts-li
 
 **Note:** the default caps/knobs are shown, but there's a dozen available, and more can be added by taking four simple measurements.
 
-![All parts](./docs/img/16.jpg)
-<sub><p align="center">[16_all_parts.py](./examples/16_all_parts.py)</p></sub>
+![All parts](./docs/img/17.jpg)
+<sub><p align="center">[17_all_parts.py](./examples/17_all_parts.py)</p></sub>
 
 ---
 
@@ -264,7 +275,7 @@ my_part = pf.build_<category>(part_type="<part_type>")
 
 CadQuery only supports <a href="https://cadquery.readthedocs.io/en/latest/importexport.html" target="_blank">importing STEP files</a>. If you're working with an STL, you can easily convert them to STEP using <a href="https://www.autodesk.com/products/fusion-360/personal" target="_blank">Fusion 360</a>, or online converters (though I've had some format issues with these).
 
-Once you have a STEP file, follow the steps (ah!) shown in [example 17 TODO](http://google.fr).
+Once you have a STEP file, follow the steps (ah!) shown in [example 16](#example-16).
 
 ---
 
