@@ -34,14 +34,13 @@ class ButtonPbs110Part(GenericThreadedWithStopPart):
         self,
         enclosure_wall_thickness: float
     ):
-        thread_diameter = 6.8
         super().__init__(
             enclosure_wall_thickness,
 
             width=12,
             length=12,
 
-            thread_diameter=thread_diameter,
+            thread_diameter=6.8,
             thread_diameter_error_margin=0.6,
             thread_depth=6.8,
 
@@ -58,6 +57,7 @@ class ButtonPbs110Part(GenericThreadedWithStopPart):
         self.inside_footprint_offset = (0, 0)
 
         button_outside_thickness = 20.7 - 8.3
+        # TODO we want to add the nut [and washer], as well as in the debug object (esp. important if no cap)
         self.outside_footprint = (self.thread_diameter, self.thread_diameter)
         self.outside_footprint_thickness = button_outside_thickness - self.block_thickness - enclosure_wall_thickness  # updated later if button_cap is not None
 
@@ -68,7 +68,7 @@ class ButtonPbs110Part(GenericThreadedWithStopPart):
         )
         footprint_out = (
             cq.Workplane("front")
-                .circle(thread_diameter/2)
+                .circle(self.thread_diameter/2)
                 .extrude(self.outside_footprint_thickness)
         )
 

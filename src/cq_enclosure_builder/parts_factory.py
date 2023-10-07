@@ -156,7 +156,7 @@ class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
             if not part_type:
                 raise ValueError(f"No part_type provided to build method, and no default provided for category '{category}'. See PartFactory#list_types_of_{category}. See PartFactory#set_default_types.")
 
-        throw_on_validation_error = kwargs.pop('throw_on_validation_error', True)
+        throw_on_validation_error = kwargs.pop('throw_on_validation_error', False)  # TODO set to True
 
         if category not in cls.part_registry:
             raise ValueError(f"Unknown part category: {category}")

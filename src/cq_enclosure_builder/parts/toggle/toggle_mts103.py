@@ -15,8 +15,10 @@
 """
 
 import cadquery as cq
+
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedWithStopPart
 from cq_enclosure_builder.parts_factory import register_part
+
 
 @register_part("toggle", "MTS-103")
 class ToggleMts103Part(GenericThreadedWithStopPart):
@@ -26,15 +28,17 @@ class ToggleMts103Part(GenericThreadedWithStopPart):
     https://www.aliexpress.com/item/1005005708888531.html
     """
 
-    def __init__(self, enclosure_wall_thickness):
-        thread_diameter = 6.0
+    def __init__(
+        self,
+        enclosure_wall_thickness: float
+    ):
         super().__init__(
             enclosure_wall_thickness,
 
             width=14,
             length=14,
 
-            thread_diameter=thread_diameter,
+            thread_diameter=6.0,
             thread_diameter_error_margin=0.6,
             thread_depth=8.8,
 
@@ -45,30 +49,38 @@ class ToggleMts103Part(GenericThreadedWithStopPart):
             pyramid_taper=35,
         )
 
-        self.inside_footprint = (13, 8.2)
+        toggle_block_size = (13, 8.2)
+        toggle_block_thickness = 9.5 + 6.3
+        self.inside_footprint = (
+            toggle_block_size[0] if toggle_block_size[0] > self.width else self.width,
+            toggle_block_size[1] if toggle_block_size[1] > self.length else self.length
+        )
+        self.inside_footprint_thickness = self.block_thickness + toggle_block_thickness
         self.inside_footprint_offset = (0, 0)
+
+        toggle_thread_minus_wall = self.thread_depth - self.block_thickness - enclosure_wall_thickness
+        toggle_stick_thickness = 10.2
+        # TODO we want to add the nut [and washer], as well as in the debug object
+        self.outside_footprint = (self.thread_diameter, self.thread_diameter)
+        self.outside_footprint_thickness = toggle_thread_minus_wall + toggle_stick_thickness
+
         footprint_in = (
             cq.Workplane("front")
-                .box(*self.inside_footprint, 10, centered=(True, True, False))
-                .translate([0, 0, -10.0])
+                .box(*toggle_block_size, toggle_block_thickness, centered=(True, True, False))
+                .translate([0, 0, -(toggle_block_thickness + self.block_thickness)])
+                .add(self.pyramid.mirror("XY").translate([0, 0, enclosure_wall_thickness]))
         )
-
-        self.outside_footprint = (self.thread_diameter, self.thread_diameter)
         footprint_out = (
             cq.Workplane("front")
-                .circle(thread_diameter/2)
-                .extrude(self.thread_depth)
+                .circle(self.thread_diameter/2)
+                .extrude(toggle_thread_minus_wall)
                 .translate([0, 0, enclosure_wall_thickness])
                 .add(
                     cq.Workplane("front")
                         .circle(1.5)
-                        .extrude(10.2)
-                        .translate([0, 0, self.thread_depth])
+                        .extrude(toggle_stick_thickness)
+                        .translate([0, 0, toggle_thread_minus_wall + enclosure_wall_thickness])
                 )
         )
-
-        footprint_in = self.mirror_and_translate(footprint_in)
-        footprint_out = self.mirror_and_translate(footprint_out)
-
-        self.debug_objects.footprint.inside  = footprint_in
-        self.debug_objects.footprint.outside = footprint_out
+        self.debug_objects.footprint.inside  = self.mirror_and_translate(footprint_in)
+        self.debug_objects.footprint.outside = self.mirror_and_translate(footprint_out)

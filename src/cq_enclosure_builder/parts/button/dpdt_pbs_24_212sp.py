@@ -56,6 +56,7 @@ class ButtonDpdtPbs24212SpPart(GenericThreadedWithStopPart):
         self.inside_footprint_offset = (0, 0)
         self.inside_footprint_thickness = self.block_thickness + button_block_thickness
 
+        # TODO we want to add the nut [and washer], as well as in the debug object (esp. important if no cap)
         self.outside_footprint = (self.thread_diameter, self.thread_diameter)
         self.outside_footprint_thickness = 20.5 - self.block_thickness - self.enclosure_wall_thickness  # updated later if button_cap is not None
 

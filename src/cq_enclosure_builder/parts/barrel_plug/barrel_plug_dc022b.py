@@ -27,19 +27,18 @@ class BarrelPlugDc022bPart(GenericThreadedPart):
     """
 
     def __init__(self, enclosure_wall_thickness):
-        thread_diameter = 10.7
         super().__init__(
             enclosure_wall_thickness,
 
             base_size=15.6,
 
-            thread_diameter=thread_diameter,
+            thread_diameter=10.7,
             thread_diameter_error_margin=0.6,
 
             footprint_specs=GenericThreadedPart.FootprintSpecs(
                 inside_footprint_size=(15.6, 15.6),
-                inside_footprint_depth=22,
+                inside_footprint_depth=(8.1 + 5.9) - enclosure_wall_thickness,
                 outside_footprint_size=(12.4, 12.4),
-                outside_footprint_depth=3.2
+                outside_footprint_depth=3
             )
         )

@@ -54,6 +54,7 @@ class Jack6_35mmPj612aPart(GenericThreadedWithStopPart):
         self.inside_footprint_thickness = 20
         self.inside_footprint_offset = (0, 0)
 
+        # TODO we want to add the nut [and washer], as well as in the debug object
         self.outside_footprint = (jack_diameter_with_nut, jack_diameter_with_nut)
         self.outside_footprint_thickness = self.nut_depth
 

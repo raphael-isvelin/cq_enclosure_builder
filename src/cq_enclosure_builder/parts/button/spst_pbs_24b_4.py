@@ -51,19 +51,19 @@ class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
             pyramid_taper=5
         )
 
-        footprint_in_length = 30.8
         button_block_thickness = 14
-        self.inside_footprint = (self.width, footprint_in_length)
+        self.inside_footprint = (self.width, 30.8)
         self.inside_footprint_thickness = self.block_thickness + button_block_thickness
         self.inside_footprint_offset = (0, -4.8)
 
+        # TODO we want to add the nut [and washer], as well as in the debug object (esp. important if no cap)
         self.outside_footprint = (self.thread_diameter, self.thread_diameter)
         self.outside_footprint_thickness = 25.9 - self.block_thickness - enclosure_wall_thickness  # updated later if button_cap is not None
 
         footprint_in = (
             cq.Workplane("front")
                 .box(*self.inside_footprint, button_block_thickness, centered=(True, True, False))
-                .translate([0, (footprint_in_length/2) - 20.2, -(button_block_thickness + self.block_thickness)])
+                .translate([0, (self.inside_footprint[1]/2) - 20.2, -(button_block_thickness + self.block_thickness)])
                 .add(self.pyramid.mirror("XY").translate([0, 0, enclosure_wall_thickness]))
         )
         footprint_out = (

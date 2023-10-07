@@ -14,17 +14,22 @@
    limitations under the License.
 """
 
+
 class KnobOrCap:
     """
     Knobs and Caps
 
-    The distance_from_enclosure_wall is simply an easy way to position the knob/cap;
-        the values provided are mostly arbitrary: ideally, we should be able to find it
-        dynamically using the inner_depth and whichever pot/button/encoder/etc. we're using.
+    `inner_depth` corresponds to the depth of the hole in which the shaft of component is entering.
     """
-    def __init__(self, diameter, thickness, inner_depth, distance_from_enclosure_wall = 0, fillet=0):
+
+    def __init__(
+        self,
+        diameter: float,
+        thickness: float,
+        inner_depth: float,
+        fillet: float = 0
+    ):
         self.diameter = diameter
         self.thickness = thickness
         self.inner_depth = inner_depth
-        self.distance_from_enclosure_wall = distance_from_enclosure_wall  # deprecated
         self.fillet = fillet

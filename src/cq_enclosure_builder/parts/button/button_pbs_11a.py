@@ -32,18 +32,17 @@ class ButtonPbs11aPart(GenericThreadedPart):
         self,
         enclosure_wall_thickness: float
     ):
-        thread_diameter = 12
         super().__init__(
             enclosure_wall_thickness,
 
             base_size=18,
 
-            thread_diameter=thread_diameter,
+            thread_diameter=12,
             thread_diameter_error_margin=0.6,
 
             footprint_specs=GenericThreadedPart.FootprintSpecs(
                 inside_footprint_size=(12.05, 12.05),
-                inside_footprint_depth=28.6-enclosure_wall_thickness,
+                inside_footprint_depth=28.6 - enclosure_wall_thickness,
                 outside_footprint_size=(18, 18),
                 outside_footprint_depth=10.6
             )

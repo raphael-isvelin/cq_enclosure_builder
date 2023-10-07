@@ -83,6 +83,7 @@ class GenericThreadedPart(Part):
             self.inside_footprint_offset = (0, 0)
             self.inside_footprint_thickness = footprint_specs.inside_footprint_depth
 
+            # TODO we want to add the nut [and washer], as well as in the debug object (esp. important if no cap)
             self.outside_footprint = footprint_specs.outside_footprint_size
             self.outside_footprint_thickness = footprint_specs.outside_footprint_depth
 
