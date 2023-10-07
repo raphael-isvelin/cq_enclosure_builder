@@ -21,6 +21,7 @@ from typing import List, Type, Tuple, Dict, Any, Callable
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory_protocol import PartsFactoryProtocol
 
+
 class PartFactoryMeta(type):
     """
     Metaclass for PartFactory.
@@ -95,6 +96,7 @@ class PartFactoryMeta(type):
             } for name, param in parameters.items()]
         return classmethod(method)
 
+
 class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
     """
     PartFactory is responsible for creating different parts based on their type and category.
@@ -154,6 +156,8 @@ class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
             if not part_type:
                 raise ValueError(f"No part_type provided to build method, and no default provided for category '{category}'. See PartFactory#list_types_of_{category}. See PartFactory#set_default_types.")
 
+        throw_on_validation_error = kwargs.pop('throw_on_validation_error', True)
+
         if category not in cls.part_registry:
             raise ValueError(f"Unknown part category: {category}")
 
@@ -188,7 +192,14 @@ class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
             part_instance = cls.part_registry[category][part_type](**kwargs)
             cls._cache[cache_key] = part_instance
 
-        part_instance.validate()
+        errors = part_instance.validate()
+        if len(errors) > 0:
+            message = f"Part {category}/{part_type} failed the validation: {str(errors)}"
+            if throw_on_validation_error:
+                raise ValueError(message)
+            else:
+                print("WARNING: " + message)
+
         return part_instance
 
     @classmethod

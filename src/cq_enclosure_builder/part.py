@@ -18,6 +18,7 @@ from typing import List, Tuple, Dict, Union
 
 import cadquery as cq
 
+
 class AssemblyPart:
     def __init__(self, workplane: cq.Workplane, name: str, color: cq.Color):
         self.workplane: cq.Workplane = workplane
@@ -26,6 +27,7 @@ class AssemblyPart:
 
     def as_assembly_add_parameters(self):
         return (self.workplane, None, self.name, self.color)
+
 
 class DebugObjects:
     class Footprint:
@@ -44,15 +46,13 @@ class DebugObjects:
 
         self.others: Dict[str, cq.Workplane] = {}
 
+
 class PartSize:
     def __init__(self):
         self.width: float = 0
         self.length: float = 0
         self.thickness: float = 0
 
-class ValidationErrors:
-    def __init__(self, errors: List[str]):
-        self.errors = errors
 
 class Part:
     """Base class for all parts."""
@@ -94,8 +94,9 @@ class Part:
             panel_assembly.add(part.workplane, name=part.name, color=part.color)
         return panel_assembly
 
-    def validate(self) -> Union[ValidationErrors, None]:
+    def validate(self) -> List[str]:
         errors: List[str] = []
+
         if self.part is None: errors.append("part is None")
         if self.mask is None: errors.append("mask is None")
         if self.size.width == 0: errors.append("size.width is 0")
@@ -109,7 +110,5 @@ class Part:
         if self.outside_footprint_offset is None: errors.append("outside_footprint_offset is None")
         if self.debug_objects.footprint.inside is None and self.debug_objects.footprint.outside is None:
             errors.append("Both debug_objects.footprint.inside and debug_objects.footprint.outside are None")
-        if len(errors) == 0:
-            return None
-        else:
-            return ValidationErrors(errors)
+
+        return errors
