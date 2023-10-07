@@ -14,30 +14,38 @@
    limitations under the License.
 """
 
-from typing import Dict, Union
+from typing import Dict, Union, Tuple
 
 import cadquery as cq
 from cq_enclosure_builder import Face, ProjectInfo
 from cq_enclosure_builder.part import Part
 
 class PanelSize:
-    def __init__(self, width, length, wall_thickness, total_thickness):
+    def __init__(
+        self,
+        width: float,
+        length: float,
+        wall_thickness: float,
+        total_thickness: float = None  # default: wall_thickness
+    ):
         self.width = width
         self.length = length
         self.wall_thickness = wall_thickness
         self.total_thickness = total_thickness
+        if self.total_thickness is None:
+            self.total_thickness = self.wall_thickness
 
 class Panel:
     def __init__(
             self,
             face: Face,
-            top_view_width,
-            top_view_length,
-            wall_thickness,
-            color = None,
-            part_color = None,
-            alpha = 1.0,
-            lid_size_error_margin = 0.0,  # if provided, panel will be smaller than mask
+            top_view_width: float,
+            top_view_length: float,
+            wall_thickness: float,
+            color: Tuple[float, float, float] = None,
+            part_color: Tuple[float, float, float] = None,
+            alpha: float = 1.0,
+            lid_size_error_margin: float = 0.0,  # if provided, panel will be smaller than mask
             project_info: ProjectInfo = ProjectInfo()
         ):
         self.face: Face = face
@@ -67,7 +75,15 @@ class Panel:
         self._parts_to_add = []
         self._screw_counter_sunks = []
 
-    def add(self, label: str, part: Part, rel_pos=None, abs_pos=None, color:cq.Color=None):
+    def add(
+        self,
+        label: str,
+        part: Part,
+        rel_pos: Tuple[float, float] = None,
+        abs_pos: Tuple[float, float] = None,
+        color: Tuple[float, float, float] = None,
+        alpha: float = 1.0,
+    ):
         print(f"[{str(self.project_info)}] {self.face.label}: adding part '{label}'")
         pos = None
         if rel_pos == None and abs_pos == None:
@@ -84,10 +100,14 @@ class Panel:
             "label": label,
             "pos": pos,
             "color": color,
+            "alpha": alpha,
         })
         return self
 
     def add_screw_counter_sunk(self, block: cq.Workplane, mask: cq.Workplane):
+        """
+        Used by `Enclosure` when a screw is added; cut a countersunk hole in the panel.
+        """
         self._screw_counter_sunks.append((block, mask))
 
     def assemble(self):
@@ -115,7 +135,7 @@ class Panel:
                     self._rotate_to_face(
                         part_obj.part.translate([*part_to_add["pos"], 0])),
                     name=part_to_add["label"],
-                    color=cq.Color(*self._part_color, 1.0) if part_to_add["color"] is None else part_to_add["color"],
+                    color=cq.Color(*self._part_color if part_to_add["color"] is None else part_to_add["color"], part_to_add["alpha"]),
                 )
             if part_obj.size.thickness > self.size.total_thickness:
                 self.size.total_thickness = part_obj.size.thickness

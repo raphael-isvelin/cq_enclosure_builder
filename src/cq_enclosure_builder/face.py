@@ -14,11 +14,18 @@
    limitations under the License.
 """
 
+from typing import Tuple
+
 from cq_enclosure_builder.constants import DEFAULT_PART_COLOR
 
 class Face:
     class FaceInfo:
-        def __init__(self, label, default_color, default_part_color):
+        def __init__(
+            self,
+            label: str,
+            default_color: Tuple[float, float, float],
+            default_part_color: Tuple[float, float, float]
+        ):
             self.label = label
             self.default_color = default_color
             self.default_part_color = default_part_color
