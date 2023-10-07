@@ -349,7 +349,29 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|
-| `__init__`  | - `param1`: Type Description<br>- `param2`: Type Description | Constructor |
+| `__init__`  | <ul><li>XX</li></ul> | No-arg constructors, sets the variables below to their default values. |
+| (value) `part`: `cq.Workplane` | *N/A* | The part that will be added to the panel. |
+| (value) `assembly_parts`: `List[AssemblyPart]` (default: `None`) | `AssemblyPart` has fields `workplane: cq.Workplane`, `name: str`, and `color: cq.Color`. Used to keep sub-parts visually separated (e.g. having screws colored differently); will be used for display if present, otherwise `part` will be. `part` should still be set if equivalent; see comment in [Part](./src/cq_enclosure_builder/part.py) |
+| (value) `mask`: `cq.Workplane` | *N/A* | Will be cut from the panel, should likely be the same width/length as the `part`. |
+| (value) `size`: `PartSize` | *N/A* | `PartSize` has fields `width: float`, `length: float`, and `thickness: float`. |
+| (value) `additional_printables: Dict[str, cq.Workplane]` | *N/A* | Workplanes in this map will be export when calling [Enclosure](#api-reference-enclosure)'s `export_printables'. | 
+| (value) `inside_footprint: Tuple[float, float]` | *N/A* | Needed by the layout builder ([LayoutGroup](#api-reference-layout-group)) to position elements. |
+| (value) `inside_footprint_thickness: float` | *N/A* | Currently, only used when wanting to create a "pyramid" support to sit underneath another part, for added strength. |
+| (value) `inside_footprint_offset: Tuple[float, float]` | *N/A* | How far the centre-point of the inside_footprint is from (0,0). Used by the layout builder. |
+| (value) `outside_footprint: Tuple[float, float]` | *N/A* | Needed by the layout builder ([LayoutGroup](#api-reference-layout-group)) to position elements. |
+| (value) `outside_footprint_thickness: float` | *N/A* | Unused at the moment; recommend to fill it when creating new parts. |
+| (value) `outside_footprint_offset: Tuple[float, float]` (default: `(0,0)`) | *N/A* | How far the centre-point of the outside_footprint is from (0,0). Currently, it assumes `(0,0)`: any other value will be ignored. If it's not the case for your part (e.g. the centre of your USB connector's hole not exactly at `(0,0)`), the layout builder won't work perfectly. |
+| (value) `debug_objects`: [DebugObjects](#api-reference-debug-objects) | *N/A* | Used to get useful visual information on your part. For instance, it will show how much a SPST is sticking out of an enclosure (including caps). |
+
+<a name="api-reference-debug-objects"></a>
+### class: [DebugObjects](./src/cq_enclosure_builder/part.py)
+
+| Value Name | Parameters | Description |
+|-------------|------------|-------------|
+| `__init__`  | *none* |  |
+| (value) `footprint`: `DebugObjects.Footprint` | *N/A* | Sub-classes has two fields, `inside: cq.Workplane` and `outside: cq.Workplane` (default for both: `None`). It is used to show the actual space taken by the part. If you're creating a new part, you likely want to set these fields if relevant. |
+| (value) `hole`: `cq.Workplane` (default: `None`) | *N/A* | Visual representation of the hole in the enclosure (e.g. for a USB port, it will simply be the size of the connector). |
+| (value) `others`: `Dict[str, cq.Workplane]` | *N.A* | Shown in the [Panel](#api-reference-panel)'s and [Enclosure](#api-reference-enclosure)'s debug assemblies.
 
 ---
 

@@ -14,8 +14,9 @@
    limitations under the License.
 """
 
+from typing import List, Tuple, Dict
+
 import cadquery as cq
-from typing import List
 
 class AssemblyPart:
     def __init__(self, workplane: cq.Workplane, name: str, color: cq.Color):
@@ -39,9 +40,9 @@ class DebugObjects:
 
         # Materialisation of the actual hole in the enclosure (e.g. a ~9.35mm extruded circle hole for a female jack).
         # Used for visualisation only.
-        self.hole = None
+        self.hole: cq.Workplane = None
 
-        self.others = {}
+        self.others: Dict[str, cq.Workplane] = {}
 
 class PartSize:
     def __init__(self):
@@ -68,17 +69,18 @@ class Part:
         #   `assembly_parts_to_cq_assembly(assembly_parts).toCompound()` or equivalent.
         self.assembly_parts: List[AssemblyPart] = None
 
-        self.additional_printables = None
+        self.additional_printables: Dict[str, cq.Workplane] = None
 
-        self.size = PartSize()
-        self.inside_footprint = None  # used by the layout builder  # TODO
-        self.inside_footprint_thickness = None
-        self.inside_footprint_offset = None  # how far is it from 0,0
-        self.outside_footprint = None  # used by the layout builder
-        self.outside_footprint_thickness = None
-        self.outside_footprint_offset = (0, 0)  # currently, it is assumed the center of the outside-facing side of the part is at 0,0
+        self.size: PartSize = PartSize()
+        self.inside_footprint: Tuple[float, float] = None  # used by the layout builder  # TODO
+        self.inside_footprint_thickness: float = None
+        self.inside_footprint_offset: Tuple[float, float] = None  # how far is it from 0,0
 
-        self.debug_objects = DebugObjects()
+        self.outside_footprint: Tuple[float, float] = None  # used by the layout builder
+        self.outside_footprint_thickness: float = None
+        self.outside_footprint_offset: Tuple[float, float] = (0, 0)  # currently, it is assumed the center of the outside-facing side of the part is at 0,0
+
+        self.debug_objects: DebugObjects = DebugObjects()
 
     def assembly_parts_to_cq_assembly(self):
         if self.assembly_parts is None:
@@ -88,8 +90,5 @@ class Part:
             panel_assembly.add(part.workplane, name=part.name, color=part.color)
         return panel_assembly
 
-    def show(self):  # TODO delete
-        print("debug show() part " + self.__class__.__name__ + " - TODO delete")
-
     def validate(self):
-        print("VALIDATING CLASS: " + self.__class__.__name__)
+        print("(TODO!) VALIDATING CLASS: " + self.__class__.__name__)
