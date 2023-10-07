@@ -32,6 +32,7 @@ Generate printable enclosures for projects in a few lines of code. Some features
 - **[Available parts](#available-parts)**
     - **[Built-in categories and part types](#available-parts-list-builtins)**
     - **[Adding a new Part](#available-parts-add-new)**
+    - **[Adding a new Part from a STL or STEP file](#available-parts-add-new-step)**
 - **[Strength Test](#strength-test)**
     - **[With support](#strength-test)**
     - **[Without support](#strength-test)**
@@ -73,7 +74,7 @@ Almost the same as above, but shows how `PartsFactory#set_default_types` and `Pa
 <a name="example-03"></a>
 ### 03 – Panel's optional parameters
 
-Shows optional parameters for the `Panel` class (see [API Reference](#api-reference-panel)). Here, we've updated the panel colour, the part colour, and the panel's transparency.
+Shows optional parameters for the [Panel](#api-reference-panel) class (see [API Reference](#api-reference-panel)). Here, we've updated the panel colour, the part colour, and the panel's transparency.
 
 ![Panel's optional parameters](./docs/img/03.jpg)
 <sub><p align="center">[03_panel_optional_params](./examples/03_panel_optional_params.py)</p></sub>
@@ -89,7 +90,7 @@ A simple [Enclosure](#api-reference-enclosure) with an 'exploded' view.
 <a name="example-05"></a>
 ### 05 – Export enclosure STLs
 
-`Enclosure#export_printables` will create ready-to-print STLs files for each separate parts of your project. For most enclosures, it will be a **lid** and the rest of the enclosure (**box**); in some cases, some components requires additional prints, such as brackets to hold a screen.
+[Enclosure](#api-reference-enclosure)'s `export_printables` will create ready-to-print STLs files for each separate parts of your project. For most enclosures, it will be a **lid** and the rest of the enclosure (**box**); in some cases, some components requires additional prints, such as brackets to hold a screen.
 
 ![Export enclosure STLs](./docs/img/05.jpg)
 <sub><p align="center">[05_export_enclosure_stls](./examples/05_export_enclosure_stls.py)</p></sub>
@@ -97,7 +98,7 @@ A simple [Enclosure](#api-reference-enclosure) with an 'exploded' view.
 <a name="example-06"></a>
 ### 06 – Enclosure's optional parameters
 
-Shows optional parameters for the `Enclosure` class (see [API Reference](#api-reference-enclosure)). Here, we've updated a few parameters, but the most visibles in the screenshot below is that we've removed the fillet (rounded corners) on the top and bottom of the enclosure.
+Shows optional parameters for the [Enclosure](#api-reference-enclosure) class. Here, we've updated a few parameters, but the most visibles in the screenshot below is that we've removed the fillet (rounded corners) on the top and bottom of the enclosure.
 
 ![Enclosure's optional parameters](./docs/img/06.jpg)
 <sub><p align="center">[06_enclosure_optional_params](./examples/06_enclosure_optional_params.py)</p></sub>
@@ -139,7 +140,7 @@ Create a grid of any component (6.35mm jacks in this case). You can define the n
 <a name="example-11"></a>
 ### 11 – Layout builder: combining groups
 
-[LayoutGroup](#api-reference-layout-group) (and `LayoutElement`) can be combined together: here, we have two grid of jacks (6.35mm and 3.5mm), and a single USB A, equally spread on the panel.
+Multiple [LayoutGroup](#api-reference-layout-group) (and [LayoutElement](#api-reference-layout-element])) can be combined together: here, we have two grid of jacks (6.35mm and 3.5mm), and a single USB A, equally spread on the panel.
 
 ![Layout builder: combining groups](./docs/img/11.jpg)
 <sub><p align="center">[11_layout_builder_combining_groups](./examples/11_layout_builder_combining_groups.py)</p></sub>
@@ -173,7 +174,7 @@ For the protobard, the screws can be positioned arbitrarily (grid coordinates).
 <a name="example-15"></a>
 ### 15 – Add a new Part
 
-See **[Adding a new Part](#available-parts-add-new)** for more details.
+See [Adding a new Part](#available-parts-add-new) for more details.
 
 ![Add a new Part](./docs/img/15.jpg)
 <sub><p align="center">[15_add_new_part](./examples/15_add_new_part.py)</p></sub>
@@ -196,22 +197,24 @@ For more details, see below.
 <a name="available-parts-list-builtins"></a>
 ### Built-in categories and part types
 
-- **jack**: '6.35mm PJ-612A', '3.5mm XXX'
-- **button**: 'SPST PBS-24B-4', 'DPDT PBS-24-212SP', 'PBS 11-A', 'PBS-110'
-- **encoder**: 'EC11'
-- **potentiometer**: 'WH148'
-- **usb_a**: '3.0 vertical cltgxdd'
-- **usb_c**: 'ChengHaoRan E'
-- **screen**: 'HDMI 5 inch JRP5015', 'DSI 5 inch XXX'
-- **air_vent**: 'basic rectangular'
-- **banana**: '4mm'
-- **barrel_plug**: 'DC-022B'
-- **rca**: 'N1030'
-- **support**: 'pyramid', 'skirt'
-- **toggle**: 'MTS-103'
-- **midi**: 'SD-50SN'
-- **holder**: 'RPi 4B', 'Protoboard'
-- **text**: 'default'
+For many parts, I've provided purchase links within the docstrings of the Python code, so you can obtain the exact item I used for modeling them.
+
+- **jack**: [6.35mm PJ-612A](./src/cq_enclosure_builder/parts/jack/jack_6_35mm_pj612a.py), [3.5mm XXX](./src/cq_enclosure_builder/parts/jack/jack_3_5mm_xxx.py)
+- **button**: [SPST PBS-24B-4](./src/cq_enclosure_builder/parts/button/spst_pbs_24b_4.py), [DPDT PBS-24-212SP](./src/cq_enclosure_builder/parts//button/dpdt_pbs_24_212sp.py), [PBS 11-A](./src/cq_enclosure_builder/parts/button/button_pbs_11a.py), [PBS-110](./src/cq_enclosure_builder/parts/button/button_pbs_110.py)
+- **encoder**: [EC11](./src/cq_enclosure_builder/parts/encoder/encoder_ec11.py)
+- **potentiometer**: [WH148](./src/cq_enclosure_builder/parts/potentiometer/potentiometer_wh148.py)
+- **usb_a**: [3.0 cltgxdd](./src/cq_enclosure_builder/parts/usb_a/usb_a_30_vertical_cltgxdd.py)
+- **usb_c**: [ChengHaoRan E](./src/cq_enclosure_builder/parts/usb_c/usb_c_chenghaoran_e.py)
+- **screen**: [HDMI 5 inch JRP5015](./src/cq_enclosure_builder/parts/screen/hdmi_5inch_jrp5015.py), [DSI 5 inch XXX](./src/cq_enclosure_builder/parts/screen/dsi_5inch_xxx.py)
+- **air_vent**: [basic rectangular](./src/cq_enclosure_builder/parts/air_vent/rect_air_vent_part.py)
+- **banana**: [4mm](./src/cq_enclosure_builder/parts/banana/banana_4mm.py)
+- **barrel_plug**: [DC-022B](./src/cq_enclosure_builder/parts/barrel_plug/barrel_plug_dc022b.py)
+- **rca**: [N1030](./src/cq_enclosure_builder/parts/rca/rca_n1030.py)
+- **support**: [pyramid](./src/cq_enclosure_builder/parts/support/pyramid_support.py), [skirt](./src/cq_enclosure_builder/parts/support/skirt.py)
+- **toggle**: [MTS-103](./src/cq_enclosure_builder/parts/toggle/toggle_mts103.py)
+- **midi**: [SD-50SN](./src/cq_enclosure_builder/parts/midi/midi_sd_50sn.py)
+- **holder**: [RPi 4B](./src/cq_enclosure_builder/parts/holder/pi4_holder.py), [Protoboard](./src/cq_enclosure_builder/parts/holder/protoboard_holder.py)
+- **text**: [default](./src/cq_enclosure_builder/parts/text//default_text.py)
 
 <a name="available-parts-add-new"></a>
 ### Adding a new Part
@@ -228,7 +231,7 @@ To create a new part, you can copy the file [__template.py](./src/cq_enclosure_b
 
 If contributing, `<category>` should match the sub-folder, otherwise, it can be anything. `<part_type>` represents the reference of your component (e.g. `PBS 11-A`).
 
-If there's no category matching your part, it's not an issue: a new build method `PartsFactory#build_<your new category>` will automatically be added to the factory. (If contributing, simply create a new sub-package in the folder mentioned above.)
+If there's no category matching your part, it's not an issue: a new build method [PartsFactory](#api-reference-parts-factory)'s' `build_<your new category>` will automatically be added to the factory. (If contributing, simply create a new sub-package in the folder mentioned above.)
 
 You'll now be able to use your part:
 ```
@@ -237,9 +240,14 @@ from cq_enclosure_builder import PartsFactory as pf
 my_part = pf.build_<category>(part_type="<part_type>")
 ```
 
-**Note 1:** set your part as default for this category with `PartsFactory#set_default_types`.
+**Note 1:** set your part as default for this category with [PartsFactory](#api-reference-parts-factory)'s `set_default_types`.
 
 **Note 2:** you don't need to use `@register_part`, it only allows your to use [PartsFactory](./src/cq_enclosure_builder/parts_factory.py) and its built-in cache. If not, simply instantiate your object as you normally would (`MyPart()`).
+
+<a name="available-parts-add-new-step"></a>
+### Adding a new Part from a STL or STEP file
+
+TODO
 
 ---
 
@@ -248,10 +256,11 @@ my_part = pf.build_<category>(part_type="<part_type>")
 
 The enclosures should be strong enough for most enclosure needs, including guitar pedals (which endure stomping!)
 
-I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [here](./examples/strength_test_enclosures.py)):
+I've made to tests using <a href="https://www.amazon.de/dp/B09KL2JYT6" target="_blank">this PLA</a>:
 - the first one was made with nothing supporting the SPST;
 - the second one had a small 'pillar' underneath it (see [example 13](#example-13) above), making it very solid with reasonable use. (If you PCB design is flexible, you can plan for a small hole to allow the pillar to support the bottom of the SPST.)
 
+You can find the code used to generated the STLs [here](./examples/strength_test_enclosures.py).
 
 | ![TODO!](./docs/img/strength-test-with-support.jpg) | ![TODO!](./docs/img/strength-test-without-support.jpg) |
 |:------------------------------------:|:-------------------------------------:|
