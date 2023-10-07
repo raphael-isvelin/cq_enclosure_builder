@@ -37,7 +37,8 @@ Generate printable enclosures for projects in a few lines of code. Some features
 - **[API Reference](#api-reference)**
     - **[Enclosure](#api-reference-enclosure)**
     - **[PartsFactory](#api-reference-parts-factory)**
-    - **[LayoutGroup](#api-reference-layout-group)**
+    - **[LayoutElement](#api-reference-layout-element)**
+    - **[LayoutGroup](#api-reference-layout-group)** (layout builder)
     - **[Panel](#api-reference-panel)**
     - **[Part](#api-reference-part)**
 
@@ -292,12 +293,40 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 
 ---
 
+<a name="api-reference-layout-element"></a>
+### class: [LayoutElement](./src/cq_enclosure_builder/layout_builder/layout_elementgroup.py)
+
+| Method Name | Parameters | Description |
+|-------------|------------|-------------|
+| `__init__`  | <ul><li>`label: str`</li><li>`part`: [Part](#api-reference-part)</li></ul> |  |
+| `move_to`  | <ul><li>`pos: Tuple[float, float]`</li></ul> |  |
+| `translate`  | <ul><li>`pos: Tuple[float, float]`</li></ul> |  |
+| `get_pos`  | *none* | Get the relative pos (centre is 0,0). |
+| `get_abs_pos`  | <ul><li>`panel`: [Panel](#api-reference-panel)</li></ul> | Get the absolute based on the size of the panel. |
+| `set_inside_footprint_x`  | <ul><li>`new_x: float`</li></ul> | Overrides the real footprint of the element. See [example 9](#example-09) for use case. |
+| `set_outside_footprint_x`  | <ul><li>`new_x: float`</li></ul> | *see above* |
+| `set_footprints_x`  | <ul><li>`new_x: float`</li></ul> | *see above*<br/><br/>Set both inside and outside at once. |
+| `set_inside_footprint_y`  | <ul><li>`new_y: float`</li></ul> | Overrides the real footprint of the element. See [example 9](#example-09) for use case. |
+| `set_outside_footprint_y`  | <ul><li>`new_y: float`</li></ul> | *see above* |
+| `set_footprints_y`  | <ul><li>`new_y: float`</li></ul> | *see above*<br/><br/>Set both inside and outside at once. |
+
+---
+
 <a name="api-reference-layout-group"></a>
 ### class: [LayoutGroup](./src/cq_enclosure_builder/layout_builder/layout_group.py) (layout builder), inherits [LayoutElement](./src/cq_enclosure_builder/layout_builder/layout_element.py)
 
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|
-| `__init__`  | - `param1`: Type Description<br>- `param2`: Type Description | Constructor |
+| `__init__`  | *not needed* | ZZZ |
+| `move_to`  | <ul><li>`pos: Tuple[float, float]`</li></ul> | Same as [LayoutElement](#api-reference-layout-element). Set the pos of the entire group. |
+| `translate`  | <ul><li>`pos: Tuple[float, float]`</li></ul> | Same as [LayoutElement](#api-reference-layout-element). Translate all the elements of the group. |
+| `get_pos`  | *none* | Get the relative pos (centre is 0,0). |
+| `get_elements` -> `List[`[LayoutElement](#api-reference-layout-element)`]`  | *none* | Returns all the elements of the group. If there's nested groups, it flatten them by recurisvely calling `get_elements`. |
+| (static) `line_of_parts` -> `LayoutGroup`  | <ul><li>`parts: Union[Part, Tuple[str, Part]]`: either a list of parts or a list of tuple containing a label for the part and part itself</li>`margin: float` (default: `5`): the distance between each element</li><li>`horizontal: bool` (default: `True`)</li><li>`group_center_at_0_0: bool` (default: `True`): if `False`, the line will start at position 0; if `True`, the line will be `translate` by `-(line width/2)` so its centre is at 0</li><li>`elements_centers_at_0_0: bool` (default: `True`): if `True`, each element will be `translate` by `total_footprint_offset` (if `horizontal`, it will only translate the Y position; and vice versa)</li><li>`align_start_to_outside_footprint: bool` (default: `False`): if `True`, the outside footprint of the first element will be at position 0 (only matters if the inside footprint is larger than the outside); if `False`, it will use total footprint (whichever is largest)</li><li>`align_to_outside_footprint: bool` (default: `False`): if `True`, the outside footprint of the first item will be at 0 (only matters if the inside footprint is larger than the outside); if `False`, it will use total footprint (whichever is largest)</li></ul> | Return a simple group where each part is next to each other in a line. |
+| (static) `line_of_elements` -> `LayoutGroup`  | <ul><li>`elements: List[LayoutElement]`</li></ul>Rest is identical to `line_of_parts`. | The `element` variant is useful to combine groups. |
+| (static) `fixed_width_line_of_parts` -> `LayoutGroup`  | <ul><li>`size: float`: the maximum space taken by the line</li><li>`parts: Union[Part, Tuple[str, Part]]`: either a list of parts or a list of tuple containing a label for the part and part itself</li><li>`horizontal: bool` (default: `True`)</li><li>`add_margin_on_sides: bool` (default `True`): if `False`, the first and last elements will be touching the start and end of the line; if True, the same margin found between each element will also be at the start and end</li><li>`group_center_at_0_0: bool` (default: `True`): *see `line_of_parts`*</li><li>`elements_centers_at_0_0: bool` (default: `True`): *see `line_of_parts`*</li><li>`align_to_outside_footprint: bool` (default: `False`): *see `line_of_parts`*</li></ul> | Return a line of element spaced equally, taking a set amount of space. |
+| (static) `fixed_width_line_of_elements` -> `LayoutGroup`  | <ul><li>`elements: List[LayoutElement]`</li></ul>Rest is identical to `line_of_parts` (same order). | The `element` variant is useful to combine groups. |
+| (static) `grid_of_part` -> `LayoutGroup`  | <ul><li>`label: str`</li><li>`part`: [Part](#api-reference-part)</li><li>`rows: int`: number of rows</li><li>`cols: int`: number of columns</li><li>`margin_rows: float` (default: `5`): margin between each row</li><li>`margin_cols: float` (default: `5`): margin between each col</ul> | Return a grid of `rows` x `cols` made up the same [Part](#api-reference-part). |
 
 ---
 

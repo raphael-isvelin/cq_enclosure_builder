@@ -38,11 +38,11 @@ class LayoutElement:
         self.is_aligned_center_x = False
         self.is_aligned_center_y = False
 
-    def set_inside_footprint_x(self, inside_footprint_x: bool):
+    def set_inside_footprint_x(self, inside_footprint_x: float):
         self.inside_footprint = (inside_footprint_x, self.inside_footprint[1])
         self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0], self.total_footprint[1])
 
-    def set_outside_footprint_x(self, outside_footprint_x: bool):
+    def set_outside_footprint_x(self, outside_footprint_x: float):
         self.outside_footprint = (outside_footprint_x, self.outside_footprint[1])
         self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0], self.total_footprint[1])
 
