@@ -47,6 +47,7 @@ class Enclosure:
 
     LID_SCREWS_COLOR: Tuple[float, float, float] = (0.6, 0.45, 0.8)
     LID_SUPPORT_COLOR: Tuple[float, float, float] = (0.65, 0.5, 0.85)
+    CORNER_LID_SCREWS_THICKNESS: float = 8
     TOP_PANEL_SUPPORT_COLOR: Tuple[float, float, float] = (0.65, 0.5, 0.85)
 
     def __init__(
@@ -94,6 +95,7 @@ class Enclosure:
         self.screws = []
         self.lid_screws_assembly: cq.Assembly = None
         self.lid_support: cq.Workplane = None
+        self.lid_thickness_error_margin = lid_thickness_error_margin
         self.add_lid_support: bool = add_lid_support
 
         for info in self.panels_specs:
@@ -102,9 +104,9 @@ class Enclosure:
 
         # Lid should be created before the screws are added (cut the screws' masks from the lid)
         if add_lid_support:
-            self._build_lid_support(lid_thickness_error_margin)
+            self._build_lid_support()
         if add_corner_lid_screws:
-            self.add_corner_lid_screws(lid_thickness_error_margin, heat_set=lid_screws_heat_set)
+            self.add_corner_lid_screws(heat_set=lid_screws_heat_set)
 
         if add_top_support:
             skirt = SkirtPart(
@@ -223,6 +225,12 @@ class Enclosure:
         if with_counter_sunk_block:
             screw["counter_sunk_block"] = screw["counter_sunk_block"].translate([*pos, pos_error_margin])
             screw["counter_sunk_mask"] = screw["counter_sunk_mask"].translate([*pos, pos_error_margin])
+
+            translate_z = screw["size"][2] + self.lid_thickness_error_margin + self.size.wall_thickness
+            cs_block = screw["counter_sunk_block"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
+            cs_mask = screw["counter_sunk_mask"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
+            self.panels[Face.BOTTOM].add_screw_counter_sunk(cs_block, cs_mask)
+
         self.screws.append(screw)
         if self.add_lid_support:
             self.lid_support = self.lid_support.cut(screw["mask"])
@@ -230,13 +238,12 @@ class Enclosure:
 
     def add_corner_lid_screws(
         self,
-        lid_thickness_error_margin,
         screw_size_category: str = "m2",
         heat_set: bool = False
     ) -> None:
         # TODO support lid != Face.BOTTOM + refactor
 
-        lid_screws_thickness = 8
+        lid_screws_thickness = Enclosure.CORNER_LID_SCREWS_THICKNESS
 
         screw_provider = DefaultHeatSetScrewProvider if heat_set else DefaultFlatHeadScrewProvider
 
@@ -259,24 +266,24 @@ class Enclosure:
                 screw_size_category=screw_size_category,
                 block_thickness=lid_screws_thickness,
                 abs_pos=screw_pos,
-                pos_error_margin=lid_thickness_error_margin,
+                pos_error_margin=self.lid_thickness_error_margin,
                 taper=TaperOptions.Z_TAPER_ANGLE,
                 taper_rotation=screw_rotation,
                 with_counter_sunk_block=True,
                 screw_provider=screw_provider
             )
-            translate_z = screw["size"][2] + lid_thickness_error_margin + self.size.wall_thickness
+            translate_z = screw["size"][2] + self.lid_thickness_error_margin + self.size.wall_thickness
             cs_block = screw["counter_sunk_block"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
             cs_mask = screw["counter_sunk_mask"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
             self.panels[Face.BOTTOM].add_screw_counter_sunk(cs_block, cs_mask)
 
-    def _build_lid_support(self, lid_thickness_error_margin) -> None:
+    def _build_lid_support(self) -> None:
         width = self.size.outer_width - self.size.wall_thickness*2
         length = self.size.outer_length - self.size.wall_thickness*2
         self.lid_support = (
             SkirtPart(self.size.wall_thickness, width, length, skirt_size=(2, 2), base_size=1)
                 .part
-                .translate([0, 0, -self.size.wall_thickness + lid_thickness_error_margin])
+                .translate([0, 0, -self.size.wall_thickness + self.lid_thickness_error_margin])
         )
 
     def assemble(

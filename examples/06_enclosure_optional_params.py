@@ -30,7 +30,7 @@ pf.set_default_parameters({"enclosure_wall_thickness": enclosure.size.wall_thick
 enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), rel_pos=(0, 0))
 enclosure.assemble()
 
-show_object(enclosure.all_printables_assembly)
+show_object(enclosure.assembly_with_debug)
 
 # Exports the following files, based on the project's name and version:
 #   - stls/hello_world-box-v0.9.stl

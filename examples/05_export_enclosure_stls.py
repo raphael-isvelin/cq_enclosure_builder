@@ -14,7 +14,7 @@ enclosure = Enclosure(EnclosureSize(180, 120, 38, 2))
 pf.set_default_types({"screen": 'DSI 5 inch CFsunbird'})
 pf.set_default_parameters({"enclosure_wall_thickness": enclosure.size.wall_thickness})
 
-enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_screen(), rel_pos=(0, 0))
+enclosure.add_part_to_face(Face.TOP, "DSI screen", pf.build_screen(), rel_pos=(0, 0))
 
 enclosure.assemble()
 

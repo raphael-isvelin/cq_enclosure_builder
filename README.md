@@ -21,8 +21,9 @@ Easily generate printable enclosures for your projects in just a few lines of co
     - **[02 – Set default part types and parameters](#example-02)**
     - **[03 – Panel's optional parameters](#example-03)**
     - **[04 – Enclosure with buttons](#example-04)**
-    - **[05 – Export enclosure STLs](#example-05)**
-    - **[06 – Enclosure's optional parameters](#example-06)**
+    - **[05 – Enclosure: export STLs](#example-05)**
+    - **[06 – Enclosure: optional parameters](#example-06)**
+    - **[06.5 – Enclosure: custom screws placement](#example-06_5)**
     - **[07 – Layout builder: simple line](#example-07)**
     - **[08 – Layout builder: fixed-width line](#example-08)**
     - **[09 – Layout builder: fixed-width line with median part centred at 0,0](#example-09)**
@@ -101,22 +102,32 @@ A simple [Enclosure](#api-reference-enclosure) with an 'exploded' view.
 <sub><p align="center">[04_enclosure_with_button.py](./examples/04_enclosure_with_button.py)</p></sub>
 
 <a name="example-05"></a>
-### 05 – Export enclosure STLs
+### 05 – Enclosure: export STLs
 
 [Enclosure](#api-reference-enclosure)'s `export_printables` will generate ready-to-print STLs files for each distinct part of your project. Most enclosures will typically require only to parts to print: the main section (**box**) and a **lid**, while others will require additional prints (such as brackets to hold a specific type of screen in this example).
 
-![Export enclosure STLs](./docs/img/05.jpg)
+![Enclosure: export STLs](./docs/img/05.jpg)
 <sub><p align="center">[05_export_enclosure_stls.py](./examples/05_export_enclosure_stls.py)</p></sub>
 
 <a name="example-06"></a>
-### 06 – Enclosure's optional parameters
+### 06 – Enclosure: optional parameters
 
 Shows optional parameters for the [Enclosure](#api-reference-enclosure) class. Here, we've updated a few parameters, but the most visibles in the screenshot below is that we've removed the fillet (rounded corners) on the top and bottom of the enclosure.
 
 We've also changed the project's name, which generated printables STLs with a customisd name.
 
-![Enclosure's optional parameters](./docs/img/06.jpg)
+![Enclosure: optional parameters](./docs/img/06.jpg)
 <sub><p align="center">[06_enclosure_optional_params.py](./examples/06_enclosure_optional_params.py)</p></sub>
+
+<a name="example-06_5"></a>
+### 06.5 – Enclosure: Enclosure: custom screws placement
+
+Certainly! Here's a revised version of your description:
+
+By default, the [Enclosure](#api-reference-enclosure) includes four screws at its corners. However, you can customize this setup. In the following example, we added two M2 screws with printed threads, complementing the default four M3 heat set inserts.
+
+![Enclosure: custom screws placement](./docs/img/06_5.jpg)
+<sub><p align="center">[06_5_enclosure_custom_screws.py](./examples/06_5_enclosure_custom_screws.py)</p></sub>
 
 <a name="example-07"></a>
 ### 07 – Layout builder: simple line

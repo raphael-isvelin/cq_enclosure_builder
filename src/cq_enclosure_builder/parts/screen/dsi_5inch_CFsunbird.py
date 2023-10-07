@@ -148,15 +148,14 @@ class Dsi5InchCfsunbirdPart(Part):
                 .box(*screen_w_bevel_size, part_thickness, centered=(True, True, False))
         )
 
-        bracket, bracket_split, bracket_size = self.build_brackets(enclosure_wall_thickness, bracket_extra_thickness)
+        bracket, bracket_split, bracket_footprint, bracket_size = self.build_brackets(enclosure_wall_thickness, bracket_extra_thickness)
 
         self.size.width     = screen_board_size[0]
         self.size.length    = screen_board_size[1]
         self.size.thickness = part_thickness
 
-        pcb_thickness = 2
         self.inside_footprint = (self.size.width, self.size.length)
-        self.inside_footprint_thickness =part_thickness + screw_block_thickness + pcb_thickness
+        self.inside_footprint_thickness = part_thickness + screw_block_thickness - enclosure_wall_thickness
         self.inside_footprint_offset = (0, 0)
 
         self.outside_footprint = (screen_w_ramp_width, screen_w_ramp_length)
@@ -178,8 +177,8 @@ class Dsi5InchCfsunbirdPart(Part):
         if center_is_outward_facing_hole:
             translate_by_viewing_area_offset = lambda obj: obj.translate([-viewing_area_offset[0], -viewing_area_offset[1], 0])
 
-            bracket, bracket_split, screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole = list(map(translate_by_viewing_area_offset,
-                    [bracket, bracket_split, screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole]))
+            bracket, bracket_split, bracket_footprint, screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole = list(map(translate_by_viewing_area_offset,
+                    [bracket, bracket_split, bracket_footprint, screen_panel, mask, footprint_in, footprint_out, viewing_area_hole, debug_screen_block, screws_mask, screen_w_ramps_hole]))
 
             screws = list(map(translate_by_viewing_area_offset, screws))
 
@@ -188,8 +187,8 @@ class Dsi5InchCfsunbirdPart(Part):
             assembly_parts.append(AssemblyPart(screw, f"Screw {idx}", cq.Color(0.7, 0.3, 0.8)))
 
         footprint_in = (footprint_in
-            .add(bracket.rotate((0, 0, 0), (0, 1, 0), 180).translate([54.1, 0, 16.6 + 2]))
-            .add(bracket_split.rotate((0, 0, 0), (0, 1, 0), 180).translate([-55.7, 0, 16.6 + 2]))
+            .add(bracket_footprint.rotate((0, 0, 0), (0, 1, 0), 180).translate([54.1, 0, 16.6 + 2]))
+            .add(bracket_footprint.rotate((0, 0, 0), (0, 1, 0), 180).translate([-55.7, 0, 16.6 + 2]))
         )
 
         self.assembly_parts = assembly_parts
@@ -243,10 +242,11 @@ class Dsi5InchCfsunbirdPart(Part):
         ]
         bracket_size = (10, 103.6)
 
+        bracket_thickness = 2
         bracket = (
             cq.Workplane("front")
                 .rect(*bracket_size)
-                .extrude(enclosure_wall_thickness)
+                .extrude(bracket_thickness)
                 .add(
                     cq.Workplane("front")
                         .rect(10, Dsi5InchCfsunbirdPart.DISTANCE_BETWEEN_INNER_SCREWS_Y + 10)
@@ -265,6 +265,8 @@ class Dsi5InchCfsunbirdPart(Part):
                 .extrude(enclosure_wall_thickness + bracket_extra_thickness)
         )
 
+        bracket_footprint = bracket  # we don't want to rorate/translate it--legacy
+
         # Makes them nicer to display in Enclosure#all_printables_assembly (aligned with the)
         bracket = bracket.rotate((0, 0, 0), (0, 0, 1), 90)
         bracket_split = bracket_split.rotate((0, 0, 0), (0, 0, 1), 90)
@@ -274,4 +276,4 @@ class Dsi5InchCfsunbirdPart(Part):
         bracket = bracket.translate([0.4, -2.2, 0])
         bracket_split = bracket_split.translate([0.4, -2.2, 0])
 
-        return (bracket, bracket_split, bracket_size)
+        return (bracket, bracket_split, bracket_footprint, bracket_size)
