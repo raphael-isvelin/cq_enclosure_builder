@@ -15,10 +15,12 @@
 """
 
 import cadquery as cq
+
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedPart
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("button", "PBS 11-A")
+
+@register_part("button", "PBS-11A")
 class ButtonPbs11aPart(GenericThreadedPart):
     """
     Button PBS-11A
@@ -26,7 +28,10 @@ class ButtonPbs11aPart(GenericThreadedPart):
     https://www.aliexpress.com/item/1005004704407979.html
     """
 
-    def __init__(self, enclosure_wall_thickness):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float
+    ):
         thread_diameter = 12
         super().__init__(
             enclosure_wall_thickness,

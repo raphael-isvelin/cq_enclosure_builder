@@ -14,21 +14,35 @@
    limitations under the License.
 """
 
+from typing import Tuple
+
 import cadquery as cq
+
 from cq_enclosure_builder.part import Part
+
 
 class GenericThreadedPart(Part):
     class FootprintSpecs:
-        def __init__(self, inside_footprint_size, inside_footprint_depth,
-                     outside_footprint_size, outside_footprint_depth):
+        def __init__(
+            self,
+            inside_footprint_size: Tuple[float, float],
+            inside_footprint_depth: float,
+            outside_footprint_size: Tuple[float, float],
+            outside_footprint_depth: float,
+        ):
             self.inside_footprint_size = inside_footprint_size
             self.inside_footprint_depth = inside_footprint_depth
             self.outside_footprint_size = outside_footprint_size
             self.outside_footprint_depth = outside_footprint_depth
 
-    def __init__(self, enclosure_wall_thickness, base_size,
-                thread_diameter, thread_diameter_error_margin,
-                footprint_specs: FootprintSpecs = None):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float,
+        base_size: float,
+        thread_diameter: float,
+        thread_diameter_error_margin: float,
+        footprint_specs: FootprintSpecs = None,
+    ):
         super().__init__()
 
         thread_diameter = thread_diameter + thread_diameter_error_margin
@@ -66,20 +80,23 @@ class GenericThreadedPart(Part):
 
         if footprint_specs is not None:
             self.inside_footprint = footprint_specs.inside_footprint_size
-            self.outside_footprint = footprint_specs.outside_footprint_size
             self.inside_footprint_offset = (0, 0)
+            self.inside_footprint_thickness = footprint_specs.inside_footprint_depth
+
+            self.outside_footprint = footprint_specs.outside_footprint_size
+            self.outside_footprint_thickness = footprint_specs.outside_footprint_depth
 
             footprint_in = (
                 cq.Workplane("front")
                     .circle(self.inside_footprint[0]/2)
-                    .extrude(footprint_specs.inside_footprint_depth)
+                    .extrude(self.inside_footprint_thickness)
                     .translate([0, 0, enclosure_wall_thickness])
             )
             footprint_out = (
                 cq.Workplane("front")
                     .circle(self.outside_footprint[0]/2)
-                    .extrude(footprint_specs.outside_footprint_depth)
-                    .translate([0, 0, -footprint_specs.outside_footprint_depth])
+                    .extrude(self.outside_footprint_thickness)
+                    .translate([0, 0, -self.outside_footprint_thickness])
             )
             self.debug_objects.footprint.inside  = footprint_in
             self.debug_objects.footprint.outside = footprint_out
@@ -89,35 +106,46 @@ class GenericThreadedWithStopPart(Part):
     """
     Has an additional block that prevents the threaded part from sticking too far outside.
     """
-    def __init__(self, enclosure_wall_thickness, width, length,
-                thread_diameter, thread_diameter_error_margin, thread_depth,
-                washer_thickness, nut_thickness, margin_after_nut,
-                pyramid_taper,
-                dents_specs=[], dent_size_error_margin=0, dent_thickness_error_margin=0):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float,
+        width: float,
+        length: float,
+        thread_diameter: float,
+        thread_diameter_error_margin: float,
+        thread_depth: float,
+        washer_thickness: float,
+        nut_thickness: float,
+        margin_after_nut: float,
+        pyramid_taper: float,
+        dents_specs: Tuple[Tuple[float, float], Tuple[float, float]] = [],
+        dent_size_error_margin: float = 0,
+        dent_thickness_error_margin: float = 0
+    ):
         super().__init__()
 
         thread_diameter = thread_diameter + thread_diameter_error_margin
 
-        self.enclosure_wall_thickness = enclosure_wall_thickness
-        self.width = width
-        self.length = length
-        self.thread_diameter = thread_diameter
-        self.thread_diameter_error_margin = thread_diameter_error_margin
-        self.thread_depth = thread_depth
-        self.washer_thickness = washer_thickness
-        self.nut_thickness = nut_thickness
-        self.margin_after_nut = margin_after_nut
-        self.pyramid_taper = pyramid_taper
-        self.dents_specs = dents_specs
-        self.dent_size_error_margin = dent_size_error_margin
-        self.dent_thickness_error_margin = dent_thickness_error_margin
+        self.enclosure_wall_thickness: float = enclosure_wall_thickness
+        self.width: float = width
+        self.length: float = length
+        self.thread_diameter: float = thread_diameter
+        self.thread_diameter_error_margin: float = thread_diameter_error_margin
+        self.thread_depth: float = thread_depth
+        self.washer_thickness: float = washer_thickness
+        self.nut_thickness: float = nut_thickness
+        self.margin_after_nut: float = margin_after_nut
+        self.pyramid_taper: float = pyramid_taper
+        self.dents_specs: Tuple[Tuple[float, float], Tuple[float, float]] = dents_specs
+        self.dent_size_error_margin: float = dent_size_error_margin
+        self.dent_thickness_error_margin: float = dent_thickness_error_margin
 
         smaller_side = min(width, length)
         nut_depth = washer_thickness + nut_thickness + margin_after_nut
         block_thickness = thread_depth - nut_depth - enclosure_wall_thickness
-        self.smaller_side = smaller_side
-        self.nut_depth = nut_depth
-        self.block_thickness = block_thickness
+        self.smaller_side: float = smaller_side
+        self.nut_depth: float = nut_depth
+        self.block_thickness: float = block_thickness
 
         if block_thickness <= 0.00001:
             print("WARNING! Hole for '" + type(self).__name__ + "' won't go through the hole as enclosure_wall_thickness is too high compared to the thread length. block_thickness=" + str(block_thickness) + ". TODO add support!")
@@ -146,7 +174,7 @@ class GenericThreadedWithStopPart(Part):
                 .cut(thread_hole)
         )
 
-        pyramid = (
+        self.pyramid: cq.Workplane = (
             cq.Workplane("front")
                 .polyline([(0, 0), (smaller_side, 0), (smaller_side, smaller_side), (0, smaller_side)])
                 .close()
@@ -170,12 +198,12 @@ class GenericThreadedWithStopPart(Part):
 
         if len(dents_specs) > 0:
             board = board.cut(dents)
-            pyramid = pyramid.cut(dents)
+            self.pyramid = self.pyramid.cut(dents)
             panel_wall = panel_wall.cut(dents)
             
         panel = (
             board
-                .add(pyramid)
+                .add(self.pyramid)
                 .add(panel_wall)
         )
 
@@ -188,15 +216,15 @@ class GenericThreadedWithStopPart(Part):
         self.size.width     = width
         self.size.thickness = enclosure_wall_thickness + block_thickness
 
-        objects = [panel, mask, board, pyramid, panel_wall, thread_hole, dents]
+        objects = [panel, mask, board, self.pyramid, panel_wall, thread_hole, dents]
         objects = list(map(self.mirror_and_translate, objects))
 
-        panel, mask, board, pyramid, panel_wall, thread_hole, dents = objects
+        panel, mask, board, self.pyramid, panel_wall, thread_hole, dents = objects
 
         self.part = panel
         self.mask = mask
         self.debug_objects.hole = thread_hole
-        self.debug_objects.others["pyramid"]    = pyramid
+        self.debug_objects.others["pyramid"]    = self.pyramid
         self.debug_objects.others["panel_wall"] = panel_wall 
         self.debug_objects.others["dents"]      = dents
 

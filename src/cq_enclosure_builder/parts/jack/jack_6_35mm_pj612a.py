@@ -18,6 +18,7 @@ import cadquery as cq
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedWithStopPart
 from cq_enclosure_builder.parts_factory import register_part
 
+
 @register_part("jack", "6.35mm PJ-612A")
 class Jack6_35mmPj612aPart(GenericThreadedWithStopPart):
     """
@@ -26,7 +27,10 @@ class Jack6_35mmPj612aPart(GenericThreadedWithStopPart):
     https://www.aliexpress.com/item/1005003628431163.html
     """
 
-    def __init__(self, enclosure_wall_thickness):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float
+    ):
         super().__init__(
             enclosure_wall_thickness,
 
@@ -47,19 +51,22 @@ class Jack6_35mmPj612aPart(GenericThreadedWithStopPart):
         jack_diameter_with_nut = self.thread_diameter + 3
 
         self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness = 20
         self.inside_footprint_offset = (0, 0)
+
         self.outside_footprint = (jack_diameter_with_nut, jack_diameter_with_nut)
-        footprint_in_depth = 20
+        self.outside_footprint_thickness = self.nut_depth
+
         footprint_in = (
             cq.Workplane("front")
-                .box(self.size.width, self.size.length, footprint_in_depth, centered=(True, True, False))
+                .box(self.size.width, self.size.length, self.inside_footprint_thickness, centered=(True, True, False))
                 .translate([0, 0, enclosure_wall_thickness])
         )
         footprint_out = (
             cq.Workplane("front")
                 .circle(jack_diameter_with_nut/2)
-                .extrude(self.nut_depth)
-                .translate([0, 0, -self.nut_depth])
+                .extrude(self.outside_footprint_thickness)
+                .translate([0, 0, -self.outside_footprint_thickness])
         )
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out

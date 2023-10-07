@@ -15,8 +15,10 @@
 """
 
 import cadquery as cq
+
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedWithStopPart
 from cq_enclosure_builder.parts_factory import register_part
+
 
 @register_part("button", "PBS-110")
 class ButtonPbs110Part(GenericThreadedWithStopPart):
@@ -28,7 +30,10 @@ class ButtonPbs110Part(GenericThreadedWithStopPart):
     https://www.aliexpress.com/item/32711341102.html
     """
 
-    def __init__(self, enclosure_wall_thickness):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float
+    ):
         thread_diameter = 6.8
         super().__init__(
             enclosure_wall_thickness,
@@ -47,21 +52,24 @@ class ButtonPbs110Part(GenericThreadedWithStopPart):
             pyramid_taper=42
         )
 
+        button_block_thickness = 8.3 + 6.5
         self.inside_footprint = (self.width + 2, self.length + 2)
+        self.inside_footprint_thickness = self.block_thickness + button_block_thickness
         self.inside_footprint_offset = (0, 0)
-        footprint_out_thickness = 15.4
+
+        button_outside_thickness = 20.7 - 8.3
+        self.outside_footprint = (self.thread_diameter, self.thread_diameter)
+        self.outside_footprint_thickness = button_outside_thickness - self.block_thickness - enclosure_wall_thickness  # updated later if button_cap is not None
+
         footprint_in = (
             cq.Workplane("front")
-                .box(*self.inside_footprint, footprint_out_thickness, centered=(True, True, False))
-                .translate([0, 0, -footprint_out_thickness])
+                .box(*self.inside_footprint, self.inside_footprint_thickness, centered=(True, True, False))
+                .translate([0, 0, -self.inside_footprint_thickness])
         )
-
-        self.outside_footprint = (self.thread_diameter, self.thread_diameter)
-        footprint_out_thickness = 12.4
         footprint_out = (
             cq.Workplane("front")
                 .circle(thread_diameter/2)
-                .extrude(footprint_out_thickness)
+                .extrude(self.outside_footprint_thickness)
         )
 
         footprint_in = self.mirror_and_translate(footprint_in)
