@@ -17,7 +17,7 @@
 import cadquery as cq
 from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThreadedWithStopPart
 from cq_enclosure_builder.parts_factory import register_part
-from cq_enclosure_builder.parts.common.knobs_and_caps import CAP_23_75_x_11_9
+from cq_enclosure_builder.parts.common.knobs_and_caps import KnobOrCap, CAP_23_75_x_11_9
 
 @register_part("button", "SPST PBS-24B-4")
 class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
@@ -26,8 +26,11 @@ class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
 
     https://www.aliexpress.com/item/1005004646906063.html
     """
-
-    def __init__(self, enclosure_wall_thickness, button_cap = CAP_23_75_x_11_9):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float,
+        button_cap: KnobOrCap = CAP_23_75_x_11_9
+    ):
         super().__init__(
             enclosure_wall_thickness,
 

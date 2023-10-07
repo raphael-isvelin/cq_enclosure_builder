@@ -14,6 +14,7 @@ Easily generate printable enclosures for your projects in just a few lines of co
 
 ---
 
+## Summary
 - **[Install](#install)**
 - **[Examples (with screenshots)](#examples)**
     - **[01 – Panel with buttons](#example-01)**
