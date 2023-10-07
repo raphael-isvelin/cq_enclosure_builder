@@ -1,7 +1,8 @@
 # cq_enclosure_builder
 Generate printable enclosures for projects in a few lines of code. Some features:
 - Pre-designed common parts (jacks, barrel plug, USBs, etc.);
-    - Easy to add your own parts (e.g. the specific model of SPST you're using)
+    - Easy to add your own parts (e.g. the specific model of SPST you're using);
+    - Possibility to create custom parts from STEP files (convert STL to STEP beforehand if needed).
 - Screwable lid;
 - Layout builder;
 - Ready-to-print STL export.
@@ -23,9 +24,9 @@ Generate printable enclosures for projects in a few lines of code. Some features
     - **[09 – Layout builder: fixed-width line with median part centred at 0,0](#example-09)**
     - **[10 – Layout builder: grid of parts](#example-10)**
     - **[11 – Layout builder: combining groups](#example-11)**
-    - **[12 – Text](#example-12)**
+    - **[12 – Text (cut and extruded)](#example-12)**
     - **[13 – Support for parts](#example-13)**
-    - **[14 – Support for Raspberry Pi and protoboard](#example-14)**
+    - **[14 – Holders for Raspberry Pi and protoboard](#example-14)**
     - **[15 – Add a new Part](#example-15)**
     - **[16 – All parts](#example-16)**
 - **[Available parts](#available-parts)**
@@ -144,7 +145,7 @@ Create a grid of any component (6.35mm jacks in this case). You can define the n
 <sub><p align="center">[11_layout_builder_combining_groups](./examples/11_layout_builder_combining_groups.py)</p></sub>
 
 <a name="example-12"></a>
-### 12 – Text
+### 12 – Text (cut and extruded)
 
 You can add extruded and cut text (e.g. for your project's name and version).
 
@@ -264,11 +265,10 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 ### class: [Enclosure](./src/cq_enclosure_builder/enclosure.py)
 | Method or Value Name | Parameters | Description |
 |-------------|------------|-------------|
-| `__init__`  | <ul><li>`size`: [EnclosureSize](./src/cq_enclosure_builder/enclosure.py)</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`)</li><li>`lid_on_faces: List[`[Face](./src/cq_enclosure_builder/face.py)`]` (default: `[Face.BOTTOM]`): which side of the enclosure has a screwable lid. Only `BOTTOM` is supported as of now.</li><li>`lid_panel_size_error_margin: float` (default: `0.8`): how small the lid panel is on both width and length compared to the lid hole.</li><li>`lid_thickness_error_margin: float` (default: `0.4`): if >0, the lid screws and support will be slightly sunk in the enclosure.</li><li>`add_corner_lid_screws: bool` (default: `True`)</li><li>`add_lid_support: bool` (default: `True`): add a rim around the enclosure to prevent the lid from sinking in.</li><li>`add_top_support: bool` (default: `True`): small support 'skirt' to increase the strength of the top of the enclosure.</li><li>`lid_screws_heat_set: bool` (default: `True`): use heat-set inserts instead of printing a screw threads for the lid corner screws.</li><li>`no_fillet_top: bool` (default: `False`)</li><li>`no_fillet_bottom: bool` (default: `False`)</li></ul> |  |
-| `add_part_to_face` -> `None` | <ul><li>`face: `[Face](./src/cq_enclosure_builder/face.py)</li><li>`part_label: str`: will be shown in the tree when using e.g. [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery).</li><li>`part`: [Part](#api-reference-part)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; one of `rel_pos`/`abs_pos` needs to be set): position relative to the centre of the [Panel](#api-reference-panel).</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the [Panel](#api-reference-panel).</li><li>`color: cq.Color` (default: `None`; defaults to [Panel](#api-reference-panel)'s default)</li></ul> | |
+| `__init__`  | <ul><li>`size`: [EnclosureSize](./src/cq_enclosure_builder/enclosure.py)</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`): name and version are used for naming the exported STLs.</li><li>`lid_on_faces: List[`[Face](./src/cq_enclosure_builder/face.py)`]` (default: `[Face.BOTTOM]`): which side of the enclosure has a screwable lid. Only `BOTTOM` is supported as of now.</li><li>`lid_panel_size_error_margin: float` (default: `0.8`): how small the lid panel is on both width and length compared to the lid hole.</li><li>`lid_thickness_error_margin: float` (default: `0.4`): if >0, the lid screws and support will be slightly sunk in the enclosure.</li><li>`add_corner_lid_screws: bool` (default: `True`)</li><li>`add_lid_support: bool` (default: `True`): add a rim around the enclosure to prevent the lid from sinking in.</li><li>`add_top_support: bool` (default: `True`): small support 'skirt' to increase the strength of the top of the enclosure.</li><li>`lid_screws_heat_set: bool` (default: `True`): use heat-set inserts instead of printing a screw threads for the lid corner screws.</li><li>`no_fillet_top: bool` (default: `False`)</li><li>`no_fillet_bottom: bool` (default: `False`)</li></ul> |  |
+| `add_part_to_face` -> `None` | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py)</li><li>`part_label: str`: will be shown in the tree when using e.g. [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery).</li><li>`part`: [Part](#api-reference-part)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; one of `rel_pos`/`abs_pos` needs to be set): position relative to the centre of the [Panel](#api-reference-panel).</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the [Panel](#api-reference-panel).</li><li>`color: cq.Color` (default: `None`; defaults to [Panel](#api-reference-panel)'s default)</li></ul> | |
 | `assemble` -> `None` | <ul><li>`walls_explosion_factor: float` (default: `1.0`): a value >1 will move the enclosure's walls aways, giving a better inside view.</li><li>`lid_panel_shift: float` (default: `0.0`): move the lid panel (`BOTTOM`) away from the enclosure. | Needs to be called before calling `export_printables` or using the `assembly`. |
 | `export_printables` -> `None` | *none* | Export one STL per printable. By default, one for the `lid` and for the `box`. Some parts can require additional prints; any element added to [Part](#api-reference-part)'s `additional_printables` will also be exported.</li></ul>  |
-| `add_corner_lid_screws` -> `None` | *see code* | Called by the constructor if `add_corner_lid_screws` is `True`. |
 | `add_screw` -> `None` | *see code* | If you want to add more screws than the four corner screw than can be added automatically. |
 | (value) `assembly`: `cq.Assembly` | *N/A* | Contains a displayable assembly with the panels (incl. parts), frame, lid screws, and lid support.
 | (value) `debug`: `cq.Assembly` | *N/A* | Debug elements: footprints, holes, panels masks, printables, and other debug elements added by the parts ([Part](#api-reference-part)'s `debug_objects`).
@@ -281,13 +281,13 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|
 | `build` -> [Part](./src/cq_enclosure_builder/part.py)  | <ul><li>`category_name: str`</li><li>`part_type: str` (default: any default value for this `category` set with `set_default_types`).</li><li>`throw_on_validation_error: bool` (default: `True`): useful when adding new parts to make sure nothing's missing.</li><li>`**kwargs: Any`: any parameter needed by the part you're building.</li></ul> | |
-| `build_<category_name>` -> [Part](./src/cq_enclosure_builder/part.py) | *same as above (excluding `category_name`)* | Dynamically generated for each new category registered with `@register_part`. |
-| `list_categories` -> `List[str]`  | *N/A* | List all the categories registered in the factory, e.g. `["encoder", "midi", ...]` |
+| `build_<category_name>` -> [Part](./src/cq_enclosure_builder/part.py) | *same as above (without `category_name`)* | Dynamically generated for each new category registered with `@register_part`. |
+| `list_categories` -> `List[str]`  | *N/A* | List all the categories registered in the factory, e.g. `["encoder", "midi", ...]`. |
 | `list_types_for_category` -> `List[str]`  | <ul><li>`category_name: str`</li></ul> | List all the types available for a given category (for instance, various types of USB C connectors). |
 | `list_types_of_<category_name>` -> `List[str]`  | *N/A* | Same as above, without needing to provide `category_name` as parameter.  Dynamically generated. |
 | `set_default_types` -> `None`  | <ul><li>`defaults: Dict[str, str]`: the default part type to use per category; for example: `{"<samecategory_name>": '<a type from that category>}`.</li></ul> | Set the default part for any category, so you don't have to repeat `part_type="<type>"` each time you're building a part. |
 | `set_default_parameters` -> `None`  | <ul><li>`defaults: Dict[str, Any]`: the default values to use when encountering field with this name when building a part; for example: `{"<param_name>": 123.45}`.</li></ul> | For instance, if setting a default value for `enclosure_wall_thickness`, it won't have to be repeated explicitly each time you're building a part. Can be overridden. |
-| `set_defaults` -> `None`  | <ul><li>`defaults: Dict[str, Dict])`: should contains two keys, `types` and `parameters`.</li></ul> | Sets both `set_default_types` and `set_default_parameters` at once. |
+| `set_defaults` -> `None`  | <ul><li>`defaults: Dict[str, Dict]`: should contains two keys, `types` and `parameters`.</li></ul> | Sets both `set_default_types` and `set_default_parameters` at once. |
 
 ---
 
@@ -301,10 +301,10 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 | `translate` -> `Self`  | <ul><li>`pos: Tuple[float, float]`</li></ul> |  |
 | `get_pos` -> `Tuple[float, float]`  | *none* | Get the relative pos (centre is 0,0). |
 | `get_abs_pos` -> `Tuple[float, float]` | <ul><li>`panel`: [Panel](#api-reference-panel)</li></ul> | Get the absolute based on the size of the panel. |
-| `set_inside_footprint_x` -> `None` | <ul><li>`new_x: float`</li></ul> | Overrides the real footprint of the element. See [example 9](#example-09) for use case. |
+| `set_inside_footprint_x` -> `None` | <ul><li>`new_x: float`</li></ul> | Override the real footprint of the element. See [example 9](#example-09) for use case. |
 | `set_outside_footprint_x` -> `None`  | <ul><li>`new_x: float`</li></ul> | *see above* |
 | `set_footprints_x` -> `None`  | <ul><li>`new_x: float`</li></ul> | *see above*<br/><br/>Set both inside and outside at once. |
-| `set_inside_footprint_y` -> `None`  | <ul><li>`new_y: float`</li></ul> | Overrides the real footprint of the element. See [example 9](#example-09) for use case. |
+| `set_inside_footprint_y` -> `None`  | <ul><li>`new_y: float`</li></ul> | Override the real footprint of the element. See [example 9](#example-09) for use case. |
 | `set_outside_footprint_y` -> `None`  | <ul><li>`new_y: float`</li></ul> | *see above* |
 | `set_footprints_y` -> `None`  | <ul><li>`new_y: float`</li></ul> | *see above*<br/><br/>Set both inside and outside at once. |
 
@@ -315,7 +315,7 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|
-| `__init__`  | *not needed* | ZZZ |
+| `__init__`  | *not needed* |  |
 | `move_to` -> `Self`  | <ul><li>`pos: Tuple[float, float]`</li></ul> | Same as [LayoutElement](#api-reference-layout-element). Set the pos of the entire group. |
 | `translate` -> `Self`  | <ul><li>`pos: Tuple[float, float]`</li></ul> | Same as [LayoutElement](#api-reference-layout-element). Translate all the elements of the group. |
 | `get_pos` -> `Tuple[float, float]` | *none* | Get the relative pos (centre is 0,0). |
@@ -333,12 +333,12 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|
-| `__init__`  | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py): the panel's face, used to determine its orientation</li><li>`size: PanelSize`: the panel's width, length, and wall thickness</li><li>`color: Tuple[float, float, float]` (default: `None`; use the [Face](./src/cq_enclosure_builder/face.py)'s default): the colour of the panel's wall</li><li>`part_color: Tuple[float, float, float]` (default: `None`; use the [Face](./src/cq_enclosure_builder/face.py)'s default): the colour of the panel's parts</li><li>`alpha: float` (default: `1.0`): the panel wall's transparency (doesn't affect its parts)</li><li>`lid_size_error_margin: float` (default: `0.0`): used only for the lid panel; if provided, the actual size of the panel will be smaller than the `size` param (will the `mask` will be the provided size)</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`): here, mainly used for logging |  |
+| `__init__`  | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py): the panel's face, used to determine its orientation.</li><li>`size: PanelSize`: the panel's width, length, and wall thickness.</li><li>`color: Tuple[float, float, float]` (default: `None`; use the [Face](./src/cq_enclosure_builder/face.py)'s default): the colour of the panel's wall.</li><li>`part_color: Tuple[float, float, float]` (default: `None`; use the [Face](./src/cq_enclosure_builder/face.py)'s default): the colour of the panel's parts.</li><li>`alpha: float` (default: `1.0`): the panel wall's transparency (doesn't affect its parts).</li><li>`lid_size_error_margin: float` (default: `0.0`): used only for the lid panel; if provided, the actual size of the panel will be smaller than the `size` param (will the `mask` will be the provided size).</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`): here, mainly used for logging. |  |
 | `add` -> `None` | <ul><li>`label: str`: the part's name</li><li>`part`: [Part](#api-reference-part`)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; one of `rel_pos`/`abs_pos` needs to be set): position relative to the centre of the panel.</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the panel.</li><li>`color: Tuple[float, float, float]` (default: `None`; will use the default of the panel's [Face](./src/cq_enclosure_builder/face.py))</li><li>`alpha: float` (default: `1.0`)</li></ul> |  |
 | `assemble` -> `None`  | *none* | Should be called before using the values below. |
-| (value) `panel`: `cq.Workplane`  | *N/A* | The panel 'wall' and all its parts  |
+| (value) `panel`: `cq.Workplane`  | *N/A* | The panel 'wall' and all its parts.  |
 | (value) `mask`: `cq.Workplane`  | *N/A* | A solid box of the size `(size.width, size.length, size.wall_thickness)` |
-| (value) `debug_assemblies`: `Dict[str, Union[Dict, cq.Workplane]]`  | *N/A* | Assemblies: `footprint_in`, `footprint_out`, `hole`, `other` (from the `debug_objects` field of the panel's part), `combined` |
+| (value) `debug_assemblies`: `Dict[str, Union[Dict, cq.Workplane]]`  | *N/A* | Assemblies: `footprint_in`, `footprint_out`, `hole`, `other` (from the `debug_objects` field of the panel's part), `combined`. |
 
 ---
 
@@ -349,7 +349,7 @@ I've made to tests using [this PLA](https://www.amazon.de/dp/B09KL2JYT6) (code [
 |-------------|------------|-------------|
 | `__init__`  | *none* | No-arg constructors, sets the variables below to their default values. |
 | (value) `part`: `cq.Workplane` | *N/A* | The part that will be added to the panel. |
-| (value) `assembly_parts`: `List[AssemblyPart]` (default: `None`) | `AssemblyPart` has fields `workplane: cq.Workplane`, `name: str`, and `color: cq.Color`. Used to keep sub-parts visually separated (e.g. having screws colored differently); will be used for display if present, otherwise `part` will be. `part` should still be set if equivalent; see comment in [Part](./src/cq_enclosure_builder/part.py) |
+| (value) `assembly_parts`: `List[AssemblyPart]` (default: `None`) | `AssemblyPart` has fields `workplane: cq.Workplane`, `name: str`, and `color: cq.Color`. Used to keep sub-parts visually separated (e.g. having screws colored differently); will be used for display if present, otherwise `part` will be. `part` should still be set if equivalent; see comment in [Part](./src/cq_enclosure_builder/part.py). |
 | (value) `mask`: `cq.Workplane` | *N/A* | Will be cut from the panel, should likely be the same width/length as the `part`. |
 | (value) `size`: `PartSize` | *N/A* | `PartSize` has fields `width: float`, `length: float`, and `thickness: float`. |
 | (value) `additional_printables: Dict[str, cq.Workplane]` | *N/A* | Workplanes in this map will be export when calling [Enclosure](#api-reference-enclosure)'s `export_printables'. | 
