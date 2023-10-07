@@ -14,10 +14,11 @@
    limitations under the License.
 """
 
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union, Tuple, Self
 
 import cadquery as cq
 from cadquery import exporters
+
 from cq_enclosure_builder import Part, Panel, Face, ProjectInfo
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
 from cq_enclosure_builder.parts.common.screws_providers import DefaultFlatHeadScrewProvider, DefaultHeatSetScrewProvider
@@ -118,13 +119,13 @@ class Enclosure:
         }
         self.printables: Dict[str, cq.Workplane] = {}
 
-    def export_printables(self):
+    def export_printables(self) -> None:
         for name, wp in self.printables.items():
             file_path = self._build_printable_file_path(name)
             print(f"Exporting '{name}' to '{file_path}'")
             exporters.export(wp, file_path)
 
-    def _assemble_printables(self):
+    def _assemble_printables(self) -> Self:
         for name, elements in self.main_printables_config.items():
             printable_a = cq.Assembly()
             for e in elements:
@@ -142,13 +143,13 @@ class Enclosure:
 
     def add_part_to_face(
         self,
-        face: Face,
+        face: Face.FaceInfo,
         part_label: str,
         part: Part,
         rel_pos: Tuple[float, float] = None,
         abs_pos: Tuple[float, float] = None,
         color: cq.Color = None
-    ):
+    ) -> Self:
         self.panels[face].add(part_label, part, rel_pos, abs_pos, color)
         return self
 
@@ -164,7 +165,7 @@ class Enclosure:
         screw_provider = DefaultFlatHeadScrewProvider,
         counter_sunk_screw_provider = DefaultFlatHeadScrewProvider,
         with_counter_sunk_block: bool = True
-    ):
+    ) -> ScrewBlock:
         # TODO support lid != Face.BOTTOM + refactor
 
         pos = None
@@ -202,7 +203,7 @@ class Enclosure:
         lid_thickness_error_margin,
         screw_size_category: str = "m2",
         heat_set: bool = False
-    ):
+    ) -> None:
         # TODO support lid != Face.BOTTOM + refactor
 
         lid_screws_thickness = 8
@@ -239,7 +240,7 @@ class Enclosure:
             cs_mask = screw["counter_sunk_mask"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
             self.panels[Face.BOTTOM].add_screw_counter_sunk(cs_block, cs_mask)
 
-    def _build_lid_support(self, lid_thickness_error_margin):
+    def _build_lid_support(self, lid_thickness_error_margin) -> None:
         width = self.size.outer_width - self.size.wall_thickness*2
         length = self.size.outer_length - self.size.wall_thickness*2
         self.lid_support = (
@@ -252,7 +253,7 @@ class Enclosure:
         self,
         walls_explosion_factor: float = 1.0,
         lid_panel_shift: float = 0.0
-    ):
+    ) -> Self:
         for panel in self.panels.values():
             panel.assemble()
 
@@ -295,17 +296,17 @@ class Enclosure:
         )
         return self
 
-    def _build_printable_file_path(self, printable_name: str):
+    def _build_printable_file_path(self, printable_name: str) -> str:
         project_name = self.project_info.name.lower().replace(" ", "_")
         version = self.project_info.version
         return f"{Enclosure.EXPORT_FOLDER}/{project_name}-{printable_name}-v{version}.stl"
 
-    def _get_debug(self, panel: Panel, assembly_name="combined"):
+    def _get_debug(self, panel: Panel, assembly_name="combined") -> Union[cq.Assembly, None]:
         if assembly_name in panel.debug_assemblies:
             return panel.debug_assemblies[assembly_name]
         return None
 
-    def _build_panels_assembly(self, walls_explosion_factor, lid_panel_shift):
+    def _build_panels_assembly(self, walls_explosion_factor, lid_panel_shift) -> Tuple[cq.Assembly, cq.Assembly]:
         a = cq.Assembly(None)
         masks_a = cq.Assembly(None)
         for face, size, position, alpha in self.panels_specs:
@@ -359,7 +360,7 @@ class Enclosure:
 
         return shell.cut(panels_masks_assembly.toCompound())
 
-    def _build_lid_screws_assembly(self):
+    def _build_lid_screws_assembly(self) -> cq.Assembly:
         a = cq.Assembly(None)
         for idx, s in enumerate(self.screws):
             a.add(s["block"], name=f"Screw #{idx}", color=cq.Color(0.6, 0.45, 0.8))
@@ -372,7 +373,7 @@ class Enclosure:
             frame = frame.cut(translated_mask)
         return frame
 
-    def _build_debug_assembly(self, assemblies_specs, walls_explosion_factor, lid_panel_shift):
+    def _build_debug_assembly(self, assemblies_specs, walls_explosion_factor, lid_panel_shift) -> cq.Assembly:
         a = cq.Assembly(None)
         for face, size, position, alpha in self.panels_specs:
             if face == Face.BOTTOM:

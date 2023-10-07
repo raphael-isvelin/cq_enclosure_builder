@@ -15,7 +15,7 @@
 """
 
 import uuid
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Self
 
 from cq_enclosure_builder.layout_builder.layout_element import LayoutElement
 from cq_enclosure_builder.part import Part
@@ -43,21 +43,21 @@ class LayoutGroup(LayoutElement):
         if (isinstance(group_center_at_0_0, bool) and group_center_at_0_0) or (isinstance(group_center_at_0_0, str) and "y" in group_center_at_0_0):
             self.align_center_y()
 
-    def move_to(self, pos: Tuple[float, float]):
+    def move_to(self, pos: Tuple[float, float]) -> Self:
         for elem in self.elements:
             elem.move_to(pos)
         return self
 
-    def translate(self, pos: Tuple[float, float]):
+    def translate(self, pos: Tuple[float, float]) -> Self:
         for elem in self.elements:
             elem.translate((pos[0], pos[1]))
         self.pos = (self.pos[0] + pos[0], self.pos[1] + pos[1])
         return self
 
-    def get_pos(self):
+    def get_pos(self) -> Tuple[float, float]:
         return self.pos
 
-    def get_elements(self):
+    def get_elements(self) -> List[LayoutElement]:
         elems = []
         for elem in self.elements:
             if isinstance(elem, LayoutGroup):
@@ -66,21 +66,21 @@ class LayoutGroup(LayoutElement):
                 elems.append(elem)
         return elems
     
-    def align_center_x(self):
+    def align_center_x(self) -> Self:
         correct_x = self.total_footprint_offset[0]
         self.translate((-correct_x, 0))
         self.total_footprint_offset = (0, self.total_footprint_offset[1])
         self.is_aligned_center_x = True
         return self
     
-    def align_center_y(self):
+    def align_center_y(self) -> Self:
         correct_y = self.total_footprint_offset[1]
         self.translate((0, -correct_y))
         self.total_footprint_offset = (self.total_footprint_offset[0], 0)
         self.is_aligned_center_y = True
         return self
 
-    def align_center_to_0_0(self):
+    def align_center_to_0_0(self) -> Self:
         self.align_center_x()
         self.align_center_y()
         return self
@@ -91,7 +91,7 @@ class LayoutGroup(LayoutElement):
         in_inside_footprint: bool,
         direction: str,  # left, right, top, or bottom
         operation  # a method, min or max
-    ):
+    ) -> float:
         extreme_point = -99999999 if operation == max else 99999999
         for elem in elements:
             method_name = f'{direction}most_point_in_footprint'
@@ -100,19 +100,19 @@ class LayoutGroup(LayoutElement):
         return extreme_point
 
     @staticmethod
-    def leftmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool):
+    def leftmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool) -> float:
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'left', min)
 
     @staticmethod
-    def rightmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool):
+    def rightmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool) -> float:
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'right', max)
 
     @staticmethod
-    def topmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool):
+    def topmost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool) -> float:
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'top', max)
 
     @staticmethod
-    def bottommost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool):
+    def bottommost_point_in_footprints_of_elements(elements: List[LayoutElement], in_inside_footprint: bool) -> float:
         return LayoutGroup.extreme_point_in_footprint(elements, in_inside_footprint, 'bottom', min)
 
     @staticmethod

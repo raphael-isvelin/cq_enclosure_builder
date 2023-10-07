@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-from typing import Dict, Union, Tuple
+from typing import Dict, Union, Tuple, Self
 
 import cadquery as cq
 from cq_enclosure_builder import Face, ProjectInfo
@@ -83,7 +83,7 @@ class Panel:
         abs_pos: Tuple[float, float] = None,
         color: Tuple[float, float, float] = None,
         alpha: float = 1.0,
-    ):
+    ) -> Self:
         print(f"[{str(self.project_info)}] {self.face.label}: adding part '{label}'")
         pos = None
         if rel_pos == None and abs_pos == None:
@@ -104,13 +104,13 @@ class Panel:
         })
         return self
 
-    def add_screw_counter_sunk(self, block: cq.Workplane, mask: cq.Workplane):
+    def add_screw_counter_sunk(self, block: cq.Workplane, mask: cq.Workplane) -> None:
         """
         Used by `Enclosure` when a screw is added; cut a countersunk hole in the panel.
         """
         self._screw_counter_sunks.append((block, mask))
 
-    def assemble(self):
+    def assemble(self) -> Self:
         wall = (
             cq.Workplane("front")
                 .workplane()
@@ -150,7 +150,7 @@ class Panel:
         )
         return self
 
-    def _rotate_to_face(self, wp):
+    def _rotate_to_face(self, wp) -> cq.Workplane:
         if self.face == Face.TOP:
             wp = wp.mirror("XY")
         elif self.face == Face.BOTTOM:
@@ -171,7 +171,7 @@ class Panel:
             wp = wp.mirror("XZ")
         return wp
 
-    def _translate_assembly_objects_and_rotate_to_face(self, assembly_parts, translation):
+    def _translate_assembly_objects_and_rotate_to_face(self, assembly_parts, translation) -> cq.Assembly:
         assembly = cq.Assembly()
         for assembly_part in assembly_parts:
             part, loc, name, color = assembly_part.as_assembly_add_parameters()
@@ -180,7 +180,7 @@ class Panel:
             assembly.add(part, name=name, color=color)
         return assembly
 
-    def _add_part_to_debug_assemblies(self, part_to_add):
+    def _add_part_to_debug_assemblies(self, part_to_add) -> None:
         part = part_to_add["part"]
         part_pos = part_to_add["pos"]
         part_label: str = part_to_add["label"]
@@ -211,7 +211,7 @@ class Panel:
                 self.debug_assemblies["other"] = cq.Assembly()
             self.debug_assemblies["other"] = self.debug_assemblies["other"].add(other_debug_assembly, name=part_label, color=cq.Color(1, 1, 0))
 
-    def _build_combined_debug_assembly(self):
+    def _build_combined_debug_assembly(self) -> cq.Assembly:
         combined = self.debug_assemblies["combined"]
         combined = combined.add(self.mask, name="Mask", color=cq.Color(0, 1, 0, 0.5))
         if self.debug_assemblies["hole"] != None:

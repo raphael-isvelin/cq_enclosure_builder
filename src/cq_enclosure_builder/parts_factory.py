@@ -17,8 +17,9 @@
 import sys
 import inspect
 from typing import List, Type, Tuple, Dict, Any, Callable
+
 from cq_enclosure_builder.part import Part
-from .parts_factory_protocol import PartsFactoryProtocol
+from cq_enclosure_builder.parts_factory_protocol import PartsFactoryProtocol
 
 class PartFactoryMeta(type):
     """
@@ -26,7 +27,7 @@ class PartFactoryMeta(type):
 
     See comments in PartFactory for general concepts and usage information.
     """
-    NO_DEFAULT_VALUE_IDENTIFIER = "(no default value)"
+    NO_DEFAULT_VALUE_IDENTIFIER: str = "(no default value)"
 
     def register_part(cls, category: str, part_type: str, part_class: Type[Part]) -> None:
         if not category.isidentifier():
@@ -191,12 +192,12 @@ class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
         return part_instance
 
     @classmethod
-    def list_categories(cls) -> list:
+    def list_categories(cls) -> List[str]:
         """List all registered categories."""
         return list(cls.part_registry.keys())
 
     @classmethod
-    def list_types_for_category(cls, category: str) -> list:
+    def list_types_for_category(cls, category: str) -> List[str]:
         """List all registered types for a given category."""
         return list(cls.part_registry.get(category, {}).keys())
 

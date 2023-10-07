@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 
 import cadquery as cq
 
@@ -50,6 +50,10 @@ class PartSize:
         self.length: float = 0
         self.thickness: float = 0
 
+class ValidationErrors:
+    def __init__(self, errors: List[str]):
+        self.errors = errors
+
 class Part:
     """Base class for all parts."""
 
@@ -82,7 +86,7 @@ class Part:
 
         self.debug_objects: DebugObjects = DebugObjects()
 
-    def assembly_parts_to_cq_assembly(self):
+    def assembly_parts_to_cq_assembly(self) -> cq.Assembly:
         if self.assembly_parts is None:
             return None
         panel_assembly = cq.Assembly()
@@ -90,5 +94,23 @@ class Part:
             panel_assembly.add(part.workplane, name=part.name, color=part.color)
         return panel_assembly
 
-    def validate(self):
-        print("(TODO!) VALIDATING CLASS: " + self.__class__.__name__)
+    def validate(self) -> Union[ValidationErrors, None]:
+        return None
+        # errors: List[str] = []
+        # if self.part is None: errors.append("part is None")
+        # if self.mask is None: errors.append("mask is None")
+        # if self.size.width == 0: errors.append("size.width is 0")
+        # if self.size.length == 0: errors.append("size.length is 0")
+        # if self.size.thickness == 0: errors.append("size.thickness is 0")
+        # if self.inside_footprint is None: errors.append("inside_footprint is None")
+        # if self.inside_footprint_thickness is None: errors.append("inside_footprint_thickness is None")
+        # if self.inside_footprint_offset is None: errors.append("inside_footprint_offset is None")
+        # if self.outside_footprint is None: errors.append("outside_footprint is None")
+        # if self.outside_footprint_thickness is None: errors.append("outside_footprint_thickness is None")
+        # if self.outside_footprint_offset is None: errors.append("outside_footprint_offset is None")
+        # if self.debug_objects.footprint.inside is None and self.debug_objects.footprint.outside is None:
+        #     errors.append("Both debug_objects.footprint.inside and debug_objects.footprint.outside are None")
+        # if len(errors) == 0:
+        #     return None
+        # else:
+        #     return ValidationErrors(errors)
