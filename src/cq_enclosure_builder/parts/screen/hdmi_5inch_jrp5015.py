@@ -17,21 +17,25 @@
 import math
 
 import cadquery as cq
+
 from cq_enclosure_builder.constants import DEFAULT_PART_COLOR
 from cq_enclosure_builder.part import Part, AssemblyPart
 from cq_enclosure_builder.parts_factory import register_part
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock
 from cq_enclosure_builder.utils.workplane_utils import scale
 
+
 def required_taper_for_x(x, x_resulting, h):
     delta_x = (x_resulting - x) / 2
     alpha_x = math.degrees(math.atan(delta_x / h))
     return alpha_x
 
+
 def tapered_dimensions(x, y, h, alpha):
     alpha_rad = math.radians(alpha)
     delta_y = h * math.tan(alpha_rad)
     return y + 2 * delta_y
+
 
 @register_part("screen", "HDMI 5 inch JRP5015")
 class Hdmi5InchJrp5015Part(Part):
@@ -46,9 +50,12 @@ class Hdmi5InchJrp5015Part(Part):
         enclosure_wall_thickness: float,
         screw_block_thickness: float = 6,
         center_is_outward_facing_hole: bool = True,
-        ramp_width_l_plus_r = 2.8,   # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
-        ratio_bevel_lr_to_bt = 1.5,  # N times less than ^ for top and bottom, careful with slopes >35 degrees
+        ramp_width_l_plus_r: float = 2.8,   # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
+        ratio_bevel_lr_to_bt: float = 1.5,  # N times less than ^ for top and bottom, careful with slopes >35 degrees
     ):
+        if not center_is_outward_facing_hole:
+            print("WARNING: use of center_is_outward_facing_hole=False in USB C is deprecated; the layout builder assumes True, it can cause alignment issues")
+
         super().__init__()
 
         screen_viewing_area_size = (108.8-0.8, 65.6-0.8)
@@ -134,21 +141,26 @@ class Hdmi5InchJrp5015Part(Part):
         self.size.length    = screen_board_size[1]
         self.size.thickness = part_thickness
 
+        pcb_thickness = 2
         self.inside_footprint = (self.size.width, self.size.length)
+        print("pt: " + str(part_thickness))
+        self.inside_footprint_thickness =part_thickness + screw_block_thickness + pcb_thickness
         self.inside_footprint_offset = (0, 0)
+
         self.outside_footprint = (screen_w_ramp_width, screen_w_ramp_length)
+        self.outside_footprint_thickness = 3
+
         footprint_in = (
             cq.Workplane("front")
                 .rect(*self.inside_footprint)
-                .extrude(10)
+                .extrude(self.inside_footprint_thickness)
                 .translate([0, 0, enclosure_wall_thickness])
         )
-        outside_footprint_thickness = 3
         footprint_out = (
             cq.Workplane("front")
                 .rect(*self.outside_footprint)
-                .extrude(outside_footprint_thickness)
-                .translate([*viewing_area_offset, -outside_footprint_thickness])
+                .extrude(self.outside_footprint_thickness)
+                .translate([*viewing_area_offset, -self.outside_footprint_thickness])
         )
 
         if center_is_outward_facing_hole:

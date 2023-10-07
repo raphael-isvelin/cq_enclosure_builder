@@ -17,32 +17,36 @@
 import math
 
 import cadquery as cq
+
 from cq_enclosure_builder.constants import DEFAULT_PART_COLOR
 from cq_enclosure_builder.part import Part, AssemblyPart
 from cq_enclosure_builder.parts_factory import register_part
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock
 from cq_enclosure_builder.utils.workplane_utils import scale
 
+
 def required_taper_for_x(x, x_resulting, h):
     delta_x = (x_resulting - x) / 2
     alpha_x = math.degrees(math.atan(delta_x / h))
     return alpha_x
+
 
 def tapered_dimensions(x, y, h, alpha):
     alpha_rad = math.radians(alpha)
     delta_y = h * math.tan(alpha_rad)
     return y + 2 * delta_y
 
-@register_part("screen", "DSI 5 inch XXX")
+
+@register_part("screen", "DSI 5 inch CFsunbird")
 class Dsi5InchXxxPart(Part):
     """
-    DSI 5 inch screen XXX
+    DSI 5 inch screen CFsunbird
 
     Screen doesn't have screw holes sticking out of the PCB, so we're also printing some strips to press it in place.
     screw_block_thickness should the same height as the screw on the PCB, or can be made taller, if strip_extra_thickness
     is set to the difference; in which case, the strip won't be flat, but have a part sticking out, to press on the screen [screws].
 
-    TODO link
+    https://www.aliexpress.com/item/1005005353135304.html
     """
 
     DISTANCE_BETWEEN_SCREWS_X = 110.8 - 1.0
@@ -55,8 +59,8 @@ class Dsi5InchXxxPart(Part):
         screw_block_thickness: float = 11.6 + 1.4,
         strip_extra_thickness: float = 1.4,  # strips are pressing the screen in place
         center_is_outward_facing_hole: bool = True,
-        ramp_width_l_plus_r = 2.8,   # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
-        ratio_bevel_lr_to_bt = 1.5,  # N times less than ^ for top and bottom, careful with slopes >35 degrees
+        ramp_width_l_plus_r: float = 2.8,   # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
+        ratio_bevel_lr_to_bt: float = 1.5,  # N times less than ^ for top and bottom, careful with slopes >35 degrees
     ):
         # TODO refactor, it's copy/pasted from HDMI will little modifications:
         # - default screw_block_thickness
@@ -150,22 +154,25 @@ class Dsi5InchXxxPart(Part):
         self.size.length    = screen_board_size[1]
         self.size.thickness = part_thickness
 
+        pcb_thickness = 2
         self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness =part_thickness + screw_block_thickness + pcb_thickness
         self.inside_footprint_offset = (0, 0)
+
+        self.outside_footprint = (screen_w_ramp_width, screen_w_ramp_length)
+        self.outside_footprint_thickness = 3
+
         footprint_in = (
             cq.Workplane("front")
                 .rect(*self.inside_footprint)
-                .extrude(10)
+                .extrude(self.inside_footprint_thickness)
                 .translate([0, 0, enclosure_wall_thickness])
         )
-
-        self.outside_footprint = (screen_w_ramp_width, screen_w_ramp_length)
-        outside_footprint_thickness = 3
         footprint_out = (
             cq.Workplane("front")
                 .rect(*self.outside_footprint)
-                .extrude(outside_footprint_thickness)
-                .translate([*viewing_area_offset, -outside_footprint_thickness])
+                .extrude(self.outside_footprint_thickness)
+                .translate([*viewing_area_offset, -self.outside_footprint_thickness])
         )
 
         if center_is_outward_facing_hole:
