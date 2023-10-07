@@ -1,18 +1,21 @@
 # cq_enclosure_builder
-Generate printable enclosures for projects in a few lines of code. Some features:
-- Pre-designed common parts (jacks, barrel plug, USBs, etc.);
-    - Easy to add your own parts (e.g. the specific model of SPST you're using);
-    - Possibility to create custom parts from STEP files (convert STL to STEP beforehand if needed).
-- Screwable lid;
-- Layout builder;
-- Ready-to-print STL export.
+Easily generate printable enclosures for your projects in just a few lines of code.
 
-| ![Code](./docs/img/cqeb_example_code.jpg)<br><sub>Code to generated the model</sub> | ![Preview](./docs/img/cqeb_example_preview.jpg)<br><sub>Model preview</sub> | ![Photo](./docs/img/cqeb_example_photo.jpg)<br><sub>TODO IMAGE Printed result</sub> |
+### Features
+- **Parts library**: includes jacks, barrel plugs, USBs, and more (22 parts across 16 categories so far—see [List of built-in parts](#available-parts-list-builtins)).
+    - Easy to extend with your own parts (e.g. the specific model of SPST you're using).
+    - Create custom parts from **existing STEP files** (converted from **STL** if necessary).
+- **Screwable lid**: supports heat set inserts and regular printed threads.
+- **Layout builder**: offers parametric lines and grids of parts.
+- **STL export**: generates ready-to-print files.
+
+| ![Code](./docs/img/cqeb_example_code.jpg)<br><sub>Code to generate the model</sub> | ![Preview](./docs/img/cqeb_example_preview.jpg)<br><sub>Model preview</sub> | ![Photo](./docs/img/cqeb_example_photo.jpg)<br><sub>TODO IMAGE Printed result</sub> |
 |:--------------------------:|:---------------------------:|:----------:|
 
 ---
 
-- **[Examples](#examples)**
+- **[Install](#install)**
+- **[Examples (with screenshots)](#examples)**
     - **[01 – Panel with buttons](#example-01)**
     - **[02 – Set default part types and parameters](#example-02)**
     - **[03 – Panel's optional parameters](#example-03)**
@@ -30,7 +33,7 @@ Generate printable enclosures for projects in a few lines of code. Some features
     - **[15 – Add a new Part](#example-15)**
     - **[16 – All parts](#example-16)**
 - **[Available parts](#available-parts)**
-    - **[Built-in categories and part types](#available-parts-list-builtins)**
+    - **[List of built-in parts](#available-parts-list-builtins)**
     - **[Adding a new Part](#available-parts-add-new)**
     - **[Adding a new Part from a STL or STEP file](#available-parts-add-new-step)**
 - **[Strength Test](#strength-test)**
@@ -46,30 +49,38 @@ Generate printable enclosures for projects in a few lines of code. Some features
 
 ---
 
+<a name="install"></a>
+## Install
+
+First, you'll need to install [CadQuery](https://cadquery.readthedocs.io/en/latest/installation.html).
+
+There are a few available UIs you can choose from, including:
+- [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery#installation): more features and flexibility, but requires a working [Jupyter Notebook/Lab](https://jupyter.org/install) (highly recommended if you decide to design your own parts).
+- [cq-editor](https://github.com/CadQuery/CQ-editor#installation---pre-built-packages-recommended): the default UI.
+
+To run the examples, just open them with the UI you've picked, and they should work right away. **If I missed a required dependency, please let me know!**
+
 <a name="examples"></a>
-## Examples
+## Examples (with screenshots)
 
-To run the [example](./examples/) yourself, you'll need a CadQuery UI, such as [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery) or [cq-editor](https://github.com/CadQuery/CQ-editor). The former is **way** more flexible, but will require you to have a working [Jupyter Notebook/Lab](https://jupyter.org/install) install.
+You can explore the examples provided. If you're using [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery#installation), check out [00_all_examples.ipynb](./examples/00_all_examples.ipynb) which consolidates all examples into a single Notebook.
 
-If you haven't installed [CadQuery](https://cadquery.readthedocs.io/en/latest/installation.html) [yet], feel free to check the screenshots below!
+For other UIs, navigate to the [examples](./examples/) directory and open the individual `.py` files with your chosen UI.
 
-([00_all_examples](./examples/00_all_examples.ipynb) contains all the examples in a single Notebook.)
-
-<a name="example-01"></a>
 ### 01 – Panel with buttons
 
 A single [Panel](#api-reference-panel) (side of an enclosure) with two buttons.
 
 ![Panel with buttons](./docs/img/01.jpg)
-<sub><p align="center">[01_panel_with_button](./examples/01_panel_with_button.py)</p></sub>
+<sub><p align="center">[01_panel_with_button.py](./examples/01_panel_with_button.py)</p></sub>
 
 <a name="example-02"></a>
 ### 02 – Set default part types and parameters
 
-Almost the same as above, but shows how `PartsFactory#set_default_types` and `PartsFactory#set_default_parameters` can help you make your code more readable, by removing the need to repeat the `part_type` (e.g. with specific model of SPST you're using for your project), and removing the need to repeat common parameters such as `enclosure_wall_thickness`.
+Almost the same as above, but shows how [PartsFactory](#api-reference-parts-factory)'s `set_default_types` and `set_default_parameters` can help you make your code more readable, by removing the need to repeat the `part_type` (e.g. with specific model of SPST you're using for your project), and removing the need to repeat common parameters such as `enclosure_wall_thickness`.
 
 ![Panel with Set default part types and parameters](./docs/img/02.jpg)
-<sub><p align="center">[02_default_part_type_and_parameters](./examples/02_default_part_type_and_parameters.py)</p></sub>
+<sub><p align="center">[02_default_part_type_and_parameters.py](./examples/02_default_part_type_and_parameters.py)</p></sub>
 
 <a name="example-03"></a>
 ### 03 – Panel's optional parameters
@@ -77,7 +88,7 @@ Almost the same as above, but shows how `PartsFactory#set_default_types` and `Pa
 Shows optional parameters for the [Panel](#api-reference-panel) class (see [API Reference](#api-reference-panel)). Here, we've updated the panel colour, the part colour, and the panel's transparency.
 
 ![Panel's optional parameters](./docs/img/03.jpg)
-<sub><p align="center">[03_panel_optional_params](./examples/03_panel_optional_params.py)</p></sub>
+<sub><p align="center">[03_panel_optional_params.py](./examples/03_panel_optional_params.py)</p></sub>
 
 <a name="example-04"></a>
 ### 04 – Enclosure with buttons
@@ -85,15 +96,15 @@ Shows optional parameters for the [Panel](#api-reference-panel) class (see [API 
 A simple [Enclosure](#api-reference-enclosure) with an 'exploded' view.
 
 ![Enclosure with buttons](./docs/img/04.jpg)
-<sub><p align="center">[04_enclosure_with_button](./examples/04_enclosure_with_button.py)</p></sub>
+<sub><p align="center">[04_enclosure_with_button.py](./examples/04_enclosure_with_button.py)</p></sub>
 
 <a name="example-05"></a>
 ### 05 – Export enclosure STLs
 
-[Enclosure](#api-reference-enclosure)'s `export_printables` will create ready-to-print STLs files for each separate parts of your project. For most enclosures, it will be a **lid** and the rest of the enclosure (**box**); in some cases, some components requires additional prints, such as brackets to hold a screen.
+[Enclosure](#api-reference-enclosure)'s `export_printables` will generate ready-to-print STLs files for each distinct part of your project. Most enclosures will typically require only to parts to print: the main section (**box**) and a **lid**, while others will require additional prints (such as brackets to hold certain types of screens).
 
 ![Export enclosure STLs](./docs/img/05.jpg)
-<sub><p align="center">[05_export_enclosure_stls](./examples/05_export_enclosure_stls.py)</p></sub>
+<sub><p align="center">[05_export_enclosure_stls.py](./examples/05_export_enclosure_stls.py)</p></sub>
 
 <a name="example-06"></a>
 ### 06 – Enclosure's optional parameters
@@ -101,7 +112,7 @@ A simple [Enclosure](#api-reference-enclosure) with an 'exploded' view.
 Shows optional parameters for the [Enclosure](#api-reference-enclosure) class. Here, we've updated a few parameters, but the most visibles in the screenshot below is that we've removed the fillet (rounded corners) on the top and bottom of the enclosure.
 
 ![Enclosure's optional parameters](./docs/img/06.jpg)
-<sub><p align="center">[06_enclosure_optional_params](./examples/06_enclosure_optional_params.py)</p></sub>
+<sub><p align="center">[06_enclosure_optional_params.py](./examples/06_enclosure_optional_params.py)</p></sub>
 
 <a name="example-07"></a>
 ### 07 – Layout builder: simple line
@@ -109,25 +120,25 @@ Shows optional parameters for the [Enclosure](#api-reference-enclosure) class. H
 Using [LayoutGroup](#api-reference-layout-group) to build a simple line of three components. See optional parameters to center the line on (0,0), add margin between each element, etc.
 
 ![Layout builder: simple line](./docs/img/07.jpg)
-<sub><p align="center">[07_layout_builder_simple_line](./examples/07_layout_builder_simple_line.py)</p></sub>
+<sub><p align="center">[07_layout_builder_simple_line.py](./examples/07_layout_builder_simple_line.py)</p></sub>
 
 <a name="example-08"></a>
 ### 08 – Layout builder: fixed-width line
 
-Line of N components taking all the available space. Here, we're aligning the parts by their 'external footprint': the outwards facing part of the components, such as the hole of a USB, or the knobs of potentiometers.
+Line of N components taking all the available space. Here, we're aligning the parts by their 'external footprint': the outward-facing section of the components, such as the hole of a USB or the knobs of potentiometers.
 
-In the screenshot below, the beige rectangle represents the PCB to which the USB A connector is attached, which is larger than the USB port itself. (Of course, in this example, the board would be sticking out of the enclosure!)
+In the screenshot below, the beige rectangle represents the PCB onto which the USB A connector is mounted, which is larger than the USB port itself. Conversely, for the button and encoder, the cap and knob are more prominent than their respective base components.
 
 ![Layout builder: fixed-width line](./docs/img/08.jpg)
-<sub><p align="center">[08_layout_builder_fixed_width_line](./examples/08_layout_builder_fixed_width_line.py)</p></sub>
+<sub><p align="center">[08_layout_builder_fixed_width_line.py](./examples/08_layout_builder_fixed_width_line.py)</p></sub>
 
 <a name="example-09"></a>
 ### 09 – Layout builder: fixed-width line with median part centred at (0,0)
 
-Fixed-width line, but we want to force the median element (here, the second out of three) to be at (0,0). This won't be the case by default if the footprint of the element[s] on its left and the footprint of the element[s] on its right is not equal. (Yes, this means that the elements aren't equally-spaced anymore, but is useful in some cases.)
+In this fixed-width line layout, we aim to position the median element (in this instance, the second out of three) directly at the coordinate `(0,0)`. By default, this positioning might not be achieved if the footprint of the element(s) to its left differs from that of the element(s) to its right. Though this might mess with the even spacing a bit, it comes in handy in some situations.
 
 ![Layout builder: fixed-width line with median part centred at (0,0)](./docs/img/09.jpg)
-<sub><p align="center">[09_layout_buider_fixed_width_line_centre_at_0_0](./examples/09_layout_buider_fixed_width_line_centre_at_0_0.py)</p></sub>
+<sub><p align="center">[09_layout_buider_fixed_width_line_centre_at_0_0.py](./examples/09_layout_buider_fixed_width_line_centre_at_0_0.py)</p></sub>
 
 <a name="example-10"></a>
 ### 10 – Layout builder: grid of parts
@@ -135,15 +146,15 @@ Fixed-width line, but we want to force the median element (here, the second out 
 Create a grid of any component (6.35mm jacks in this case). You can define the number of rows and columns, as well as the spacing between them.
 
 ![Layout builder: grid of parts](./docs/img/10.jpg)
-<sub><p align="center">[10_layout_builder_grid_of_parts](./examples/10_layout_builder_grid_of_parts.py)</p></sub>
+<sub><p align="center">[10_layout_builder_grid_of_parts.py](./examples/10_layout_builder_grid_of_parts.py)</p></sub>
 
 <a name="example-11"></a>
 ### 11 – Layout builder: combining groups
 
-Multiple [LayoutGroup](#api-reference-layout-group) (and [LayoutElement](#api-reference-layout-element])) can be combined together: here, we have two grid of jacks (6.35mm and 3.5mm), and a single USB A, equally spread on the panel.
+You can combine multiple [LayoutGroup](#api-reference-layout-group) (and [LayoutElement](#api-reference-layout-element]) instances. In this example, we've evenly spaced two grids of jacks (6.35mm and 3.5mm) along with a single USB A on the panel.
 
 ![Layout builder: combining groups](./docs/img/11.jpg)
-<sub><p align="center">[11_layout_builder_combining_groups](./examples/11_layout_builder_combining_groups.py)</p></sub>
+<sub><p align="center">[11_layout_builder_combining_groups.py](./examples/11_layout_builder_combining_groups.py)</p></sub>
 
 <a name="example-12"></a>
 ### 12 – Text (cut and extruded)
@@ -151,15 +162,15 @@ Multiple [LayoutGroup](#api-reference-layout-group) (and [LayoutElement](#api-re
 You can add extruded and cut text (e.g. for your project's name and version).
 
 ![Text](./docs/img/12.jpg)
-<sub><p align="center">[12_text](./examples/12_text.py)</p></sub>
+<sub><p align="center">[12_text.py](./examples/12_text.py)</p></sub>
 
 <a name="example-13"></a>
 ### 13 – Support for parts
 
-If you have free space under your parts under heavy stress (e.g. the switch on a guitar pedal), you can add a support pillar underneath.
+For parts under heavy stress, such as the switch on a guitar pedal, you can add a support pillar underneath if there's available space.
 
 ![Support for parts](./docs/img/13.jpg)
-<sub><p align="center">[13_support_for_part](./examples/13_support_for_part.py)</p></sub>
+<sub><p align="center">[13_support_for_part.py](./examples/13_support_for_part.py)</p></sub>
 
 <a name="example-14"></a>
 ### 14 – Holders for Raspberry Pi and protoboard
@@ -169,7 +180,7 @@ Screws to hold your PCBs in place.
 For the protobard, the screws can be positioned arbitrarily (grid coordinates).
 
 ![Support for Raspberry Pi and protoboard](./docs/img/14.jpg)
-<sub><p align="center">[14_support_for_pi_and_protoboard](./examples/14_support_for_pi_and_protoboard.py)</p></sub>
+<sub><p align="center">[14_holders_for_pi_and_protoboard.py](./examples/14_holders_for_pi_and_protoboard.py)</p></sub>
 
 <a name="example-15"></a>
 ### 15 – Add a new Part
@@ -177,14 +188,16 @@ For the protobard, the screws can be positioned arbitrarily (grid coordinates).
 See [Adding a new Part](#available-parts-add-new) for more details.
 
 ![Add a new Part](./docs/img/15.jpg)
-<sub><p align="center">[15_add_new_part](./examples/15_add_new_part.py)</p></sub>
+<sub><p align="center">[15_add_new_part.py](./examples/15_add_new_part.py)</p></sub>
 
 <a name="example-16"></a>
 ### 16 – All parts
 
-Show all available parts. Note: the default caps/knobs are shown, but there's a dozen available, and more can be added by taking four simple measurements.
+Show all available parts.
 
-For more details, see below.
+For a detailed list, scroll down to [List of built-in parts](#available-parts-list-builtins).
+
+**Note:** the default caps/knobs are shown, but there's a dozen available, and more can be added by taking four simple measurements.
 
 ![All parts](./docs/img/16.jpg)
 <sub><p align="center">[16_all_parts.py](./examples/16_all_parts.py)</p></sub>
@@ -195,7 +208,7 @@ For more details, see below.
 ## Available parts
 
 <a name="available-parts-list-builtins"></a>
-### Built-in categories and part types
+### List of built-in parts
 
 For many parts, I've provided purchase links within the docstrings of the Python code, so you can obtain the exact item I used for modeling them.
 
@@ -221,20 +234,19 @@ For many parts, I've provided purchase links within the docstrings of the Python
 
 See [example 15](#example-15) above.
 
-Each part has a category (`button`, `encoder`, `screen`, etc.)
+Each part belongs to a category, such as `button`, `encoder`, `screen`, and so forth. (New categories can be added on the fly.)
 
-To create a new part, you can copy the file [__template.py](./src/cq_enclosure_builder/parts/__template.py) somewhere in your project. (If you wish to contribute, copy the file into the appropriate sub-folder of [cq_enclosure_builder/parts](./src/cq_enclosure_builder/parts/).)
+#### Steps
 
-```
-@register_part("<category>", "<part_type>")
-```
-
-If contributing, `<category>` should match the sub-folder, otherwise, it can be anything. `<part_type>` represents the reference of your component (e.g. `PBS 11-A`).
-
-If there's no category matching your part, it's not an issue: a new build method [PartsFactory](#api-reference-parts-factory)'s' `build_<your new category>` will automatically be added to the factory. (If contributing, simply create a new sub-package in the folder mentioned above.)
-
-You'll now be able to use your part:
-```
+1. Copy the file [__template.py](./src/cq_enclosure_builder/parts/__template.py) to a location in your project.
+    - **For contributors**: place the file into the appropriate sub-package of [cq_enclosure_builder/parts](./src/cq_enclosure_builder/parts/).
+2. *(Optional)* Use the `@register_part("<category>", "<part_type>")` decorator.
+    - `<category>` should match the sub-folder if contributing. Otherwise, it can be any valid Python identifier.
+    - `<part_type>` represents the reference for your component (e.g. `PBS 11-A`).
+3. If your part's category doesn't exist, no problem! A new build method—`build_<your new category>`—will be automatically added to the [PartsFactory](#api-reference-parts-factory).
+    - **For contributors**: simply create a new sub-package in the previously mentioned folder.
+4. You'll now be able to use your part as follows:
+```python
 from cq_enclosure_builder import PartsFactory as pf
 
 my_part = pf.build_<category>(part_type="<part_type>")
@@ -242,25 +254,27 @@ my_part = pf.build_<category>(part_type="<part_type>")
 
 **Note 1:** set your part as default for this category with [PartsFactory](#api-reference-parts-factory)'s `set_default_types`.
 
-**Note 2:** you don't need to use `@register_part`, it only allows your to use [PartsFactory](./src/cq_enclosure_builder/parts_factory.py) and its built-in cache. If not, simply instantiate your object as you normally would (`MyPart()`).
+**Note 2:** the `@register_part` decorator is optional but allows for integration with [PartsFactory](#api-reference-parts-factory) and its built-in caching. Without it, instantiate your object as usual, like `MyPart()`.
 
 <a name="available-parts-add-new-step"></a>
 ### Adding a new Part from a STL or STEP file
 
-TODO
+CadQuery only supports <a href="https://cadquery.readthedocs.io/en/latest/importexport.html" target="_blank">importing STEP files</a>. If you're working with an STL, you can easily convert them to STEP using <a href="https://www.autodesk.com/products/fusion-360/personal" target="_blank">Fusion 360</a>, or online converters (though I've had some format issues with these).
+
+Once you have a STEP file, follow the steps (ah!) shown in [example 17 TODO](http://google.fr).
 
 ---
 
 <a name="strength-test"></a>
 ## Strength test
 
-The enclosures should be strong enough for most enclosure needs, including guitar pedals (which endure stomping!)
+The enclosures should be strong enough for most needs, including guitar pedals (which experience regular stomping!)
 
-I've made to tests using <a href="https://www.amazon.de/dp/B09KL2JYT6" target="_blank">this PLA</a>:
-- the first one was made with nothing supporting the SPST;
-- the second one had a small 'pillar' underneath it (see [example 13](#example-13) above), making it very solid with reasonable use. (If you PCB design is flexible, you can plan for a small hole to allow the pillar to support the bottom of the SPST.)
+I conducted two tests using <a href="https://www.amazon.de/dp/B09KL2JYT6" target="_blank">this PLA</a>:
+- in the first test, the enclosure was constructed without any support beneath the SPST;
+- for the second test, a small 'pillar' was added underneath the SPST (see [example 13](#example-13) above), making it very solid (if you don't plan to stand on top of it).
 
-You can find the code used to generated the STLs [here](./examples/strength_test_enclosures.py).
+The code used to generate the STLs for these tests can be found here. [here](./examples/strength_test_enclosures.py).
 
 | ![TODO!](./docs/img/strength-test-with-support.jpg) | ![TODO!](./docs/img/strength-test-without-support.jpg) |
 |:------------------------------------:|:-------------------------------------:|
@@ -275,13 +289,13 @@ You can find the code used to generated the STLs [here](./examples/strength_test
 | Method or Value Name | Parameters | Description |
 |-------------|------------|-------------|
 | `__init__`  | <ul><li>`size`: [EnclosureSize](./src/cq_enclosure_builder/enclosure.py)</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`): name and version are used for naming the exported STLs.</li><li>`lid_on_faces: List[`[Face](./src/cq_enclosure_builder/face.py)`]` (default: `[Face.BOTTOM]`): which side of the enclosure has a screwable lid. Only `BOTTOM` is supported as of now.</li><li>`lid_panel_size_error_margin: float` (default: `0.8`): how small the lid panel is on both width and length compared to the lid hole.</li><li>`lid_thickness_error_margin: float` (default: `0.4`): if >0, the lid screws and support will be slightly sunk in the enclosure.</li><li>`add_corner_lid_screws: bool` (default: `True`)</li><li>`add_lid_support: bool` (default: `True`): add a rim around the enclosure to prevent the lid from sinking in.</li><li>`add_top_support: bool` (default: `True`): small support 'skirt' to increase the strength of the top of the enclosure.</li><li>`lid_screws_heat_set: bool` (default: `True`): use heat-set inserts instead of printing a screw threads for the lid corner screws.</li><li>`no_fillet_top: bool` (default: `False`)</li><li>`no_fillet_bottom: bool` (default: `False`)</li></ul> |  |
-| `add_part_to_face` -> `None` | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py)</li><li>`part_label: str`: will be shown in the tree when using e.g. [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery).</li><li>`part`: [Part](#api-reference-part)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; one of `rel_pos`/`abs_pos` needs to be set): position relative to the centre of the [Panel](#api-reference-panel).</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the [Panel](#api-reference-panel).</li><li>`color: cq.Color` (default: `None`; defaults to [Panel](#api-reference-panel)'s default)</li></ul> | |
+| `add_part_to_face` -> `None` | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py)</li><li>`part_label: str`: will be shown in the tree when using e.g. [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery).</li><li>`part`: [Part](#api-reference-part)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; either `rel_pos` or `abs_pos` must be specified): position relative to the centre of the [Panel](#api-reference-panel).</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the [Panel](#api-reference-panel).</li><li>`color: cq.Color` (default: `None`; defaults to [Panel](#api-reference-panel)'s default)</li></ul> | |
 | `assemble` -> `None` | <ul><li>`walls_explosion_factor: float` (default: `1.0`): a value >1 will move the enclosure's walls aways, giving a better inside view.</li><li>`lid_panel_shift: float` (default: `0.0`): move the lid panel (`BOTTOM`) away from the enclosure. | Needs to be called before calling `export_printables` or using the `assembly`. |
 | `export_printables` -> `None` | *none* | Export one STL per printable. By default, one for the `lid` and for the `box`. Some parts can require additional prints; any element added to [Part](#api-reference-part)'s `additional_printables` will also be exported.</li></ul>  |
 | `add_screw` -> `None` | *see code* | If you want to add more screws than the four corner screw than can be added automatically. |
-| (value) `assembly`: `cq.Assembly` | *N/A* | Contains a displayable assembly with the panels (incl. parts), frame, lid screws, and lid support.
-| (value) `debug`: `cq.Assembly` | *N/A* | Debug elements: footprints, holes, panels masks, printables, and other debug elements added by the parts ([Part](#api-reference-part)'s `debug_objects`).
-| (value) `assembly_with_debug`: `cq.Assembly` | *N/A* | Assembly containing the two previous assemblies.
+| *(value)* `assembly`: `cq.Assembly` | *N/A* | Contains a displayable assembly with the panels (incl. parts), frame, lid screws, and lid support.
+| *(value)* `debug`: `cq.Assembly` | *N/A* | Debug elements: footprints, holes, panels masks, printables, and other debug elements added by the parts ([Part](#api-reference-part)'s `debug_objects`).
+| *(value)* `assembly_with_debug`: `cq.Assembly` | *N/A* | Assembly containing the two previous assemblies.
 
 ---
 
@@ -329,11 +343,11 @@ You can find the code used to generated the STLs [here](./examples/strength_test
 | `translate` -> `Self`  | <ul><li>`pos: Tuple[float, float]`</li></ul> | Same as [LayoutElement](#api-reference-layout-element). Translate all the elements of the group. |
 | `get_pos` -> `Tuple[float, float]` | *none* | Get the relative pos (centre is 0,0). |
 | `get_elements` -> `List[`[LayoutElement](#api-reference-layout-element)`]`  | *none* | Returns all the elements of the group. If there's nested groups, it flatten them by recurisvely calling `get_elements`. |
-| (static) `line_of_parts` -> `LayoutGroup`  | <ul><li>`parts: Union[`[Part](#api-reference-part)`, Tuple[str, `[Part](#api-reference-part)`]]`: either a list of parts or a list of tuple containing a label for the part and part itself</li>`margin: float` (default: `5`): the distance between each element.</li><li>`horizontal: bool` (default: `True`)</li><li>`group_center_at_0_0: bool` (default: `True`): if `False`, the line will start at position 0; if `True`, the line will be `translate` by `-(line width/2)` so its centre is at 0.</li><li>`elements_centers_at_0_0: bool` (default: `True`): if `True`, each element will be `translate` by `total_footprint_offset` (if `horizontal`, it will only translate the Y position; and vice versa).</li><li>`align_start_to_outside_footprint: bool` (default: `False`): if `True`, the outside footprint of the first element will be at position 0 (only matters if the inside footprint is larger than the outside); if `False`, it will use total footprint (whichever is largest).</li><li>`align_to_outside_footprint: bool` (default: `False`): if `True`, the outside footprint of the first item will be at 0 (only matters if the inside footprint is larger than the outside); if `False`, it will use total footprint (whichever is largest).</li></ul> | Return a simple group where each part is next to each other in a line. |
-| (static) `line_of_elements` -> `LayoutGroup`  | <ul><li>`elements: List[LayoutElement]`</li></ul>Rest is identical to `line_of_parts`. | The `element` variant is useful to combine groups. |
-| (static) `fixed_width_line_of_parts` -> `LayoutGroup`  | <ul><li>`size: float`: the maximum space taken by the line.</li><li>`parts: Union[`[Part](#api-reference-part)`, Tuple[str, `[Part](#api-reference-part)`]]`: either a list of parts or a list of tuple containing a label for the part and part itself.</li><li>`horizontal: bool` (default: `True`)</li><li>`add_margin_on_sides: bool` (default `True`): if `False`, the first and last elements will be touching the start and end of the line; if True, the same margin found between each element will also be at the start and end.</li><li>`group_center_at_0_0: bool` (default: `True`): *see `line_of_parts`.*</li><li>`elements_centers_at_0_0: bool` (default: `True`): *see `line_of_parts`.*</li><li>`align_to_outside_footprint: bool` (default: `False`): *see `line_of_parts`.*</li></ul> | Return a line of element spaced equally, taking a set amount of space. |
-| (static) `fixed_width_line_of_elements` -> `LayoutGroup`  | <ul><li>`elements: List[LayoutElement]`</li></ul>Rest is identical to `fixed_width_line_of_parts` (same order). | The `element` variant is useful to combine groups. |
-| (static) `grid_of_part` -> `LayoutGroup`  | <ul><li>`label: str`</li><li>`part`: [Part](#api-reference-part)</li><li>`rows: int`: number of rows.</li><li>`cols: int`: number of columns.</li><li>`margin_rows: float` (default: `5`): margin between each row.</li><li>`margin_cols: float` (default: `5`): margin between each col.</ul> | Return a grid of `rows` x `cols` made up the same [Part](#api-reference-part). |
+| *(static)* `line_of_parts` -> [LayoutGroup](#api-reference-layout-group)  | <ul><li>`parts: Union[`[Part](#api-reference-part)`, Tuple[str, `[Part](#api-reference-part)`]]`: accepts either a list of parts or a list of tuples. Each tuple should contain a label for the part followed by the part itself.</li>`margin: float` (default: `5`): the spacing between each element.</li><li>`horizontal: bool` (default: `True`): if `False`, the line will be vertical.</li><li>`group_center_at_0_0: bool` (default: `True`): if `False`, the line will start at `(0,0)`; if `True`, the  centre of the line will be at `(0,0)`.</li><li>`elements_centers_at_0_0: bool` (default: `True`): if `True`, each element will be `translate` by `total_footprint_offset` (if `horizontal`, it will only translate the Y position; and vice versa).</li><li>`align_start_to_outside_footprint: bool` (default: `False`): dietermines alignment for the starting point. If `True`, the `ouside_footprint` of the first element aligns with position 0 (this is relevant if the `inside_footprint` is larger than the outside). Otherwise, it uses the `total_footprint`, selecting whichever dimension is largest.</li><li>`align_to_outside_footprint: bool` (default: `False`): if `True`, the `outside_footprint` of all parts will directly be in context (when `margin=0`). Otherwise, it uses the `total_footprint`, selecting whichever dimension is largest.</li></ul> | Return a simple group where each part is next to each other in a line. |
+| *(static)* `line_of_elements` -> [LayoutGroup](#api-reference-layout-group)  | <ul><li>`elements: List[`[LayoutElement](#api-reference-layout-element)`]`</li></ul>The rest is identical to `line_of_parts`. | The `element` variant is useful to combine groups. |
+| *(static)* `fixed_width_line_of_parts` -> [LayoutGroup](#api-reference-layout-group) | <ul><li>`size: float`: the maximum space taken by the line.</li><li>`parts: Union[`[Part](#api-reference-part)`, Tuple[str, `[Part](#api-reference-part)`]]`: either a list of parts or a list of tuple containing a label for the part and part itself.</li><li>`horizontal: bool` (default: `True`)</li><li>`add_margin_on_sides: bool` (default `True`): if `False`, the first and last elements will be touching the start and end of the line; if `True`, the same margin found between each element will also be at the start and end.</li><li>`group_center_at_0_0: bool` (default: `True`): *see `line_of_parts`.*</li><li>`elements_centers_at_0_0: bool` (default: `True`): *see `line_of_parts`.*</li><li>`align_to_outside_footprint: bool` (default: `False`): *see `line_of_parts`.*</li></ul> | Return a line of element spaced equally, taking a set amount of space. |
+| *(static)* `fixed_width_line_of_elements` -> [LayoutGroup](#api-reference-layout-group) | <ul><li>`elements: List[`[LayoutElement](#api-reference-layout-element)`]`</li></ul>The rest is identical to `fixed_width_line_of_parts` (same order—`elements` is the second parameter). | The `element` variant is useful to combine groups. |
+| *(static)* `grid_of_part` -> [LayoutGroup](#api-reference-layout-group) | <ul><li>`label: str`</li><li>`part`: [Part](#api-reference-part)</li><li>`rows: int`: number of rows.</li><li>`cols: int`: number of columns.</li><li>`margin_rows: float` (default: `5`): margin between each row.</li><li>`margin_cols: float` (default: `5`): margin between each col.</ul> | Return a grid of `rows` x `cols` made up the same [Part](#api-reference-part). |
 
 ---
 
@@ -342,12 +356,12 @@ You can find the code used to generated the STLs [here](./examples/strength_test
 
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|
-| `__init__`  | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py): the panel's face, used to determine its orientation.</li><li>`size: PanelSize`: the panel's width, length, and wall thickness.</li><li>`color: Tuple[float, float, float]` (default: `None`; use the [Face](./src/cq_enclosure_builder/face.py)'s default): the colour of the panel's wall.</li><li>`part_color: Tuple[float, float, float]` (default: `None`; use the [Face](./src/cq_enclosure_builder/face.py)'s default): the colour of the panel's parts.</li><li>`alpha: float` (default: `1.0`): the panel wall's transparency (doesn't affect its parts).</li><li>`lid_size_error_margin: float` (default: `0.0`): used only for the lid panel; if provided, the actual size of the panel will be smaller than the `size` param (will the `mask` will be the provided size).</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`): here, mainly used for logging. |  |
-| `add` -> `None` | <ul><li>`label: str`: the part's name</li><li>`part`: [Part](#api-reference-part`)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; one of `rel_pos`/`abs_pos` needs to be set): position relative to the centre of the panel.</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the panel.</li><li>`color: Tuple[float, float, float]` (default: `None`; will use the default of the panel's [Face](./src/cq_enclosure_builder/face.py))</li><li>`alpha: float` (default: `1.0`)</li></ul> |  |
-| `assemble` -> `None`  | *none* | Should be called before using the values below. |
-| (value) `panel`: `cq.Workplane`  | *N/A* | The panel 'wall' and all its parts.  |
-| (value) `mask`: `cq.Workplane`  | *N/A* | A solid box of the size `(size.width, size.length, size.wall_thickness)` |
-| (value) `debug_assemblies`: `Dict[str, Union[Dict, cq.Workplane]]`  | *N/A* | Assemblies: `footprint_in`, `footprint_out`, `hole`, `other` (from the `debug_objects` field of the panel's part), `combined`. |
+| `__init__`  | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py): refers to the panel's face which is used to establish its orientation.</li><li>`size: PanelSize`: specifies the panel's dimensions: `width`, `length`, and `wall_thickness`.</li><li>`color: Tuple[float, float, float]` (default: `None`—uses the [Face](./src/cq_enclosure_builder/face.py)'s default): the colour of the panel's wall.</li><li>`part_color: Tuple[float, float, float]` (default: `None`—uses the [Face](./src/cq_enclosure_builder/face.py)'s default): the colour of the panel's parts.</li><li>`alpha: float` (default: `1.0`): the panel wall's transparency (doesn't affect its parts).</li><li>`lid_size_error_margin: float` (default: `0.0`): applicable only for the lid panel. If a value is provided, the actual size of the panel will be smaller than the defined size, but the mask will retain the provided size.</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`): only used for logging in this class. |  |
+| `add` -> `None` | <ul><li>`label: str`: the name of the part.</li><li>`part`: [Part](#api-reference-part`)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; either `rel_pos` or `abs_pos` must be specified): position relative to the centre of the panel.</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the panel.</li><li>`color: Tuple[float, float, float]` (default: `None`—will use the default of the panel's [Face](./src/cq_enclosure_builder/face.py))</li><li>`alpha: float` (default: `1.0`)</li></ul> |  |
+| `assemble` -> `None`  | *none* | Should be called before using the values below, otherwise you won't like it. |
+| *(value)* `panel`: `cq.Workplane`  | *N/A* | The panel 'wall' and all its parts.  |
+| *(value)* `mask`: `cq.Workplane`  | *N/A* | A solid box of the size `(size.width, size.length, size.wall_thickness)` |
+| *(value)* `debug_assemblies`: `Dict[str, Union[Dict, cq.Workplane]]`  | *N/A* | Assemblies: `footprint_in`, `footprint_out`, `hole`, `other` (from the `debug_objects` field of the panel's part), `combined`. |
 
 ---
 
@@ -356,19 +370,19 @@ You can find the code used to generated the STLs [here](./examples/strength_test
 
 | Method Name | Parameters | Description |
 |-------------|------------|-------------|
-| `__init__`  | *none* | No-arg constructors, sets the variables below to their default values. |
-| (value) `part`: `cq.Workplane` | *N/A* | The part that will be added to the panel. |
-| (value) `assembly_parts`: `List[AssemblyPart]` (default: `None`) | `AssemblyPart` has fields `workplane: cq.Workplane`, `name: str`, and `color: cq.Color`. Used to keep sub-parts visually separated (e.g. having screws colored differently); will be used for display if present, otherwise `part` will be. `part` should still be set if equivalent; see comment in [Part](./src/cq_enclosure_builder/part.py). |
-| (value) `mask`: `cq.Workplane` | *N/A* | Will be cut from the panel, should likely be the same width/length as the `part`. |
-| (value) `size`: `PartSize` | *N/A* | `PartSize` has fields `width: float`, `length: float`, and `thickness: float`. |
-| (value) `additional_printables: Dict[str, cq.Workplane]` | *N/A* | Workplanes in this map will be export when calling [Enclosure](#api-reference-enclosure)'s `export_printables'. | 
-| (value) `inside_footprint: Tuple[float, float]` | *N/A* | Needed by the layout builder ([LayoutGroup](#api-reference-layout-group)) to position elements. |
-| (value) `inside_footprint_thickness: float` | *N/A* | Currently, only used when wanting to create a "pyramid" support to sit underneath another part, for added strength. |
-| (value) `inside_footprint_offset: Tuple[float, float]` | *N/A* | How far the centre-point of the inside_footprint is from (0,0). Used by the layout builder. |
-| (value) `outside_footprint: Tuple[float, float]` | *N/A* | Needed by the layout builder ([LayoutGroup](#api-reference-layout-group)) to position elements. |
-| (value) `outside_footprint_thickness: float` | *N/A* | Unused at the moment; recommend to fill it when creating new parts. |
-| (value) `outside_footprint_offset: Tuple[float, float]` (default: `(0,0)`) | *N/A* | How far the centre-point of the outside_footprint is from (0,0). Currently, it assumes `(0,0)`: any other value will be ignored. If it's not the case for your part (e.g. the centre of your USB connector's hole not exactly at `(0,0)`), the layout builder won't work perfectly. |
-| (value) `debug_objects`: [DebugObjects](#api-reference-debug-objects) | *N/A* | Used to get useful visual information on your part. For instance, it will show how much a SPST is sticking out of an enclosure (including caps). |
+| `__init__`  | *none* | No-arg constructors; sets the variables below to their default values. |
+| *(value)* `part`: `cq.Workplane` | *N/A* | The part that will be added to the panel. |
+| *(value)* `assembly_parts`: `List[`[AssemblyPart](./src/cq_enclosure_builder/part.py)`]` (default: `None`) | [AssemblyPart](./src/cq_enclosure_builder/part.py) consists of three fields: `workplane: cq.Workplane`, `name: str`, and `color: cq.Color`. It's utilized to visually distinguish sub-parts, like coloring screws differently. If [AssemblyPart](./src/cq_enclosure_builder/part.py) is present, it will be used for display; otherwise, the part field will be used. Even if they are equivalent, the part should still be set. Refer to the comments in [Part](./src/cq_enclosure_builder/part.py) for more details. |
+| *(value)* `mask`: `cq.Workplane` | *N/A* | Will be cut from the panel, should likely be the same width/length as the `part`. |
+| *(value)* `size`: `PartSize` | *N/A* | `PartSize` consists of three fields: `width: float`, `length: float`, and `thickness: float`. |
+| *(value)* `additional_printables: Dict[str, cq.Workplane]` | *N/A* | Workplanes in this map will be export when calling [Enclosure](#api-reference-enclosure)'s `export_printables'. | 
+| *(value)* `inside_footprint: Tuple[float, float]` | *N/A* | Needed by the layout builder ([LayoutGroup](#api-reference-layout-group)) to position elements. |
+| *(value)* `inside_footprint_thickness: float` | *N/A* | Currently, only used when wanting to create a "pyramid" support to sit underneath another part, for added strength. |
+| *(value)* `inside_footprint_offset: Tuple[float, float]` | *N/A* | The distance from the centre-point of the `inside_footprint` to the coordinate `(0,0)`. This is used by the layout builder. |
+| *(value)* `outside_footprint: Tuple[float, float]` | *N/A* | Needed by the layout builder ([LayoutGroup](#api-reference-layout-group)) to position elements. |
+| *(value)* `outside_footprint_thickness: float` | *N/A* | Unused at the moment; required field nonetheless. |
+| *(value)* `outside_footprint_offset: Tuple[float, float]` (default: `(0,0)`) | *N/A* | The current design assumes the centre-point of the `outside_footprint` is at the coordinate `(0,0)`. If this isn't the case for your specific part (for instance, if the center of your USB connector's hole isn't exactly at `(0,0)`), the layout builder may not function optimally. |
+| *(value)* `debug_objects`: [DebugObjects](#api-reference-debug-objects) | *N/A* | Used to obtain visual insights about your part. For example, it can display how much an SPST is sticking out from an enclosure, including its caps. |
 
 <a name="api-reference-debug-objects"></a>
 ### class: [DebugObjects](./src/cq_enclosure_builder/part.py)
@@ -376,9 +390,9 @@ You can find the code used to generated the STLs [here](./examples/strength_test
 | Value Name | Parameters | Description |
 |-------------|------------|-------------|
 | `__init__`  | *none* |  |
-| (value) `footprint`: `DebugObjects.Footprint` | *N/A* | Sub-classes has two fields, `inside: cq.Workplane` and `outside: cq.Workplane` (default for both: `None`). It is used to show the actual space taken by the part. If you're creating a new part, you likely want to set these fields if relevant. |
-| (value) `hole`: `cq.Workplane` (default: `None`) | *N/A* | Visual representation of the hole in the enclosure (e.g. for a USB port, it will simply be the size of the connector). |
-| (value) `others`: `Dict[str, cq.Workplane]` | *N.A* | Shown in the [Panel](#api-reference-panel)'s and [Enclosure](#api-reference-enclosure)'s debug assemblies.
+| *(value)* `footprint`: `DebugObjects.Footprint` | *N/A* | Sub-classes has two fields, `inside: cq.Workplane` and `outside: cq.Workplane` (default for both: `None`). It is used to show the actual space taken by the part. If you're creating a new part, you likely want to set these fields if relevant. |
+| *(value)* `hole`: `cq.Workplane` (default: `None`) | *N/A* | Visual representation of the hole in the enclosure (e.g. for a USB port, it will simply be the size of the connector). |
+| *(value)* `others`: `Dict[str, cq.Workplane]` | *N.A* | Shown in the [Panel](#api-reference-panel)'s and [Enclosure](#api-reference-enclosure)'s debug assemblies.
 
 ---
 
