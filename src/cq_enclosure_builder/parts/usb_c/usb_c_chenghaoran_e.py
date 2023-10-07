@@ -17,10 +17,12 @@
 import cadquery as cq
 import cq_warehouse.extensions
 from cq_warehouse.fastener import PanHeadScrew
+
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
 
 M2_SIZE = 2
+
 
 @register_part("usb_c", "ChengHaoRan E")
 class UsbCChengHaoRanEPart(Part):
@@ -31,9 +33,14 @@ class UsbCChengHaoRanEPart(Part):
     """
 
     # TODO refactor or rewrite!
-    def __init__(self, enclosure_wall_thickness, orientation_vertical=False, center_is_outward_facing_hole=True):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float,
+        orientation_vertical: bool = False,
+        center_is_outward_facing_hole: bool = True
+    ):
         if not center_is_outward_facing_hole:
-            raise ValueError("USB C: use of center_is_outward_facing_hole=False is deprecated and unsupported")
+            print("WARNING: use of center_is_outward_facing_hole=False in USB C is deprecated; the layout builder assumes True, it can cause alignment issues")
 
         super().__init__()
 
@@ -201,26 +208,29 @@ class UsbCChengHaoRanEPart(Part):
         self.size.length    = 22
         self.size.thickness = enclosure_wall_thickness + wall_thickness
 
+        pcb_thickness = 2
         self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness = usb_c_depth - enclosure_wall_thickness + pcb_thickness
         self.inside_footprint_offset = (0, -0.6) if not orientation_vertical else (-1.4, -2)
+
         self.outside_footprint = (usb_c_w if not orientation_vertical else usb_c_l, usb_c_l if not orientation_vertical else usb_c_w)
+        self.outside_footprint_thickness = 3
+
         footprint_in = (
             cq.Workplane("front")
                 .rect(self.size.width, self.size.length)
-                .extrude(usb_c_depth - enclosure_wall_thickness)
+                .extrude(self.inside_footprint_thickness)
                 .translate([0, 0, enclosure_wall_thickness])
         )
-        if orientation_vertical:
-            footprint_in = footprint_in.translate([-1.4, -2, 0])
-        else:
-            footprint_in = footprint_in.translate([0, -0.6, 0])
-        outside_footprint_thickness = 3
+        footprint_in = footprint_in.translate([-1.4, -2, 0]) if orientation_vertical else footprint_in.translate([0, -0.6, 0])
+
         footprint_out = (
             cq.Workplane("front")
                 .rect(*self.outside_footprint)
-                .extrude(outside_footprint_thickness)
-                .translate([-0, 0, -outside_footprint_thickness])
+                .extrude(self.outside_footprint_thickness)
+                .translate([0, 0, -self.outside_footprint_thickness])
         )
+
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
         

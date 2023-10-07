@@ -16,8 +16,10 @@
 
 import cadquery as cq
 from cq_warehouse.fastener import PanHeadScrew
+
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
+
 
 @register_part("usb_a", "3.0 vertical cltgxdd")
 class UsbA30VerticalCltgxddPart(Part):
@@ -27,7 +29,15 @@ class UsbA30VerticalCltgxddPart(Part):
     https://www.aliexpress.com/item/1005003329405836.html
     """
 
-    def __init__(self, enclosure_wall_thickness, orientation_vertical=False, center_is_outward_facing_hole=True):
+    def __init__(
+        self,
+        enclosure_wall_thickness: float,
+        orientation_vertical: bool = False,
+        center_is_outward_facing_hole: bool = True
+    ):
+        if not center_is_outward_facing_hole:
+            print("WARNING: use of center_is_outward_facing_hole=False in USB C is deprecated; the layout builder assumes True, it can cause alignment issues")
+
         super().__init__()
 
         width = 25.2
@@ -163,27 +173,28 @@ class UsbA30VerticalCltgxddPart(Part):
         self.size.length    = 29.2 if orientation_vertical else 26.8
         self.size.thickness = enclosure_wall_thickness + wall_thickness
 
+        pcb_thickness = 2
         self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness = usb_depth - enclosure_wall_thickness + pcb_thickness
         self.inside_footprint_offset = (0, 4.6) if not orientation_vertical else (-6.6, -2, 0)
+
         self.outside_footprint = (usb_size[0] if not orientation_vertical else usb_size[1], usb_size[1] if not orientation_vertical else usb_size[0])
+        self.outside_footprint_thickness = 3
+
         footprint_in = (
             cq.Workplane("front")
                 .rect(self.size.width, self.size.length)
-                .extrude(usb_depth - enclosure_wall_thickness)
+                .extrude(self.inside_footprint_thickness)
                 .translate([0, 0, enclosure_wall_thickness])
         )
-        if orientation_vertical:
-            footprint_in = footprint_in.translate([-6.6, -2, 0])  # TODO unhardcode
-        else:
-            footprint_in = footprint_in.translate([0, 4.6, 0])
-        outside_footprint_thickness = 3
+        footprint_in = footprint_in.translate([-6.6, -2, 0]) if orientation_vertical else footprint_in.translate([0, 4.6, 0])
+
         footprint_out = (
             cq.Workplane("front")
                 .rect(*self.outside_footprint)
-                .extrude(outside_footprint_thickness)
-                .translate([-0, 0, -outside_footprint_thickness])
+                .extrude(self.outside_footprint_thickness)
+                .translate([-0, 0, -self.outside_footprint_thickness])
         )
-        self.outside_footprint = usb_size  # TODO check why override??
 
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
