@@ -17,8 +17,10 @@
 from typing import Tuple
 
 import cadquery as cq
+
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
+
 
 @register_part("support", "skirt")
 class SkirtPart(Part):
@@ -27,9 +29,9 @@ class SkirtPart(Part):
     """
     def __init__(
         self,
-        enclosure_wall_thickness,
-        width,
-        length,
+        enclosure_wall_thickness: float,
+        width: float,
+        length: float,
         skirt_size: Tuple[float, float] = (4, 4),
         base_size: float = None
     ):
@@ -82,8 +84,12 @@ class SkirtPart(Part):
         self.size.thickness = skirt_size[1]
 
         self.inside_footprint = (self.size.width, self.size.length)  # TODO should account for the screw blocks (incl. taper)
+        self.inside_footprint_thickness = self.size.thickness
         self.inside_footprint_offset = (0, 0)
+
         self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint_thickness = 0
+
         self.debug_objects.footprint.inside  = skirt
         self.debug_objects.footprint.outside = None
         

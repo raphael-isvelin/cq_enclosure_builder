@@ -17,11 +17,13 @@
 from typing import Union
 
 import cadquery as cq
+
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
 from cq_enclosure_builder.parts.common.screws_providers import TinyBlockFlatHeadScrewProvider
 from cq_enclosure_builder.parts.air_vent.fan_size import FanSize
+
 
 @register_part("air_vent", "basic rectangular")
 class RectAirVentPart(Part):
@@ -31,19 +33,20 @@ class RectAirVentPart(Part):
     Needs refactoring.
     Hasn't been tested much besides the default parameters.
     """
+
     def __init__(
         self,
-        enclosure_wall_thickness,
-        width = 30,
-        length = 25,
-        thickness = 6,
-        margin = 0.5,
-        hole_angle = 25,
-        hole_width = 1.6,
-        distance_between_holes = 4,
-        taper = True,
-        taper_margin = 3,
-        taper_angle = 35,
+        enclosure_wall_thickness: float,
+        width: float = 30,
+        length: float = 25,
+        thickness: float = 6,
+        margin: float = 0.5,
+        hole_angle: float = 25,
+        hole_width: float = 1.6,
+        distance_between_holes: float = 4,
+        taper: bool = True,
+        taper_margin: float = 3,
+        taper_angle: float = 35,
         with_fan_screws: Union[FanSize, None] = FanSize._30_MM,
         fan_screws_size: str = "m3",
         fan_screws_taper_mode: TaperOptions = TaperOptions.XY_TAPER,
@@ -83,7 +86,25 @@ class RectAirVentPart(Part):
                 .translate([0, 0, enclosure_wall_thickness])
                 .cut(cq.Workplane("front").box(width, length, thickness, centered=(True, True, False)))
                 .add(board)
-        )        
+        )
+
+        self.size.width     = width + margin*2 + taper_margin*2
+        self.size.length    = length + margin*2 + taper_margin*2
+        self.size.thickness = thickness
+
+        self.inside_footprint = (self.size.width, self.size.length)  # TODO should account for the screw blocks (incl. taper)
+        self.inside_footprint_thickness = thickness - enclosure_wall_thickness
+        self.inside_footprint_offset = (0, 0)
+
+        self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint_thickness = 2
+
+        footprint_in = (
+            cq.Workplane("front")
+                .rect(width, length)
+                .extrude(self.inside_footprint_thickness)
+                .translate([0, 0, enclosure_wall_thickness])
+        )
 
         # Pyramid
         if taper:
@@ -103,14 +124,6 @@ class RectAirVentPart(Part):
                 .box(width, length, enclosure_wall_thickness, centered=(True, True, False))
         )
 
-        inside_footprint_thickness = 4
-        footprint_in = (
-            cq.Workplane("front")
-                .rect(width, length)
-                .extrude(inside_footprint_thickness)
-                .translate([0, 0, enclosure_wall_thickness])
-        )
-
         # Fan screws
         if with_fan_screws is not None:
             fan_screws_a = RectAirVentPart._get_fan_screws_blocks(
@@ -126,6 +139,12 @@ class RectAirVentPart(Part):
             fan_screws = fan_screws_a["screws"]  #.translate([0, 0, enclosure_wall_thickness])
             fan_masks = fan_screws_a["masks"]  #.translate([0, 0, enclosure_wall_thickness])
             footprint_in = footprint_in.add(fan_screws_a["footprint_in"])
+            fan_footprint = fan_screws_a["footprint_size"]
+            self.inside_footprint = (
+                self.inside_footprint[0] if self.inside_footprint[0] > fan_footprint[0] else fan_footprint[0],
+                self.inside_footprint[1] if self.inside_footprint[1] > fan_footprint[1] else fan_footprint[1],
+            )
+            self.inside_footprint_thickness = self.inside_footprint_thickness + fan_screws_a["footprint_thickness"]
 
             board = board.cut(fan_masks).add(fan_screws)
             mask = mask.add(fan_masks)
@@ -133,20 +152,15 @@ class RectAirVentPart(Part):
         self.part = board
         self.mask = mask
 
-        self.size.width     = width + margin*2 + taper_margin*2
-        self.size.length    = length + margin*2 + taper_margin*2
-        self.size.thickness = thickness
-
-        self.inside_footprint = (self.size.width, self.size.length)  # TODO should account for the screw blocks (incl. taper)
-        self.inside_footprint_offset = (0, 0)
-        self.outside_footprint = (self.size.width, self.size.length)
-        footprint_in = footprint_in.add(board)
-        outside_footprint_thickness = 2
+        footprint_in = footprint_in.add(board).cut(
+            cq.Workplane("front")
+                .box(*self.inside_footprint, enclosure_wall_thickness, centered=(True, True, False))
+        )
         footprint_out = (
             cq.Workplane("front")
                 .rect(*self.outside_footprint)
-                .extrude(outside_footprint_thickness)
-                .translate([-0, 0, -outside_footprint_thickness])
+                .extrude(self.outside_footprint_thickness)
+                .translate([-0, 0, -self.outside_footprint_thickness])
         )
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
@@ -190,6 +204,13 @@ class RectAirVentPart(Part):
         else:
             raise ValueError("Unknown FanSize")
 
+        if screw_block_taper_option == TaperOptions.XY_TAPER:
+            # TODO UNHARDCODE (based on block_thickness and taper_include)
+            # hacky way to include the screw block taper in the inside_footprint
+            taper_ramp_size = block_thickness / 2
+            footprint_size = footprint_size + taper_ramp_size*2
+        # TODO might need to do something for Z_TAPERs as well
+
         hdbs = distance_between_screws/2
 
         screws_pos = [
@@ -217,5 +238,7 @@ class RectAirVentPart(Part):
             "screws": screws.toCompound(),
             "masks": masks.toCompound(),
             "footprint_in": footprint_in,
+            "footprint_size": (footprint_size, footprint_size),
+            "footprint_thickness": footprint_thickness,
             #"base_plate": base_plate.translate([0, 0, -enclosure_wall_thickness])
         }
