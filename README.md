@@ -6,7 +6,7 @@ Generate printable enclosures for projects in a few lines of code. Some features
 - Layout builder;
 - Ready-to-print STL export.
 
-| ![Code](./docs/img/cqeb_example_code.jpg)<br><sub>Code to generated the model</sub> | ![Preview](./docs/img/cqeb_example_preview.jpg)<br><sub>Model preview</sub> | ![Photo](./docs/img/cqeb_example_photo.jpg)<br><sub>TODO REPLACE WITH IMAGE OF CORRECT ENCLOSURE Printed result</sub> |
+| ![Code](./docs/img/cqeb_example_code.jpg)<br><sub>Code to generated the model</sub> | ![Preview](./docs/img/cqeb_example_preview.jpg)<br><sub>Model preview</sub> | ![Photo](./docs/img/cqeb_example_photo.jpg)<br><sub>TODO IMAGE Printed result</sub> |
 |:--------------------------:|:---------------------------:|:----------:|
 
 ---

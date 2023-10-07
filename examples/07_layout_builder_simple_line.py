@@ -7,17 +7,17 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Panel, Face
-from cq_enclosure_builder.layout_builder import LayoutElement, LayoutGroup
+from cq_enclosure_builder import Panel, PanelSize, Face
+from cq_enclosure_builder.layout_builder import LayoutGroup
+
+panel = Panel(Face.TOP, PanelSize(100, 38, 2))
 
 pf.set_default_types({
     "usb_a": '3.0 vertical cltgxdd',
     "button": 'SPST PBS-24B-4',
     "encoder": 'EC11',
 })
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
-
-panel = Panel(Face.TOP, 100, 38, 2)
+pf.set_default_parameters({"enclosure_wall_thickness": panel.size.wall_thickness})
 
 group = LayoutGroup.line_of_parts(
     [

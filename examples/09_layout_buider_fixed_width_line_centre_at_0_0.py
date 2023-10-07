@@ -7,20 +7,18 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Panel, Face
+from cq_enclosure_builder import Panel, PanelSize, Face
 from cq_enclosure_builder.layout_builder import LayoutElement, LayoutGroup
+
+panel_size = PanelSize(100, 38, 2)
+panel = Panel(Face.TOP, panel_size)
 
 pf.set_default_types({
     "usb_a": '3.0 vertical cltgxdd',
     "button": 'SPST PBS-24B-4',
     "encoder": 'EC11',
 })
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
-
-WIDTH = 100
-LENGTH = 38
-
-panel = Panel(Face.TOP, WIDTH, LENGTH, 2)
+pf.set_default_parameters({"enclosure_wall_thickness": panel_size.wall_thickness})
 
 button_element = LayoutElement("Button", pf.build_button())
 usb_element = LayoutElement("USB", pf.build_usb_a())
@@ -33,7 +31,7 @@ button_element.set_footprints_x(encoder_element.total_footprint[0])
 #   (see Octopus' front panel for example: we want the screen at 0,0)
 
 group = LayoutGroup.fixed_width_line_of_elements(
-    WIDTH,
+    panel_size.width,
     [button_element, usb_element, encoder_element],
     horizontal=True,
     add_margin_on_sides=True,
@@ -42,7 +40,7 @@ group = LayoutGroup.fixed_width_line_of_elements(
     align_to_outside_footprint=True,
 )
 
-group.translate([0, LENGTH/2, 0])
+group.translate([0, panel_size.length/2, 0])
 for idx, elem in enumerate(group.get_elements()):
     panel.add(elem.label, elem.part, abs_pos=elem.get_pos())
 panel.assemble()

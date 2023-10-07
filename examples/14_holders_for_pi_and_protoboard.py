@@ -7,11 +7,11 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Panel, Face
+from cq_enclosure_builder import Panel, PanelSize, Face
 
-panel = Panel(Face.BOTTOM, 180, 90, 2)
+panel = Panel(Face.BOTTOM, PanelSize(180, 90, 2))
 
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
+pf.set_default_parameters({"enclosure_wall_thickness": panel.size.wall_thickness})
 
 pi_holder = pf.build_holder(
     part_type="RPi 4B",

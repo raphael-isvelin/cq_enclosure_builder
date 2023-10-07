@@ -12,7 +12,7 @@ from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo
 enclosure = Enclosure(EnclosureSize(180, 90, 38, 2))
 
 pf.set_default_types({"button": 'SPST PBS-24B-4'})
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
+pf.set_default_parameters({"enclosure_wall_thickness": enclosure.size.wall_thickness})
 
 enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), abs_pos=(40, 10))
 

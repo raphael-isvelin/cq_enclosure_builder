@@ -40,9 +40,7 @@ class Panel:
     def __init__(
             self,
             face: Face,
-            top_view_width: float,
-            top_view_length: float,
-            wall_thickness: float,
+            size: PanelSize,
             color: Tuple[float, float, float] = None,
             part_color: Tuple[float, float, float] = None,
             alpha: float = 1.0,
@@ -50,18 +48,18 @@ class Panel:
             project_info: ProjectInfo = ProjectInfo()
         ):
         self.face: Face = face
-        self.size: PanelSize = PanelSize(top_view_width, top_view_length, wall_thickness, wall_thickness)
-        self._color = color
+        self.size: PanelSize = size
+        self._color: Tuple[float, float, float] = color
         if self._color == None:
             self._color = self.face.default_color
-        self._part_color = part_color
+        self._part_color: Tuple[float, float, float] = part_color
         if self._part_color == None:
             self._part_color = self.face.default_part_color
         self.panel: cq.Workplane = None
         self.mask: cq.Workplane = self._rotate_to_face(
             cq.Workplane("front")
                 .workplane()
-                .box(top_view_width, top_view_length, wall_thickness, centered=(True, True, False))
+                .box(self.size.width, self.size.length, self.size.wall_thickness, centered=(True, True, False))
         )
         self.debug_assemblies: Dict[str, Union[Dict, cq.Workplane]] = {}
         self.debug_assemblies["hole"] = None
@@ -70,7 +68,7 @@ class Panel:
         self.debug_assemblies["other"] = None
         self.debug_assemblies["combined"] = cq.Assembly(None, name=self.face.label + " - Debug")
         self.lid_size_error_margin: float = lid_size_error_margin
-        self.project_info = project_info
+        self.project_info: ProjectInfo = project_info
         self.additional_printables = []
         self._alpha: float = alpha
         self._parts_to_add = []

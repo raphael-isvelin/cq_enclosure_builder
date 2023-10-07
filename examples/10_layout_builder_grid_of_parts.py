@@ -7,13 +7,13 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Panel, Face
+from cq_enclosure_builder import Panel, PanelSize, Face
 from cq_enclosure_builder.layout_builder import LayoutGroup
 
-pf.set_default_types({"jack": '6.35mm PJ-612A'})
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
+panel = Panel(Face.TOP, PanelSize(100, 38, 2))
 
-panel = Panel(Face.TOP, 100, 38, 2)
+pf.set_default_types({"jack": '6.35mm PJ-612A'})
+pf.set_default_parameters({"enclosure_wall_thickness": panel.size.wall_thickness})
 
 jacks_grid = LayoutGroup.grid_of_part(
     "Jack 6.35",

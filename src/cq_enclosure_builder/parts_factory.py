@@ -172,7 +172,7 @@ class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
                 if param_name in cls.default_parameters:
                     kwargs[param_name] = cls.default_parameters[param_name]
                 elif param["default_value"] == PartFactoryMeta.NO_DEFAULT_VALUE_IDENTIFIER:
-                    raise ValueError(f"Missing required parameter '{param_name}' and no default is set. See PartFactory#set_default_parameters.")
+                    raise ValueError(f"{category}.{part_type}: missing required parameter '{param_name}' and no default is set. See PartFactory#set_default_parameters.")
                 else:
                     # Adding the default value (from the __init__), because otherwise, not passing a value for a parameter that has a default value,
                     #   and passing a value with explictly the same value as the default value, would result in two different cache entries.

@@ -7,18 +7,17 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Panel, Face
+from cq_enclosure_builder import Panel, PanelSize, Face
 
-ENCLOSURE_WALL_THICKNESS = 2
+panel_size = PanelSize(width=100, length=38, wall_thickness=2)
+panel = Panel(Face.TOP, panel_size)
 
 pf.set_default_types({
     "button": 'SPST PBS-24B-4',
 })
 pf.set_default_parameters({
-    "enclosure_wall_thickness": ENCLOSURE_WALL_THICKNESS
+    "enclosure_wall_thickness": panel_size.wall_thickness
 })
-
-panel = Panel(Face.TOP, 100, 38, ENCLOSURE_WALL_THICKNESS)
 
 button = pf.build_button()
 

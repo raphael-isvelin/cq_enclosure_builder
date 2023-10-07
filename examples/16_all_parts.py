@@ -10,18 +10,18 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Panel, Face
+from cq_enclosure_builder import Panel, PanelSize, Face
 from cq_enclosure_builder.layout_builder import LayoutElement, LayoutGroup
 
+panel = Panel(Face.TOP, PanelSize(0.1, 0.1, 0.1))  # not caring about the panel size
+
 pf.set_default_parameters({
-    "enclosure_wall_thickness": 2,
+    "enclosure_wall_thickness": panel.size.wall_thickness,
     "support_height": 10,  # used by support/pyramid
-    "width": 6,
-    "length": 5,
+    "width": 8,  # used by support/skirt
+    "length": 6,  # used by support/skirt
 })
 # Will break if new Parts with arguments without default values are added
-
-panel = Panel(Face.TOP, 0.1, 0.1, 0.1)  # not caring about the panel size
 
 lines = []
 

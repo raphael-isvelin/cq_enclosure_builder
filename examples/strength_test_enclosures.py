@@ -7,6 +7,8 @@ from cq_enclosure_builder import Panel, Face
 from cq_enclosure_builder.layout_builder import LayoutElement, LayoutGroup
 from cq_enclosure_builder.parts.common.knobs_and_caps import KNOB_18_x_17_25
 
+enclosure_size = EnclosureSize(60, 113, 31, 2)  # 1590B
+
 pf.set_default_types({
     "button": 'SPST PBS-24B-4',
     "potentiometer": 'WH148',
@@ -15,12 +17,11 @@ pf.set_default_types({
     "support": 'pyramid',
 })
 pf.set_default_parameters({
-    "enclosure_wall_thickness": 2,
+    "enclosure_wall_thickness": enclosure_size.wall_thickness,
     "pot_knob": KNOB_18_x_17_25,
 })
 
 def build_strength_test_enclosure(with_support: bool):
-    enclosure_size = EnclosureSize(60, 113, 31, 2)  # 1590B
     project_name = "strength-test-" + ("with" if with_support else "without") + "-support"
     project_info = ProjectInfo(project_name, "1")
     enclosure = Enclosure(enclosure_size, project_info=project_info)

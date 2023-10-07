@@ -9,9 +9,6 @@ sys.path.append("../src")
 from cq_enclosure_builder import PartFactory as pf
 from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo
 
-pf.set_default_types({"button": 'SPST PBS-24B-4'})
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
-
 enclosure = Enclosure(
     size=EnclosureSize(180, 90, 38, 2),
     project_info=ProjectInfo("my-enclosure", "0.9"),
@@ -22,9 +19,12 @@ enclosure = Enclosure(
     add_lid_support=True,     # adds a rim all around the enclosure to prevent the lid from sinking in
     add_top_support=True,     # small support rim on the enclosure to provide additional strength
     lid_screws_heat_set=True, # use heat set inserts instead of printed threads
-    no_fillet_top=True,       # removed the fillet (rounded edges) on the top of the enclosure
-    no_fillet_bottom=True,    # removed the fillet (rounded edges) on the bottom of the enclosure
+    no_fillet_top=True,      # removed the fillet (rounded edges) on the top of the enclosure
+    no_fillet_bottom=True,   # removed the fillet (rounded edges) on the bottom of the enclosure
 )
+
+pf.set_default_types({"button": 'SPST PBS-24B-4'})
+pf.set_default_parameters({"enclosure_wall_thickness": enclosure.size.wall_thickness})
 
 enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), abs_pos=(40, 10))
 enclosure.assemble()

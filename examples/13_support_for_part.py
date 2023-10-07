@@ -15,11 +15,11 @@ pf.set_default_types({
     "button": 'SPST PBS-24B-4',
     "support": 'pyramid',
 })
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
+pf.set_default_parameters({"enclosure_wall_thickness": enclosure.size.wall_thickness})
 
 spst = pf.build_button()
 
-support_height = enclosure_size.outer_thickness - spst.inside_footprint_thickness - enclosure_size.wall_thickness
+support_height = enclosure.size.outer_thickness - spst.inside_footprint_thickness - enclosure.size.wall_thickness
 support = pf.build_support(support_height=support_height)
 
 enclosure.add_part_to_face(Face.TOP, "SPST", spst, rel_pos=(-10, 0))

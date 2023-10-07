@@ -7,7 +7,7 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Part, Panel, Face
+from cq_enclosure_builder import Part, Panel, PanelSize, Face
 from cq_enclosure_builder.parts_factory import register_part
 
 
@@ -51,7 +51,7 @@ class Abc45Part(Part):
         )
 
 
-panel = Panel(Face.TOP, 60, 30, 2)
+panel = Panel(Face.TOP, PanelSize(60, 30, 2))
 
 my_part = Abc45Part(enclosure_wall_thickness=2)
 panel.add("test 1", my_part, rel_pos=(-20, 0))
@@ -59,7 +59,7 @@ panel.add("test 1", my_part, rel_pos=(-20, 0))
 panel.add("test 2", pf.build_cool_thing(part_type='ABC-45', enclosure_wall_thickness=2), rel_pos=(00, 10))
 
 pf.set_default_types({"cool_thing": 'ABC-45'})
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
+pf.set_default_parameters({"enclosure_wall_thickness": panel.size.wall_thickness})
 panel.add("test 3", pf.build_cool_thing(), rel_pos=(20, 0))
 
 panel.assemble()

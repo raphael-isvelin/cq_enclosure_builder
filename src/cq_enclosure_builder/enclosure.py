@@ -20,7 +20,7 @@ from typing_extensions import Self
 import cadquery as cq
 from cadquery import exporters
 
-from cq_enclosure_builder import Part, Panel, Face, ProjectInfo
+from cq_enclosure_builder import Part, Panel, PanelSize, Face, ProjectInfo
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
 from cq_enclosure_builder.parts.common.screws_providers import DefaultFlatHeadScrewProvider, DefaultHeatSetScrewProvider
 from cq_enclosure_builder.parts.support.skirt import SkirtPart
@@ -98,7 +98,7 @@ class Enclosure:
 
         for info in self.panels_specs:
             lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
-            self.panels[info[0]] = Panel(info[0], *info[1], alpha=info[3], lid_size_error_margin=lid_size_error_margin, project_info=self.project_info)
+            self.panels[info[0]] = Panel(info[0], PanelSize(*info[1]), alpha=info[3], lid_size_error_margin=lid_size_error_margin, project_info=self.project_info)
 
         # Lid should be created before the screws are added (cut the screws' masks from the lid)
         if add_lid_support:

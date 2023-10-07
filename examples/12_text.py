@@ -7,12 +7,12 @@ import sys
 sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
-from cq_enclosure_builder import Panel, Face
+from cq_enclosure_builder import Panel, PanelSize, Face
 
-panel = Panel(Face.TOP, 180, 90, 2)
+panel = Panel(Face.TOP, PanelSize(180, 90, 2))
 
 pf.set_default_types({"text": 'default'})
-pf.set_default_parameters({"enclosure_wall_thickness": 2})
+pf.set_default_parameters({"enclosure_wall_thickness": panel.size.wall_thickness})
 
 extruded_text = pf.build_text(
     text = "Sample text\nA new line",
