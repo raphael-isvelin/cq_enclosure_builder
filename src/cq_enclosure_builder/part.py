@@ -73,7 +73,7 @@ class Part:
         #   `assembly_parts_to_cq_assembly(assembly_parts).toCompound()` or equivalent.
         self.assembly_parts: List[AssemblyPart] = None
 
-        self.additional_printables: Dict[str, cq.Workplane] = None
+        self.additional_printables: Dict[str, Tuple[float, float], cq.Workplane] = None
 
         self.size: PartSize = PartSize()
         self.inside_footprint: Tuple[float, float] = None  # used by the layout builder  # TODO

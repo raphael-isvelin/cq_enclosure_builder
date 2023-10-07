@@ -143,7 +143,6 @@ class Hdmi5InchJrp5015Part(Part):
 
         pcb_thickness = 2
         self.inside_footprint = (self.size.width, self.size.length)
-        print("pt: " + str(part_thickness))
         self.inside_footprint_thickness =part_thickness + screw_block_thickness + pcb_thickness
         self.inside_footprint_offset = (0, 0)
 

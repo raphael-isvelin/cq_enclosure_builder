@@ -118,13 +118,18 @@ class Enclosure:
                     Enclosure.PRINTABLE_FRAME, Enclosure.PRINTABLE_SCREWS, Enclosure.PRINTABLE_LID_SUPPORT],
             "lid": [Face.BOTTOM],
         }
-        self.printables: Dict[str, cq.Workplane] = {}
+        self.printables: Dict[str, Tuple[cq.Workplane, Tuple[float, float]]] = {}
+        self.all_printables_assembly = cq.Assembly()
 
     def export_printables(self) -> None:
-        for name, wp in self.printables.items():
+        for name, item in self.printables.items():
+            wp = item[0]
             file_path = self._build_printable_file_path(name)
             print(f"Exporting '{name}' to '{file_path}'")
             exporters.export(wp, file_path)
+        file_path = self._build_printable_file_path("ALL")
+        print(f"Exporting 'ALL' to '{file_path}'")
+        exporters.export(self.all_printables_assembly.toCompound(), file_path)
 
     def _assemble_printables(self) -> Self:
         for name, elements in self.main_printables_config.items():
@@ -140,7 +145,30 @@ class Enclosure:
                     printable_a.add(self.lid_support, name=e)
                 else:
                     raise ValueError("Unknown printable element " + str(e))
-            self.printables[name] = printable_a.toCompound()
+            printable_wp = printable_a.toCompound()
+            printable_size = None
+            # TODO make a bit more generic
+            if name == "box":  # the box should be printed top-down
+                printable_wp = (printable_wp
+                    .rotate((0, 0, 0), (0, 1, 0), 180)
+                    .translate([0, 0, self.size.outer_thickness - self.size.wall_thickness]))
+                printable_size = (self.size.outer_width, self.size.outer_length)
+            elif name == "lid":
+                printable_wp = printable_wp.translate([0, 0, self.size.wall_thickness])
+                lid_panel = self.panels[Face.BOTTOM]  # TODO unhardcode lid panel
+                printable_size = (lid_panel.true_size.width, lid_panel.true_size.length)
+            else:
+                raise ValueError(f"Unsupported printable '{name}', you might run into alignment issues when displaying all_printables_assembly")
+            self.printables[name] = (printable_wp, printable_size)
+
+        self.all_printables_assembly = cq.Assembly(name="All printables")
+        shift_by = 0
+        printables_spacing = 8
+        for name, item in self.printables.items():
+            wp = item[0]
+            printable_size = item[1]
+            self.all_printables_assembly.add(wp.translate([0, shift_by + printable_size[1]/2, 0]), name=name)
+            shift_by = shift_by + printable_size[1] + printables_spacing
 
     def add_part_to_face(
         self,
@@ -261,7 +289,8 @@ class Enclosure:
 
             for printable in panel.additional_printables:
                 printable_name = printable[0]
-                self.printables[printable_name] = printable[1]
+                printable_size = printable[1]
+                self.printables[printable_name] = (printable[2], printable_size)
 
         panels_assembly, panels_masks_assembly = self._build_panels_assembly(walls_explosion_factor, lid_panel_shift)
         self.frame = self._build_frame_assembly(panels_masks_assembly)
@@ -272,9 +301,6 @@ class Enclosure:
         other_debug_assembly = self._build_debug_assembly([("other", "")], walls_explosion_factor, lid_panel_shift)
 
         self._assemble_printables();
-        printables_debug_assembly = cq.Assembly()
-        for name, wp in self.printables.items():
-            printables_debug_assembly.add(wp, name=name)
 
         self.debug = (
             cq.Assembly(None, name="Box")
@@ -282,7 +308,6 @@ class Enclosure:
                 .add(holes_assembly, name="Holes")
                 .add(other_debug_assembly, name="Others")
                 .add(panels_masks_assembly, name="Panels masks")
-                .add(printables_debug_assembly, name="Printables")
         )
         self.assembly = (
             cq.Assembly(None, name="Box")
@@ -292,7 +317,7 @@ class Enclosure:
                 .add(self.lid_support, name="Lid support", color=cq.Color(*Enclosure.LID_SUPPORT_COLOR))
         )
         self.assembly_with_debug = (
-            cq.Assembly()
+            cq.Assembly(name="Assembly with debug objects")
                 .add(self.assembly, name="Assembly")
                 .add(self.debug, name="Debug")
         )

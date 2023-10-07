@@ -9,9 +9,10 @@ sys.path.append("../src")
 from cq_enclosure_builder import PartFactory as pf
 from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo
 
+project_info = ProjectInfo("Hello World", "0.9")
 enclosure = Enclosure(
     size=EnclosureSize(180, 90, 38, 2),
-    project_info=ProjectInfo("my-enclosure", "0.9"),
+    project_info=project_info,
     lid_on_faces=[Face.BOTTOM],    # for now, can only be BOTTOM, feel free to contribute/open an issue if you have a more specific need
     lid_panel_size_error_margin=1.2, # meaning the lid is `margin` smaller than the hole (space for the lid) on both width and length
     lid_thickness_error_margin=2,  # if >0, the lid screws and support will be slightly sunk in the enclosure
@@ -26,9 +27,13 @@ enclosure = Enclosure(
 pf.set_default_types({"button": 'SPST PBS-24B-4'})
 pf.set_default_parameters({"enclosure_wall_thickness": enclosure.size.wall_thickness})
 
-enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), abs_pos=(40, 10))
+enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), rel_pos=(0, 0))
 enclosure.assemble()
-show_object(enclosure.assembly)
 
-# Exports files stls/my-enclosure-box-v0.9.stl and stls/my-enclosure-lid-v0.9.stl
+show_object(enclosure.all_printables_assembly)
+
+# Exports the following files, based on the project's name and version:
+#   - stls/hello_world-box-v0.9.stl
+#   - stls/hello_world-lid-v0.9.stl
+#   - stls/hello_world-ALL-v0.9.stl
 enclosure.export_printables()

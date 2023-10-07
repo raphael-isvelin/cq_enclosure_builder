@@ -21,7 +21,7 @@ from cq_enclosure_builder.parts_factory import register_part
 
 
 @register_part("jack", "3.5mm PJ-392")
-class Jack3_5mmXxxPart(GenericThreadedWithStopPart):
+class Jack3_5mmPj392Part(GenericThreadedWithStopPart):
     """
     3.5mm female jack connector PJ-392
 

@@ -102,7 +102,7 @@ A simple [Enclosure](#api-reference-enclosure) with an 'exploded' view.
 <a name="example-05"></a>
 ### 05 – Export enclosure STLs
 
-[Enclosure](#api-reference-enclosure)'s `export_printables` will generate ready-to-print STLs files for each distinct part of your project. Most enclosures will typically require only to parts to print: the main section (**box**) and a **lid**, while others will require additional prints (such as brackets to hold certain types of screens).
+[Enclosure](#api-reference-enclosure)'s `export_printables` will generate ready-to-print STLs files for each distinct part of your project. Most enclosures will typically require only to parts to print: the main section (**box**) and a **lid**, while others will require additional prints (such as brackets to hold a specific type of screen in this example).
 
 ![Export enclosure STLs](./docs/img/05.jpg)
 <sub><p align="center">[05_export_enclosure_stls.py](./examples/05_export_enclosure_stls.py)</p></sub>
@@ -111,6 +111,8 @@ A simple [Enclosure](#api-reference-enclosure) with an 'exploded' view.
 ### 06 – Enclosure's optional parameters
 
 Shows optional parameters for the [Enclosure](#api-reference-enclosure) class. Here, we've updated a few parameters, but the most visibles in the screenshot below is that we've removed the fillet (rounded corners) on the top and bottom of the enclosure.
+
+We've also changed the project's name, which generated printables STLs with a customisd name.
 
 ![Enclosure's optional parameters](./docs/img/06.jpg)
 <sub><p align="center">[06_enclosure_optional_params.py](./examples/06_enclosure_optional_params.py)</p></sub>
@@ -213,13 +215,13 @@ For a detailed list, scroll down to [List of built-in parts](#available-parts-li
 
 For many parts, I've provided purchase links within the docstrings of the Python code, so you can obtain the exact item I used for modeling them.
 
-- **jack**: [6.35mm PJ-612A](./src/cq_enclosure_builder/parts/jack/jack_6_35mm_pj612a.py), [3.5mm XXX](./src/cq_enclosure_builder/parts/jack/jack_3_5mm_xxx.py)
+- **jack**: [6.35mm PJ-612A](./src/cq_enclosure_builder/parts/jack/jack_6_35mm_pj612a.py), [3.5mm PJ-392](./src/cq_enclosure_builder/parts/jack/jack_3_5mm_pj392.py.py)
 - **button**: [SPST PBS-24B-4](./src/cq_enclosure_builder/parts/button/spst_pbs_24b_4.py), [DPDT PBS-24-212SP](./src/cq_enclosure_builder/parts//button/dpdt_pbs_24_212sp.py), [PBS 11-A](./src/cq_enclosure_builder/parts/button/button_pbs_11a.py), [PBS-110](./src/cq_enclosure_builder/parts/button/button_pbs_110.py)
 - **encoder**: [EC11](./src/cq_enclosure_builder/parts/encoder/encoder_ec11.py)
 - **potentiometer**: [WH148](./src/cq_enclosure_builder/parts/potentiometer/potentiometer_wh148.py)
 - **usb_a**: [3.0 cltgxdd](./src/cq_enclosure_builder/parts/usb_a/usb_a_30_vertical_cltgxdd.py)
 - **usb_c**: [ChengHaoRan E](./src/cq_enclosure_builder/parts/usb_c/usb_c_chenghaoran_e.py)
-- **screen**: [HDMI 5 inch JRP5015](./src/cq_enclosure_builder/parts/screen/hdmi_5inch_jrp5015.py), [DSI 5 inch XXX](./src/cq_enclosure_builder/parts/screen/dsi_5inch_xxx.py)
+- **screen**: [HDMI 5 inch JRP5015](./src/cq_enclosure_builder/parts/screen/hdmi_5inch_jrp5015.py), [DSI 5 inch CFsunbird](./src/cq_enclosure_builder/parts/screen/dsi_5inch_CFsunbird.py)
 - **air_vent**: [basic rectangular](./src/cq_enclosure_builder/parts/air_vent/rect_air_vent_part.py)
 - **banana**: [4mm](./src/cq_enclosure_builder/parts/banana/banana_4mm.py)
 - **barrel_plug**: [DC-022B](./src/cq_enclosure_builder/parts/barrel_plug/barrel_plug_dc022b.py)
@@ -376,7 +378,7 @@ The code used to generate the STLs for these tests can be found here. [here](./e
 | *(value)* `assembly_parts`: `List[`[AssemblyPart](./src/cq_enclosure_builder/part.py)`]` (default: `None`) | [AssemblyPart](./src/cq_enclosure_builder/part.py) consists of three fields: `workplane: cq.Workplane`, `name: str`, and `color: cq.Color`. It's utilized to visually distinguish sub-parts, like coloring screws differently. If [AssemblyPart](./src/cq_enclosure_builder/part.py) is present, it will be used for display; otherwise, the part field will be used. Even if they are equivalent, the part should still be set. Refer to the comments in [Part](./src/cq_enclosure_builder/part.py) for more details. |
 | *(value)* `mask`: `cq.Workplane` | *N/A* | Will be cut from the panel, should likely be the same width/length as the `part`. |
 | *(value)* `size`: `PartSize` | *N/A* | `PartSize` consists of three fields: `width: float`, `length: float`, and `thickness: float`. |
-| *(value)* `additional_printables: Dict[str, cq.Workplane]` | *N/A* | Workplanes in this map will be export when calling [Enclosure](#api-reference-enclosure)'s `export_printables'. | 
+| *(value)* `additional_printables: Dict[str, Tuple[float, float], cq.Workplane]` | *N/A* | Workplanes in this map will be export when calling [Enclosure](#api-reference-enclosure)'s `export_printables'. Dict of `(<name>, <size>, <workplane>)`. | 
 | *(value)* `inside_footprint: Tuple[float, float]` | *N/A* | Needed by the layout builder ([LayoutGroup](#api-reference-layout-group)) to position elements. |
 | *(value)* `inside_footprint_thickness: float` | *N/A* | Currently, only used when wanting to create a "pyramid" support to sit underneath another part, for added strength. |
 | *(value)* `inside_footprint_offset: Tuple[float, float]` | *N/A* | The distance from the centre-point of the `inside_footprint` to the coordinate `(0,0)`. This is used by the layout builder. |

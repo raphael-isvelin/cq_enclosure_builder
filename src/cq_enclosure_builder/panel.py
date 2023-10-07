@@ -49,6 +49,9 @@ class Panel:
         ):
         self.face: Face = face
         self.size: PanelSize = size
+        self.lid_size_error_margin: float = lid_size_error_margin
+        # 'true_size' only applies if the panel is a lid (otherwise, it will just be the same as self.size)
+        self.true_size: PanelSize = PanelSize(self.size.width - self.lid_size_error_margin, self.size.length - self.lid_size_error_margin, self.size.wall_thickness)
         self._color: Tuple[float, float, float] = color
         if self._color == None:
             self._color = self.face.default_color
@@ -67,9 +70,8 @@ class Panel:
         self.debug_assemblies["footprint_out"] = None
         self.debug_assemblies["other"] = None
         self.debug_assemblies["combined"] = cq.Assembly(None, name=self.face.label + " - Debug")
-        self.lid_size_error_margin: float = lid_size_error_margin
         self.project_info: ProjectInfo = project_info
-        self.additional_printables = []
+        self.additional_printables: Dict[str, Tuple[float, float], cq.Workplane] = []
         self._alpha: float = alpha
         self._parts_to_add = []
         self._screw_counter_sunks = []
@@ -113,7 +115,7 @@ class Panel:
         wall = (
             cq.Workplane("front")
                 .workplane()
-                .box(self.size.width - self.lid_size_error_margin, self.size.length - self.lid_size_error_margin, self.size.wall_thickness,
+                .box(self.true_size.width, self.true_size.length, self.true_size.wall_thickness,
                      centered=(True, True, False))
         )
         self.panel = cq.Assembly(None, name="Panel TOP")
@@ -143,7 +145,7 @@ class Panel:
         self.panel = self.panel.add(self._rotate_to_face(wall), name="Wall", color=cq.Color(*self._color, self._alpha))
         self.debug_assemblies["combined"] = self._build_combined_debug_assembly()
         self.panel_with_debug = (
-            cq.Assembly()
+            cq.Assembly(name="Panel with debug objects")
                 .add(self.panel, name="Panel")
                 .add(self.debug_assemblies["combined"], name="Debug")
         )
@@ -185,23 +187,23 @@ class Panel:
         part_label: str = part_to_add["label"]
         if part.debug_objects.hole != None:
             if self.debug_assemblies["hole"] == None:
-                self.debug_assemblies["hole"] = cq.Assembly()
+                self.debug_assemblies["hole"] = cq.Assembly(name="Hole")
             hole = self._rotate_to_face(part.debug_objects.hole.translate([*part_pos, 0]))
             self.debug_assemblies["hole"] = self.debug_assemblies["hole"].add(hole, name=part_label, color=cq.Color(1, 0, 0))
         if part.debug_objects.footprint.inside != None:
             if self.debug_assemblies["footprint_in"] == None:
-                self.debug_assemblies["footprint_in"] = cq.Assembly()
+                self.debug_assemblies["footprint_in"] = cq.Assembly(name="Footprint IN")
             footprint_in = self._rotate_to_face(part.debug_objects.footprint.inside.translate([*part_pos, 0]))
             self.debug_assemblies["footprint_in"] = self.debug_assemblies["footprint_in"].add(footprint_in, name=part_label, color=cq.Color(1, 0, 1))
         if part.debug_objects.footprint.outside != None:
             if self.debug_assemblies["footprint_out"] == None:
-                self.debug_assemblies["footprint_out"] = cq.Assembly()
+                self.debug_assemblies["footprint_out"] = cq.Assembly(name="Footprint OUT")
             footprint_out = self._rotate_to_face(part.debug_objects.footprint.outside.translate([*part_pos, 0]))
             self.debug_assemblies["footprint_out"] = self.debug_assemblies["footprint_out"].add(footprint_out, name=part_label, color=cq.Color(0, 1, 1))
         other_debug_assembly = None
         for key in part.debug_objects.others.keys():
             if other_debug_assembly == None:
-                other_debug_assembly = cq.Assembly(None)
+                other_debug_assembly = cq.Assembly()
                 self.debug_assemblies["other"] = cq.Assembly()
             debug_part = self._rotate_to_face(part.debug_objects.others[key].translate([*part_pos, 0]))
             other_debug_assembly = other_debug_assembly.add(debug_part, name=key)
