@@ -55,18 +55,41 @@ Easily generate printable enclosures for your projects in just a few lines of co
 <a name="install"></a>
 ## Install
 
-First, you'll need to install [CadQuery](https://cadquery.readthedocs.io/en/latest/installation.html).
+### Quick install
+
+```shell
+$ python setup.py install
+```
+
+This will install `cq_enclosure_builder` on your system, as well as the required libraries (<a href="https://cadquery.readthedocs.io/en/latest/installation.html" target="_blank">CadQuery</a> and <a href="https://github.com/gumyr/cq_warehouse" target="_blank">cq_warehouse</a>.).
+
+You'll also need to copy a file to your <a href="https://github.com/gumyr/cq_warehouse" target="_blank">cq_warehouse</a> install folder, as this project uses a custom type of screw. See `flat_head_parameters.csv` in the section below. (In future versions, the default type of screw used will be change, to reduce complexity.)
+
+### Manual install
+
+First, you'll need to install <a href="https://cadquery.readthedocs.io/en/latest/installation.html" target="_blank">CadQuery</a>.
+
+Then, install the library used to generate screws: <a href="https://github.com/gumyr/cq_warehouse" target="_blank">cq_warehouse</a>.
+
+Finally, copy the custom screw used by the project in <a href="https://github.com/gumyr/cq_warehouse" target="_blank">cq_warehouse</a>'s install folder:'
+
+```shell
+# Or wherever your cq_warehouse install folder is
+$ cp src/cq_enclosure_builder/screws/flat_head_parameters.csv ~/miniconda3/lib/python3.10/site-packages/cq_warehouse/flat_head_parameters.csv
+```
+
+### UI
 
 There are a few available UIs you can choose from, including:
-- [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery#installation): more features and flexibility, but requires a working [Jupyter Notebook/Lab](https://jupyter.org/install) (highly recommended if you decide to design your own parts).
-- [cq-editor](https://github.com/CadQuery/CQ-editor#installation---pre-built-packages-recommended): the default UI.
+- <a href="https://github.com/bernhard-42/jupyter-cadquery#installation" target="_blank">jupyter-cadquery</a>: more features and flexibility, but requires a working <a href="https://jupyter.org/install" target="_blank">Jupyter Notebook/Lab</a> (highly recommended if you decide to design your own parts).
+- <a href="https://github.com/CadQuery/CQ-editor#installation---pre-built-packages-recommended" target="_blank">cq-editor</a>: the default UI.
 
 To run the examples, just open them with the UI you've picked, and they should work right away. **If I missed a required dependency, please let me know!**
 
 <a name="examples"></a>
 ## Examples (with screenshots)
 
-You can explore the examples provided. If you're using [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery#installation), check out [00_all_examples.ipynb](./examples/00_all_examples.ipynb) which consolidates all examples into a single Notebook.
+You can explore the provided examples. If you're using <a href="https://github.com/bernhard-42/jupyter-cadquery#installation" target="_blank">jupyter-cadquery</a>, check out [00_all_examples.ipynb](./examples/00_all_examples.ipynb) which groups all examples into a single Notebook.
 
 For other UIs, navigate to the [examples](./examples/) directory and open the individual `.py` files with your chosen UI.
 
@@ -314,10 +337,11 @@ The code used to generate the STLs for these tests can be found here. [here](./e
 | Method or Value Name | Parameters | Description |
 |-------------|------------|-------------|
 | `__init__`  | <ul><li>`size`: [EnclosureSize](./src/cq_enclosure_builder/enclosure.py)</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`): name and version are used for naming the exported STLs.</li><li>`lid_on_faces: List[`[Face](./src/cq_enclosure_builder/face.py)`]` (default: `[Face.BOTTOM]`): which side of the enclosure has a screwable lid. Only `BOTTOM` is supported as of now.</li><li>`lid_panel_size_error_margin: float` (default: `0.8`): how small the lid panel is on both width and length compared to the lid hole.</li><li>`lid_thickness_error_margin: float` (default: `0.4`): if >0, the lid screws and support will be slightly sunk in the enclosure.</li><li>`add_corner_lid_screws: bool` (default: `True`)</li><li>`add_lid_support: bool` (default: `True`): add a rim around the enclosure to prevent the lid from sinking in.</li><li>`add_top_support: bool` (default: `True`): small support 'skirt' to increase the strength of the top of the enclosure.</li><li>`lid_screws_heat_set: bool` (default: `True`): use heat-set inserts instead of printing a screw threads for the lid corner screws.</li><li>`no_fillet_top: bool` (default: `False`)</li><li>`no_fillet_bottom: bool` (default: `False`)</li></ul> |  |
-| `add_part_to_face` -> `None` | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py)</li><li>`part_label: str`: will be shown in the tree when using e.g. [jupyter-cadquery](https://github.com/bernhard-42/jupyter-cadquery).</li><li>`part`: [Part](#api-reference-part)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; either `rel_pos` or `abs_pos` must be specified): position relative to the centre of the [Panel](#api-reference-panel).</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the [Panel](#api-reference-panel).</li><li>`color: cq.Color` (default: `None`; defaults to [Panel](#api-reference-panel)'s default)</li></ul> | |
+| `add_part_to_face` -> `None` | <ul><li>`face`: [Face](./src/cq_enclosure_builder/face.py)</li><li>`part_label: str`: will be shown in the tree when using certain UIs such as <a href="https://github.com/bernhard-42/jupyter-cadquery#installation" target="_blank">jupyter-cadquery</a>.</li><li>`part`: [Part](#api-reference-part)</li><li>`rel_pos: Tuple[float, float]` (default: `None`; either `rel_pos` or `abs_pos` must be specified): position relative to the centre of the [Panel](#api-reference-panel).</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the [Panel](#api-reference-panel).</li><li>`color: cq.Color` (default: `None`; defaults to [Panel](#api-reference-panel)'s default)</li></ul> | |
 | `assemble` -> `None` | <ul><li>`walls_explosion_factor: float` (default: `1.0`): a value >1 will move the enclosure's walls aways, giving a better inside view.</li><li>`lid_panel_shift: float` (default: `0.0`): move the lid panel (`BOTTOM`) away from the enclosure. | Needs to be called before calling `export_printables` or using the `assembly`. |
 | `export_printables` -> `None` | *none* | Export one STL per printable. By default, one for the `lid` and for the `box`. Some parts can require additional prints; any element added to [Part](#api-reference-part)'s `additional_printables` will also be exported.</li></ul>  |
-| `add_screw` -> `None` | *see code* | If you want to add more screws than the four corner screw than can be added automatically. |
+| `__init__`  | <ul><li>`size`: [EnclosureSize](./src/cq_enclosure_builder/enclosure.py)</li><li>`project_info`: [ProjectInfo](./src/cq_enclosure_builder/project_info.py) (default: `ProjectInfo()`): name and version are used for naming the exported STLs.</li><li>`lid_on_faces: List[`[Face](./src/cq_enclosure_builder/face.py)`]` (default: `[Face.BOTTOM]`): which side of the enclosure has a screwable lid. Only `BOTTOM` is supported as of now.</li><li>`lid_panel_size_error_margin: float` (default: `0.8`): how small the lid panel is on both width and length compared to the lid hole.</li><li>`lid_thickness_error_margin: float` (default: `0.4`): if >0, the lid screws and support will be slightly sunk in the enclosure.</li><li>`add_corner_lid_screws: bool` (default: `True`)</li><li>`add_lid_support: bool` (default: `True`): add a rim around the enclosure to prevent the lid from sinking in.</li><li>`add_top_support: bool` (default: `True`): small support 'skirt' to increase the strength of the top of the enclosure.</li><li>`lid_screws_heat_set: bool` (default: `True`): use heat-set inserts instead of printing a screw threads for the lid corner screws.</li><li>`no_fillet_top: bool` (default: `False`)</li><li>`no_fillet_bottom: bool` (default: `False`)</li></ul> |  |
+| `add_screw` -> `None` | <ul><li>`screw_size_category: str` (default: `m3`): the size of your screw; the options available depends on your chosen `screw_provider` (by default, one of: `m1.4`, `m2`, `m2.5`, `m3`, `m3.5`, `m4`, and `m5`).</li><li>`block_thickness: float` (default: `8`): the depth of your screw.</li><li>`rel_pos: Tuple[float, float]` (default: `None`; either `rel_pos` or `abs_pos` must be specified): position relative to the centre of the panel.</li><li>`abs_pos: Tuple[float, float]` (default: `None`; needs one): position from one corner of the panel.</li><li>`pos_error_margin: float` (default: `0.0`): should match the value of `lid_thickness_error_margin` in [Enclosure](#api-reference-enclosure)'s constructor.</li><li>`taper: TaperOptions` (default: `TaperOptions.NO_TAPER`): generally, you'll want to opt for `Z_TAPER_CORNER` or `Z_TAPER_SIDE`, to prevent printing issues.</li><li>`screw_provider` (default: `DefaultScrewProvider`): the main difference is whether your screw has printed thread, or a hole for a heat set insert. See [screws_providers.py](./src/cq_enclosure_builder/parts/common/screws_providers.py) if you have specific needs (e.g. a thinner screw block).</li><li>`counter_sunk_screw_provider` (default: `DefaultScrewProvider`): affects the shape of the countersunk hole in the lid. If you're using regular pan head or countersunk screws, they might be sticking out a bit of the enclosure, as the default provider uses flat head screws; you'll need to create a custom screw provider, based on the ones available in [screws_providers.py](./src/cq_enclosure_builder/parts/common/screws_providers.py). If this is important to you, please create an issue.</li><li>`with_counter_sunk_block: bool` (default: `True`): if `False`, it won't make any hole in the lid panel.</li></ul> | Used to add more screws than the four corner screw than can be added automatically. See [example 6.5](#example-06_5). |
 | *(value)* `assembly`: `cq.Assembly` | *N/A* | Contains a displayable assembly with the panels (incl. parts), frame, lid screws, and lid support.
 | *(value)* `debug`: `cq.Assembly` | *N/A* | Debug elements: footprints, holes, panels masks, printables, and other debug elements added by the parts ([Part](#api-reference-part)'s `debug_objects`).
 | *(value)* `assembly_with_debug`: `cq.Assembly` | *N/A* | Assembly containing the two previous assemblies.

@@ -8,7 +8,7 @@ sys.path.append("../src")
 
 from cq_enclosure_builder import PartFactory as pf
 from cq_enclosure_builder import Enclosure, EnclosureSize, Face, ProjectInfo
-from cq_enclosure_builder.parts.common.screws_providers import DefaultFlatHeadScrewProvider
+from cq_enclosure_builder.parts.common.screws_providers import DefaultScrewProvider
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
 
 enclosure = Enclosure(EnclosureSize(80, 56, 38, 1.4))
@@ -21,9 +21,8 @@ enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), rel_pos=(0, 0))
 # We need to know the size of the screw we're about to add,
 #   as its centred at (0,0).
 # This makes adding screws more verbose than it should; it should be refactored.
-screw_provider = DefaultFlatHeadScrewProvider
 screw_size_category = "m2"
-screw_size = ScrewBlock(screw_provider).build(screw_size_category, Enclosure.CORNER_LID_SCREWS_THICKNESS, enclosure.size.wall_thickness)["size"]
+screw_size = ScrewBlock().build(screw_size_category, Enclosure.CORNER_LID_SCREWS_THICKNESS, enclosure.size.wall_thickness)["size"]
 
 sw = screw_size[0]
 sl = screw_size[1]
@@ -41,8 +40,6 @@ for screw_specs in screws_specs:
         pos_error_margin=enclosure.lid_thickness_error_margin,
         taper=TaperOptions.Z_TAPER_SIDE,
         taper_rotation=screw_specs[1],
-        with_counter_sunk_block=True,
-        screw_provider=screw_provider
     )
 
 enclosure.assemble()

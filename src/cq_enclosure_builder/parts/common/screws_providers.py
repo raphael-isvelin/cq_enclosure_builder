@@ -22,7 +22,7 @@ from .generic_screw_provider import GenericScrewProvider
 from .hole_type import HoleType
 
 
-class DefaultFlatHeadScrewProvider:
+class DefaultScrewProvider:
     SCREW_CLASS = FlatHeadScrew
     SCREW_MODEL_NAME: str = "aliexpress"
     SCREW_SIZE_REFERENCES: Dict[str, str] = {

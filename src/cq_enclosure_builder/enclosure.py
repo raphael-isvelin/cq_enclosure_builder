@@ -22,7 +22,7 @@ from cadquery import exporters
 
 from cq_enclosure_builder import Part, Panel, PanelSize, Face, ProjectInfo
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
-from cq_enclosure_builder.parts.common.screws_providers import DefaultFlatHeadScrewProvider, DefaultHeatSetScrewProvider
+from cq_enclosure_builder.parts.common.screws_providers import DefaultScrewProvider, DefaultHeatSetScrewProvider
 from cq_enclosure_builder.parts.support.skirt import SkirtPart
 
 
@@ -194,8 +194,8 @@ class Enclosure:
         pos_error_margin: float = 0,
         taper: TaperOptions = TaperOptions.NO_TAPER,
         taper_rotation: float = 0.0,
-        screw_provider = DefaultFlatHeadScrewProvider,
-        counter_sunk_screw_provider = DefaultFlatHeadScrewProvider,
+        screw_provider = DefaultScrewProvider,
+        counter_sunk_screw_provider = DefaultScrewProvider,
         with_counter_sunk_block: bool = True
     ) -> ScrewBlock:
         # TODO support lid != Face.BOTTOM + refactor
@@ -245,7 +245,7 @@ class Enclosure:
 
         lid_screws_thickness = Enclosure.CORNER_LID_SCREWS_THICKNESS
 
-        screw_provider = DefaultHeatSetScrewProvider if heat_set else DefaultFlatHeadScrewProvider
+        screw_provider = DefaultHeatSetScrewProvider if heat_set else DefaultScrewProvider
 
         screw_size = ScrewBlock(screw_provider).build(screw_size_category, lid_screws_thickness, self.size.wall_thickness)["size"]  # refactor to avoid this
         pw = self.size.outer_width

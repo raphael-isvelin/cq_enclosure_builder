@@ -20,7 +20,7 @@ from enum import Enum
 import cadquery as cq
 import cq_warehouse.extensions
 from .hole_type import HoleType
-from .screws_providers import DefaultFlatHeadScrewProvider
+from .screws_providers import DefaultScrewProvider
 
 class FitOptions(Enum):
     CLOSE = "Close"
@@ -42,8 +42,8 @@ class ScrewBlock:
 
     def __init__(
         self,
-        screw_provider=DefaultFlatHeadScrewProvider,
-        counter_sunk_screw_provider=DefaultFlatHeadScrewProvider
+        screw_provider=DefaultScrewProvider,
+        counter_sunk_screw_provider=DefaultScrewProvider
     ):
         self.screw_provider = screw_provider
         self.counter_sunk_screw_provider = counter_sunk_screw_provider
