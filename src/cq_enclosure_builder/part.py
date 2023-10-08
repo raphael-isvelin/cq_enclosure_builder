@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-from typing import List, Tuple, Dict, Union
+from typing import List, Dict, Tuple
 
 import cadquery as cq
 

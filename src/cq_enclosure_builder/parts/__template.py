@@ -14,10 +14,13 @@
    limitations under the License.
 """
 
+from typing import List, Dict, Tuple
+
 import cadquery as cq
 
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
+
 
 @register_part("<category>", "<part_type>")
 class XxxPart(Part):
@@ -26,14 +29,21 @@ class XxxPart(Part):
 
     <link to part here>
     """
+
     def __init__(
         self,
         enclosure_wall_thickness: float,  # can be removed if unused
     ) -> None:
         super().__init__()
 
+        # All the fields below are inherited from `Part`
+
         self.part = None  # TODO (required)
         self.mask = None  # TODO (required)
+
+        self.assembly_parts = None  # optional, see comment in `Part`
+
+        self.additional_printables = None  # optional
 
         self.size.width     = None  # TODO (required)
         self.size.length    = None  # TODO (required)
