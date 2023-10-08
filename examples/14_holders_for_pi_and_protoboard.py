@@ -3,6 +3,7 @@
 # to view the examples: it will make it way easier for you to naviguate through the enclosure:
 # interract with the models, hide parts, view the debug assemblies more easily, and much more.
 
+# Can be removed if you've installed cq_enclosure_builder on your system
 import sys
 sys.path.append("../src")
 

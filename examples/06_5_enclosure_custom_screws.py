@@ -3,6 +3,7 @@
 # to view the examples: it will make it way easier for you to naviguate through the enclosure:
 # interract with the models, hide parts, view the debug assemblies more easily, and much more.
 
+# Can be removed if you've installed cq_enclosure_builder on your system
 import sys
 sys.path.append("../src")
 
@@ -20,7 +21,7 @@ enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), rel_pos=(0, 0))
 
 # We need to know the size of the screw we're about to add,
 #   as its centred at (0,0).
-# This makes adding screws more verbose than it should; it should be refactored.
+# This makes adding screws more verbose than it should; see issue #7.
 screw_size_category = "m2"
 screw_size = ScrewBlock().build(screw_size_category, Enclosure.CORNER_LID_SCREWS_THICKNESS, enclosure.size.wall_thickness)["size"]
 

@@ -83,9 +83,10 @@ class Pi4HolderPart(Part):
 
         footprint_in = screws_a.toCompound()
         if add_pi_to_footprint:
-            model_path = f"{os.path.dirname(__file__)}/rpi_4b_light.stp"
+            model_path = os.path.join(os.path.dirname(__file__), "rpi_4b_light.stp")
+            model = cq.importers.importStep(model_path)
             pi_footprint = (
-                cq.importers.importStep(model_path)
+                model
                     .translate([-(board_width/2), -(board_length/2), enclosure_wall_thickness + screw_block_thickness])
                     .translate([screw_size[0]/2, screw_size[1]/2, 0])
             )

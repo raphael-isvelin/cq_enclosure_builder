@@ -3,6 +3,7 @@
 # to view the examples: it will make it way easier for you to naviguate through the enclosure:
 # interract with the models, hide parts, view the debug assemblies more easily, and much more.
 
+# Can be removed if you've installed cq_enclosure_builder on your system
 import sys
 sys.path.append("../src")
 
@@ -18,7 +19,7 @@ enclosure_size = EnclosureSize(
 enclosure = Enclosure(enclosure_size)
 
 pf.set_default_types({"button": 'SPST PBS-24B-4'})
-pf.set_default_parameters({"enclosure_wall_thickness": enclosureO_size.wall_thickness})
+pf.set_default_parameters({"enclosure_wall_thickness": enclosure.size.wall_thickness})
 
 enclosure.add_part_to_face(Face.TOP, "SPST", pf.build_button(), rel_pos=(-10, 0))
 

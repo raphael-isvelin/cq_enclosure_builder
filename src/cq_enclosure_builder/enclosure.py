@@ -64,6 +64,11 @@ class Enclosure:
         no_fillet_top: bool = False,
         no_fillet_bottom: bool = False,
     ):
+        if lid_on_faces != [Face.BOTTOM]:
+            # TODO: add support for lid != BOTTOM; see issue #2
+            # TODO nice-to-have: also add support for multiple lids (faces); see issue #3
+            raise ValueError("lid_on_faces: only value supported for now is [BOTTOM], got " + str(lid_on_faces))
+
         super().__init__()
 
         outer_width = size.outer_width
@@ -74,11 +79,6 @@ class Enclosure:
         self.project_info = project_info
         self.no_fillet_top = no_fillet_top
         self.no_fillet_bottom = no_fillet_bottom
-
-        if lid_on_faces != [Face.BOTTOM]:
-            # TODO: add support (upddate the correct face in panels_specs)
-            # TODO nice-to-have: also add support for multiple lids (faces)
-            raise ValueError("lid_on_faces: only value supported for now is [BOTTOM], got " + str(lid_on_faces))
 
         self.frame: Union[cq.Assembly, None] = None
         self.panels_specs = [
@@ -157,7 +157,7 @@ class Enclosure:
                 printable_size = (self.size.outer_width, self.size.outer_length)
             elif name == "lid":
                 printable_wp = printable_wp.translate([0, 0, self.size.wall_thickness])
-                lid_panel = self.panels[Face.BOTTOM]  # TODO unhardcode lid panel
+                lid_panel = self.panels[Face.BOTTOM]  # TODO unhardcode BOTTOM lid panel; see issue #2
                 printable_size = (lid_panel.true_size.width, lid_panel.true_size.length)
             else:
                 raise ValueError(f"Unsupported printable '{name}', you might run into alignment issues when displaying all_printables_assembly")
@@ -198,7 +198,7 @@ class Enclosure:
         counter_sunk_screw_provider = DefaultScrewProvider,
         with_counter_sunk_block: bool = True
     ) -> ScrewBlock:
-        # TODO support lid != Face.BOTTOM + refactor
+        # TODO support lid != Face.BOTTOM + refactor; see issue #2
 
         pos = None
         if rel_pos == None and abs_pos == None:
@@ -241,7 +241,7 @@ class Enclosure:
         screw_size_category: str = "m2",
         heat_set: bool = False
     ) -> None:
-        # TODO support lid != Face.BOTTOM + refactor
+        # TODO support lid != Face.BOTTOM + refactor; see issue #2
 
         lid_screws_thickness = Enclosure.CORNER_LID_SCREWS_THICKNESS
 

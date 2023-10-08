@@ -6,6 +6,7 @@
 # WARNING
 # This example takes a bit of time to render, and cq-editor fully freezes while rendering
 
+# Can be removed if you've installed cq_enclosure_builder on your system
 import sys
 sys.path.append("../src")
 
