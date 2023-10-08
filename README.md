@@ -264,7 +264,7 @@ For a detailed list, scroll down to [List of built-in parts](#available-parts-li
 
 For many parts, I've provided purchase links within the docstrings of the Python code, so you can obtain the exact item I used for modeling them.
 
-- **jack**: [6.35mm PJ-612A](./src/cq_enclosure_builder/parts/jack/jack_6_35mm_pj612a.py), [3.5mm PJ-392](./src/cq_enclosure_builder/parts/jack/jack_3_5mm_pj392.py.py)
+- **jack**: [6.35mm PJ-612A](./src/cq_enclosure_builder/parts/jack/jack_6_35mm_pj612a.py), [3.5mm PJ-392](./src/cq_enclosure_builder/parts/jack/jack_3_5mm_pj392.py)
 - **button**: [SPST PBS-24B-4](./src/cq_enclosure_builder/parts/button/spst_pbs_24b_4.py), [DPDT PBS-24-212SP](./src/cq_enclosure_builder/parts//button/dpdt_pbs_24_212sp.py), [PBS 11-A](./src/cq_enclosure_builder/parts/button/button_pbs_11a.py), [PBS-110](./src/cq_enclosure_builder/parts/button/button_pbs_110.py)
 - **encoder**: [EC11](./src/cq_enclosure_builder/parts/encoder/encoder_ec11.py)
 - **potentiometer**: [WH148](./src/cq_enclosure_builder/parts/potentiometer/potentiometer_wh148.py)
