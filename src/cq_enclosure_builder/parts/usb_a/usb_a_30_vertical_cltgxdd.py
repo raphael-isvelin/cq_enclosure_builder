@@ -33,7 +33,8 @@ class UsbA30VerticalCltgxddPart(Part):
         self,
         enclosure_wall_thickness: float,
         orientation_vertical: bool = False,
-        center_is_outward_facing_hole: bool = True
+        center_is_outward_facing_hole: bool = True,
+        rotate_180 = True,
     ):
         if not center_is_outward_facing_hole:
             print("WARNING: use of center_is_outward_facing_hole=False in USB C is deprecated; the layout builder assumes True, it can cause alignment issues")
@@ -166,6 +167,16 @@ class UsbA30VerticalCltgxddPart(Part):
         mask = mask.rotate((0, 0, 0), (0, 0, 1), rotate_by)
         usb_hole = usb_hole.rotate((0, 0, 0), (0, 0, 1), rotate_by)
 
+        # Huh, I really need to cleanup this class
+        reverse = -1 if rotate_180 else 1
+        if rotate_180:
+            # board = board.mirror("XZ")
+            # mask = board.mirror("XZ")
+            # usb_hole = board.mirror("XZ")
+            board = board.rotate((0, 0, 0), (0, 0, 1), 180)
+            mask = mask.rotate((0, 0, 0), (0, 0, 1), 180)
+            usb_hole = usb_hole.rotate((0, 0, 0), (0, 0, 1), 180)
+
         self.part = board
         self.mask = mask
 
@@ -176,7 +187,7 @@ class UsbA30VerticalCltgxddPart(Part):
         pcb_thickness = 2
         self.inside_footprint = (self.size.width, self.size.length)
         self.inside_footprint_thickness = usb_depth - enclosure_wall_thickness + pcb_thickness
-        self.inside_footprint_offset = (0, 4.6) if not orientation_vertical else (-6.6, -2, 0)
+        self.inside_footprint_offset = (0, reverse * 4.6) if not orientation_vertical else (reverse * -6.6, reverse * -2)
 
         self.outside_footprint = (usb_size[0] if not orientation_vertical else usb_size[1], usb_size[1] if not orientation_vertical else usb_size[0])
         self.outside_footprint_thickness = 3
@@ -187,7 +198,7 @@ class UsbA30VerticalCltgxddPart(Part):
                 .extrude(self.inside_footprint_thickness)
                 .translate([0, 0, enclosure_wall_thickness])
         )
-        footprint_in = footprint_in.translate([-6.6, -2, 0]) if orientation_vertical else footprint_in.translate([0, 4.6, 0])
+        footprint_in = footprint_in.translate([*self.inside_footprint_offset, 0])
 
         footprint_out = (
             cq.Workplane("front")
