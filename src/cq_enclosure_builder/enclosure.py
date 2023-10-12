@@ -35,6 +35,9 @@ class EnclosureSize:
         self.outer_width = outer_width
         self.outer_length = outer_length
         self.outer_thickness = outer_thickness
+        self.inner_width = outer_width - wall_thickness*2
+        self.inner_length = outer_length - wall_thickness*2
+        self.inner_thickness = outer_thickness - wall_thickness*2
         self.wall_thickness = wall_thickness
 
 

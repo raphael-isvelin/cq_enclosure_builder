@@ -29,15 +29,12 @@ class LayoutElement:
         self.part = part
         self.label = label
         self.pos = (0, 0)
-        inside = part.inside_footprint
-        outside = part.outside_footprint
-        self.inside_footprint = inside
-        self.outside_footprint = outside
-        self.total_footprint = (inside[0] if inside[0] > outside[0] else outside[0],
-                                inside[1] if inside[1] > outside[1] else outside[1])
-        self.total_footprint_offset = part.inside_footprint_offset  # as of now, we consider that outside offset should be at 0,0
-        self.is_aligned_center_x = False
-        self.is_aligned_center_y = False
+        self.inside_footprint = part.inside_footprint
+        self.outside_footprint = part.outside_footprint
+        self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0],
+                                self.inside_footprint[1] if self.inside_footprint[1] > self.outside_footprint[1] else self.outside_footprint[1])
+        self.inside_footprint_offset = part.inside_footprint_offset
+        self.outside_footprint_offset = (0, 0)
 
     def set_inside_footprint_x(self, inside_footprint_x: float) -> None:
         self.inside_footprint = (inside_footprint_x, self.inside_footprint[1])
@@ -81,25 +78,6 @@ class LayoutElement:
         length = panel.size.length
         return (width/2 + self.pos[0], length/2 + self.pos[1])
 
-    def align_center_x(self) -> Self:
-        correct_x = self.total_footprint_offset[0]
-        self.translate((-correct_x, 0))
-        self.total_footprint_offset = (0, self.total_footprint_offset[1])
-        self.is_aligned_center_x = True
-        return self
-    
-    def align_center_y(self) -> Self:
-        correct_y = self.total_footprint_offset[1]
-        self.translate((0, -correct_y))
-        self.total_footprint_offset = (self.total_footprint_offset[0], 0)
-        self.is_aligned_center_y = True
-        return self
-    
-    def align_center_to_0_0(self) -> Self:
-        self.align_center_x()
-        self.align_center_y()
-        return self
-
     def leftmost_point_in_footprint(self, in_inside_footprint: bool) -> float:
         return self._point_in_footprint(in_inside_footprint, 0, lambda x: -x)
 
@@ -119,5 +97,5 @@ class LayoutElement:
         operation: Callable[[float], float]  # a method, either identity or reverse sign
     ) -> float:
         fp = self.inside_footprint if in_inside_footprint else self.outside_footprint
-        offset = self.total_footprint_offset[axis] if in_inside_footprint else 0
+        offset = self.inside_footprint_offset[axis] if in_inside_footprint else self.outside_footprint_offset[axis]
         return self.pos[axis] + offset + operation(fp[axis] / 2)
