@@ -148,7 +148,7 @@ class Dsi5InchCfsunbirdPart(Part):
                 .box(*screen_w_bevel_size, part_thickness, centered=(True, True, False))
         )
 
-        bracket, bracket_split, bracket_footprint, bracket_size = self.build_brackets(enclosure_wall_thickness, bracket_extra_thickness)
+        bracket, bracket_split, bracket_footprint, bracket_size = self.build_brackets(enclosure_wall_thickness, bracket_extra_thickness, viewing_area_offset)
 
         self.size.width     = screen_board_size[0]
         self.size.length    = screen_board_size[1]
@@ -156,7 +156,7 @@ class Dsi5InchCfsunbirdPart(Part):
 
         self.inside_footprint = (self.size.width, self.size.length)
         self.inside_footprint_thickness = part_thickness + screw_block_thickness - enclosure_wall_thickness
-        self.inside_footprint_offset = (0, 0)
+        self.inside_footprint_offset = (-viewing_area_offset[0], -viewing_area_offset[1])
 
         self.outside_footprint = (screen_w_ramp_width, screen_w_ramp_length)
         self.outside_footprint_thickness = 3
@@ -231,7 +231,12 @@ class Dsi5InchCfsunbirdPart(Part):
 
         return (screws, screws_mask)
 
-    def build_brackets(self, enclosure_wall_thickness, bracket_extra_thickness):
+    def build_brackets(
+        self,
+        enclosure_wall_thickness: float,
+        bracket_extra_thickness: float,
+        viewing_area_offset: float
+    ):
         outer_screws_pos = [
             (0, -(Dsi5InchCfsunbirdPart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)),
             (0, +(Dsi5InchCfsunbirdPart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)),
@@ -273,7 +278,7 @@ class Dsi5InchCfsunbirdPart(Part):
         bracket_size = (bracket_size[1], bracket_size[0])
 
         # Center to 0,0
-        bracket = bracket.translate([0.4, -2.2, 0])
-        bracket_split = bracket_split.translate([0.4, -2.2, 0])
+        bracket = bracket.translate([*viewing_area_offset, 0])
+        bracket_split = bracket_split.translate([*viewing_area_offset, 0])
 
         return (bracket, bracket_split, bracket_footprint, bracket_size)
