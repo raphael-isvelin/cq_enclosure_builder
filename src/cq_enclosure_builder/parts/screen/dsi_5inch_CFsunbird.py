@@ -14,7 +14,9 @@
    limitations under the License.
 """
 
+import os
 import math
+from typing import Tuple
 
 import cadquery as cq
 
@@ -53,6 +55,12 @@ class Dsi5InchCfsunbirdPart(Part):
     DISTANCE_BETWEEN_OUTER_SCREWS_Y = 67.6 + 24
     DISTANCE_BETWEEN_INNER_SCREWS_Y = 67.6
 
+    # TODO check dimensions with my screen
+    DEFAULT_PI_OFFSET = (
+        -(DISTANCE_BETWEEN_SCREWS_X/2) + 15,
+        -(DISTANCE_BETWEEN_INNER_SCREWS_Y/2) + 2.43,
+    )
+
     def __init__(
         self,
         enclosure_wall_thickness: float,
@@ -61,11 +69,14 @@ class Dsi5InchCfsunbirdPart(Part):
         center_is_outward_facing_hole: bool = True,
         ramp_width_l_plus_r: float = 2.8,   # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
         ratio_bevel_lr_to_bt: float = 1.5,  # N times less than ^ for top and bottom, careful with slopes >35 degrees
+        add_pi_footprint: bool = True,
+        pi_footprint_offset: Tuple[float, float] = DEFAULT_PI_OFFSET,
     ):
         # TODO refactor, it's copy/pasted from HDMI will little modifications:
         # - default screw_block_thickness
         # - DISTANCE_BETWEEN_SCREWS_X/y
         # - additional prints
+        # - Pi footprint offset
 
         super().__init__()
 
@@ -174,6 +185,18 @@ class Dsi5InchCfsunbirdPart(Part):
                 .translate([*viewing_area_offset, -self.outside_footprint_thickness])
         )
 
+        if add_pi_footprint:
+            # TODO cleaner way to avoid duplicating the STEP (e.g. a package storing the models of common objects)
+            model_path = os.path.join(os.path.dirname(__file__), "../holder/", "rpi_4b_light.stp")
+            model = (
+                cq.importers.importStep(model_path)
+                    .translate([
+                        *pi_footprint_offset,
+                        self.inside_footprint_thickness + enclosure_wall_thickness
+                    ])
+            )
+            footprint_out = footprint_out.add(model)
+
         if center_is_outward_facing_hole:
             translate_by_viewing_area_offset = lambda obj: obj.translate([-viewing_area_offset[0], -viewing_area_offset[1], 0])
 
@@ -270,7 +293,7 @@ class Dsi5InchCfsunbirdPart(Part):
                 .extrude(enclosure_wall_thickness + bracket_extra_thickness)
         )
 
-        bracket_footprint = bracket  # we don't want to rorate/translate it--legacy
+        bracket_footprint = bracket  # copied pre-transofmration, as we don't want to rotate/translate it--legacy
 
         # Makes them nicer to display in Enclosure#all_printables_assembly (aligned with the)
         bracket = bracket.rotate((0, 0, 0), (0, 0, 1), 90)
