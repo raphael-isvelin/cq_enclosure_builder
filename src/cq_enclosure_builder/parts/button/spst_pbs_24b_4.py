@@ -32,13 +32,17 @@ class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
     def __init__(
         self,
         enclosure_wall_thickness: float,
+        reinforced: bool = True,
         button_cap: KnobOrCap = CAP_23_75_x_11_9
     ):
+        # TODO test dome vs. pyramid for reinforcement
+        base_size = 28 if reinforced else 16
+        taper = 35 if reinforced else 5
         super().__init__(
             enclosure_wall_thickness,
 
-            width=16,
-            length=16,
+            width=base_size,
+            length=base_size,
 
             thread_diameter=11.8,
             thread_diameter_error_margin=0.6,
@@ -48,11 +52,11 @@ class ButtonSpstPbs24b4Part(GenericThreadedWithStopPart):
             nut_thickness=2.13,
             margin_after_nut=0.62,
 
-            pyramid_taper=5
+            pyramid_taper=taper
         )
 
         button_block_thickness = 14
-        self.inside_footprint = (self.width, 30.8)
+        self.inside_footprint = (16, 30.8)
         self.inside_footprint_thickness = self.block_thickness + button_block_thickness
         self.inside_footprint_offset = (0, -4.8)
 
