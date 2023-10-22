@@ -147,7 +147,7 @@ We've also changed the project's name, which generated printables STLs with a cu
 <sub><p align="center">[06_enclosure_optional_params.py](./examples/06_enclosure_optional_params.py)</p></sub>
 
 <a name="example-06_5"></a>
-### 06.5 – Enclosure: Enclosure: custom screws placement
+### 06.5 – Enclosure: custom screws placement
 
 Certainly! Here's a revised version of your description:
 
@@ -177,7 +177,7 @@ In the screenshot below, the beige rectangle represents the PCB onto which the U
 <a name="example-09"></a>
 ### 09 – Layout builder: fixed-width line with median part centred at (0,0)
 
-In this fixed-width line layout, we aim to position the median element (in this instance, the second out of three) directly at the coordinate `(0,0)`. By default, this positioning might not be achieved if the footprint of the element(s) to its left differs from that of the element(s) to its right. Though this might mess with the even spacing a bit, it comes in handy in some situations.
+In this fixed-width line layout, we aim to position the median element (in this instance, the second out of three) directly at the coordinate `(0,0)`. By default, this positioning might not be achieved if the footprint of the element(s) to its left differs from that of the element(s) to its right. Though will make the spacing slightly uneven, it's useful when we want to force an element at (0,0).
 
 ![Layout builder: fixed-width line with median part centred at (0,0)](./docs/img/09.jpg)
 <sub><p align="center">[09_layout_buider_fixed_width_line_centre_at_0_0.py](./examples/09_layout_buider_fixed_width_line_centre_at_0_0.py)</p></sub>

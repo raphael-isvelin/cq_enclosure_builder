@@ -16,6 +16,7 @@
 
 import sys
 import inspect
+import json
 from typing import List, Type, Tuple, Dict, Any, Callable
 
 from cq_enclosure_builder.part import Part
@@ -185,7 +186,8 @@ class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
         part_instance = None
 
         # We need to cache lookup after we've added the default params to the kwargs
-        cache_key = (category, part_type, tuple(kwargs.items()))
+        hashable_kwargs = PartFactory.hash_kwargs(kwargs)
+        cache_key = (category, part_type, tuple(hashable_kwargs.items()))
         if cache_key in cls._cache:
             part_instance = cls._cache[cache_key]
         else:
@@ -238,6 +240,17 @@ class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
         """Set both the default type for each category, and the default parameters for the parts."""
         cls.set_default_types(defaults["types"])
         cls.set_default_parameters(defaults["parameters"])
+
+    @staticmethod
+    def hash_kwargs(kwargs):
+        hashable_kwargs = {}
+        for k, v in kwargs.items():
+            if isinstance(v, list):
+                v = tuple(v)
+            elif isinstance(v, dict):
+                v = PartFactory.hash_kwargs(v)
+            hashable_kwargs[k] = v
+        return hashable_kwargs
 
 
 def register_part(category: str, part_type: str) -> Callable[[Type[Part]], Type[Part]]:

@@ -28,10 +28,10 @@ group = LayoutGroup.line_of_parts(
     ],
     margin=0,
     horizontal=True,
-    group_center_at_0_0=False,
-    align_start_to_outside_footprint=False,  # redundant if align_to_outside_footprint is True
+    align_other_dimension_at_0=False,
     align_to_outside_footprint=False,
 )
+group.translate([group.total_footprint[0]/2, 0, 0])  # starts the line at 0 to make easier to visualise
 
 # Example of alignments, when group_center_at_0_0 is True:
 # - if align_to_outside_footprint,

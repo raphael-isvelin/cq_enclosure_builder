@@ -14,6 +14,8 @@
    limitations under the License.
 """
 
+from typing import List
+
 import cadquery as cq
 
 from cq_enclosure_builder.part import Part
@@ -57,6 +59,7 @@ class ProtoboardHolderPart(Part):
         screw_size = screw_part["size"]
 
         screws_a = cq.Assembly()
+        screws_workplanes: List[cq.Workplane] = [] 
         min_pos = [9999, 9999]
         max_pos = [-9999, -9999]
         for screw_pos in screws_pos:
@@ -68,21 +71,26 @@ class ProtoboardHolderPart(Part):
             if pos_y - screw_size[1]/2 < min_pos[1]: min_pos[1] = pos_y - screw_size[1]/2
             elif pos_y + screw_size[1]/2 > max_pos[1]: max_pos[1] = pos_y + screw_size[1]/2
 
-            screws_a.add(screw.translate([pos_x, pos_y, 0]))
+            translated_screw = screw.translate([pos_x, pos_y, 0])
+            screws_workplanes.append(translated_screw)
+            screws_a.add(translated_screw)
 
         self.size.width     = max(base_board_size[0], abs(min_pos[0]) + abs(max_pos[0]))
         self.size.length    = max(base_board_size[1], abs(min_pos[1]) + abs(max_pos[1]))
         self.size.thickness = enclosure_wall_thickness
 
-        board = (
+        self.part = (
             cq.Workplane("front")
                 .box(self.size.width, self.size.length, self.size.thickness, centered=(True, True, False))
-                .add(screws_a.toCompound())
         )
-        mask = board
+        self.mask = (
+            cq.Workplane("front")
+                .box(self.size.width, self.size.length, self.size.thickness, centered=(True, True, False))
+        )
 
-        self.part = board
-        self.mask = mask
+        for wp in screws_workplanes:
+            # Only used to have separate objects in the tree, TODO refactor
+            self.part.add(wp)
 
         self.inside_footprint = (self.size.width, self.size.length)
         self.inside_footprint_thickness = screw_block_thickness

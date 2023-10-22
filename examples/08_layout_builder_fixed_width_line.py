@@ -38,15 +38,12 @@ group = LayoutGroup.fixed_width_line_of_parts(
     ],
     horizontal=True,
     add_margin_on_sides=False,
-    group_center_at_0_0=False,
-    elements_centers_at_0_0=True,
+    align_other_dimension_at_0=False,
     align_to_outside_footprint=True,
 )
 
-group.translate([0, panel_size.length/2, 0])
-
 for idx, elem in enumerate(group.get_elements()):
-    panel.add(elem.label, elem.part, abs_pos=elem.get_pos())
+    panel.add(elem.label, elem.part, rel_pos=elem.get_pos())
 
 panel.assemble()
 
