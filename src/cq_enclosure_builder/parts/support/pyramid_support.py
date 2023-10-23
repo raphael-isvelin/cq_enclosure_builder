@@ -39,13 +39,18 @@ class PyramidSupportPart(Part):
         # Board
         board = (
             cq.Workplane("front")
+                .box(base_size, base_size, enclosure_wall_thickness, centered=(True, True, False))
+        )
+        board = board.add(
+            cq.Workplane("front")
                 .rect(base_size, base_size)
                 .extrude(support_height, taper=pyramid_taper)
+                .translate([0, 0, enclosure_wall_thickness])
         )
         board = board.add(
             cq.Workplane("front")
                 .rect(top_size, top_size)
-                .extrude(support_height)
+                .extrude(support_height + enclosure_wall_thickness)
         )
 
         self.part = board
