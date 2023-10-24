@@ -64,6 +64,7 @@ class Enclosure:
         add_lid_support: bool = True,
         add_top_support: bool = True,
         lid_screws_heat_set: bool = True,
+        lid_screws_size_category: str = "m3",
         no_fillet_top: bool = False,
         no_fillet_bottom: bool = False,
     ):
@@ -109,7 +110,7 @@ class Enclosure:
         if add_lid_support:
             self._build_lid_support()
         if add_corner_lid_screws:
-            self.add_corner_lid_screws(heat_set=lid_screws_heat_set)
+            self.add_corner_lid_screws(heat_set=lid_screws_heat_set, screw_size_category=lid_screws_size_category)
 
         if add_top_support:
             skirt = SkirtPart(
@@ -241,7 +242,7 @@ class Enclosure:
 
     def add_corner_lid_screws(
         self,
-        screw_size_category: str = "m2",
+        screw_size_category: str = "m3",
         heat_set: bool = False
     ) -> None:
         # TODO support lid != Face.BOTTOM + refactor; see issue #2
