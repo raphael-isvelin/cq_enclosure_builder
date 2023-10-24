@@ -53,13 +53,18 @@ class LayoutGroup(LayoutElement):
     def get_pos(self) -> Tuple[float, float]:
         return self.pos
 
-    def get_elements(self) -> List[LayoutElement]:
+    def get_elements_including_with_none_part(self) -> List[LayoutElement]:
+        # Using a LayoutElement with no actual part can be useful as spacer
         elems = []
         for elem in self.elements:
             if isinstance(elem, LayoutGroup):
                 elems.extend(elem.get_elements())
             else:
                 elems.append(elem)
+        return elems
+
+    def get_elements(self) -> List[LayoutElement]:
+        elems = self.get_elements_including_with_none_part()
 
         # Using a LayoutElement with no actual element can be useful as spacer
         elems = [e for e in elems if e.part is not None]

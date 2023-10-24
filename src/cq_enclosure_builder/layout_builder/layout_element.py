@@ -47,11 +47,15 @@ class LayoutElement:
 
     @staticmethod
     def spacer_x(total_footprint_x: float, label: str = "Spacer"):
-        return LayoutElement(label, part=None, total_footprint=(total_footprint_x, 0))
+        # TODO fixe spacer size issue; the margin around the spacer is not exactly what we would expect,
+        #      though it can still be useful as is, with some experimenting with the size
+        return LayoutElement(label, part=None, total_footprint=(total_footprint_x, 1))
 
     @staticmethod
     def spacer_y(total_footprint_y: float, label: str = "Spacer"):
-        return LayoutElement(label, part=None, total_footprint=(0, total_footprint_y))
+        # TODO fixe spacer size issue; the margin around the spacer is not exactly what we would expect,
+        #      though it can still be useful as is, with some experimenting with the size
+        return LayoutElement(label, part=None, total_footprint=(1, total_footprint_y))
 
     def set_inside_footprint_x(self, inside_footprint_x: float) -> None:
         self.inside_footprint = (inside_footprint_x, self.inside_footprint[1])
