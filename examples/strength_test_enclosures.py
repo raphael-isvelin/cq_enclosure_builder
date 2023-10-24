@@ -23,8 +23,8 @@ pf.set_default_parameters({
 
 def build_strength_test_enclosure(with_support: bool):
     project_name = "strength-test-" + ("with" if with_support else "without") + "-support"
-    project_info = ProjectInfo(project_name, "1")
-    enclosure = Enclosure(enclosure_size, project_info=project_info)
+    project_info = ProjectInfo(project_name, "4")
+    enclosure = Enclosure(enclosure_size, project_info=project_info, lid_screws_size_category="m3")
 
     pots = LayoutGroup.fixed_width_line_of_parts(
         enclosure_size.outer_width,
@@ -33,24 +33,31 @@ def build_strength_test_enclosure(with_support: bool):
             ("Pot right", pf.build_potentiometer()),
         ],
         add_margin_on_sides=True,
-        group_center_at_0_0=True,
-        elements_centers_at_0_0=True,
+        align_other_dimension_at_0=True,
         align_to_outside_footprint=False,
     )
-    pots.translate([0, 30, 0])
-    for idx, elem in enumerate(pots.get_elements()):
+    spacer = LayoutElement.spacer_y(15)  # size isn't very accurate for now, see TODO in the method's code
+    spst = LayoutElement("SPST", pf.build_button())
+
+    top_elements = LayoutGroup.fixed_width_line_of_elements(
+        enclosure_size.outer_length,
+        [spst, spacer, pots],
+        horizontal=False,
+        add_margin_on_sides=True,
+        align_other_dimension_at_0=False,
+        align_to_outside_footprint=True,
+    )
+    for idx, elem in enumerate(top_elements.get_elements()):
         enclosure.add_part_to_face(Face.TOP, elem.label, elem.part, rel_pos=elem.get_pos())
 
-    spst = pf.build_button()
-    enclosure.add_part_to_face(Face.TOP, "SPST", spst, rel_pos=(0, -30))
-
     if with_support:
-        support_height = enclosure_size.outer_thickness - spst.inside_footprint_thickness - enclosure_size.wall_thickness
+        support_height = enclosure_size.outer_thickness - spst.part.inside_footprint_thickness - enclosure_size.wall_thickness*2
         support = pf.build_support(support_height=support_height)
+        support_pos = (spst.pos[0], -spst.pos[1])  # Y coords are inversed between TOP and BOTTOM
 
-        enclosure.add_part_to_face(Face.BOTTOM, "Support for SPST", support, rel_pos=(0, 30))
+        enclosure.add_part_to_face(Face.BOTTOM, "Support for SPST", support, rel_pos=support_pos)
 
-    enclosure.add_part_to_face(Face.BACK, "Barrel plug", pf.build_barrel_plug(), rel_pos=(0, -5))
+    enclosure.add_part_to_face(Face.BACK, "Barrel plug", pf.build_barrel_plug(), rel_pos=(0, 0))
 
     enclosure.add_part_to_face(Face.LEFT, "Jack out", pf.build_jack(), rel_pos=(0, 0))
     enclosure.add_part_to_face(Face.RIGHT, "Jack in", pf.build_jack(), rel_pos=(0, 0))
