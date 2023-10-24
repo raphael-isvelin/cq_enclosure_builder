@@ -60,6 +60,10 @@ class LayoutGroup(LayoutElement):
                 elems.extend(elem.get_elements())
             else:
                 elems.append(elem)
+
+        # Using a LayoutElement with no actual element can be useful as spacer
+        elems = [e for e in elems if e.part is not None]
+
         return elems
 
     @staticmethod

@@ -24,17 +24,34 @@ class LayoutElement:
     def __init__(
         self,
         label: str,
-        part: Part,
+        part: Part = None,  # either part or total_footprint should be present
+        total_footprint: Tuple[float, float] = None,  # either part or total_footprint should be present
     ):
         self.part = part
         self.label = label
         self.pos = (0, 0)
-        self.inside_footprint = part.inside_footprint
-        self.outside_footprint = part.outside_footprint
-        self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0],
-                                self.inside_footprint[1] if self.inside_footprint[1] > self.outside_footprint[1] else self.outside_footprint[1])
-        self.inside_footprint_offset = part.inside_footprint_offset
+        if part is not None:
+            self.inside_footprint = part.inside_footprint
+            self.outside_footprint = part.outside_footprint
+            self.total_footprint = (self.inside_footprint[0] if self.inside_footprint[0] > self.outside_footprint[0] else self.outside_footprint[0],
+                                    self.inside_footprint[1] if self.inside_footprint[1] > self.outside_footprint[1] else self.outside_footprint[1])
+            self.inside_footprint_offset = part.inside_footprint_offset
+        else:
+            if total_footprint is None:
+                raise ValueError(f"{label}: either part or total_footprint should be present")
+            self.inside_footprint = total_footprint
+            self.outside_footprint = total_footprint
+            self.total_footprint = total_footprint
+            self.inside_footprint_offset = (0, 0)
         self.outside_footprint_offset = (0, 0)
+
+    @staticmethod
+    def spacer_x(total_footprint_x: float, label: str = "Spacer"):
+        return LayoutElement(label, part=None, total_footprint=(total_footprint_x, 0))
+
+    @staticmethod
+    def spacer_y(total_footprint_y: float, label: str = "Spacer"):
+        return LayoutElement(label, part=None, total_footprint=(0, total_footprint_y))
 
     def set_inside_footprint_x(self, inside_footprint_x: float) -> None:
         self.inside_footprint = (inside_footprint_x, self.inside_footprint[1])

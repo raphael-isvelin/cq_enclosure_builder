@@ -30,6 +30,8 @@ class PotentiometerWh148Part(GenericThreadedWithStopPart):
         enclosure_wall_thickness: float,
         pot_knob: KnobOrCap = KNOB_18_x_17_25
     ):
+        # TODO the 'body' of the pot in the inside_footprint is the wrong way around (relative to the dent)
+
         thread_depth = 6.4
         thread_diameter = 6.8
         super().__init__(
