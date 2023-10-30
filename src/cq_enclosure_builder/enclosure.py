@@ -23,6 +23,7 @@ from cadquery import exporters
 from cq_enclosure_builder import Part, Panel, PanelSize, Face, ProjectInfo
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
 from cq_enclosure_builder.parts.common.screws_providers import DefaultScrewProvider, DefaultHeatSetScrewProvider
+from cq_enclosure_builder.parts.common.screws_providers import LargeBlockFlatHeadScrewProvider, LargeBlockHeatSetScrewProvider
 from cq_enclosure_builder.parts.support.skirt import SkirtPart
 
 
@@ -65,6 +66,7 @@ class Enclosure:
         add_top_support: bool = True,
         lid_screws_heat_set: bool = True,
         lid_screws_size_category: str = "m3",
+        lid_screws_large_block_offcentered_hole: bool = True,
         no_fillet_top: bool = False,
         no_fillet_bottom: bool = False,
     ):
@@ -110,7 +112,11 @@ class Enclosure:
         if add_lid_support:
             self._build_lid_support()
         if add_corner_lid_screws:
-            self.add_corner_lid_screws(heat_set=lid_screws_heat_set, screw_size_category=lid_screws_size_category)
+            self.add_corner_lid_screws(
+                screw_size_category=lid_screws_size_category,
+                heat_set=lid_screws_heat_set,
+                large_block_offcentered_hole=lid_screws_large_block_offcentered_hole,
+            )
 
         if add_top_support:
             skirt = SkirtPart(
@@ -200,7 +206,8 @@ class Enclosure:
         taper_rotation: float = 0.0,
         screw_provider = DefaultScrewProvider,
         counter_sunk_screw_provider = DefaultScrewProvider,
-        with_counter_sunk_block: bool = True
+        with_counter_sunk_block: bool = True,
+        hole_position: Tuple[float, float] = (0, 0),
     ) -> ScrewBlock:
         # TODO support lid != Face.BOTTOM + refactor; see issue #2
 
@@ -221,7 +228,8 @@ class Enclosure:
             enclosure_wall_thickness=self.size.wall_thickness,
             taper=taper,
             taper_rotation=taper_rotation,
-            with_counter_sunk_block=with_counter_sunk_block
+            with_counter_sunk_block=with_counter_sunk_block,
+            hole_position=hole_position,
         )
         
         screw["block"] = screw["block"].translate([*pos, pos_error_margin])
@@ -243,13 +251,18 @@ class Enclosure:
     def add_corner_lid_screws(
         self,
         screw_size_category: str = "m3",
-        heat_set: bool = False
+        heat_set: bool = False,
+        large_block_offcentered_hole: bool = True,
     ) -> None:
         # TODO support lid != Face.BOTTOM + refactor; see issue #2
 
         lid_screws_thickness = Enclosure.CORNER_LID_SCREWS_THICKNESS
 
         screw_provider = DefaultHeatSetScrewProvider if heat_set else DefaultScrewProvider
+        counter_sunk_screw_provider = DefaultScrewProvider
+        if large_block_offcentered_hole:
+            screw_provider = LargeBlockHeatSetScrewProvider if heat_set else LargeBlockFlatHeadScrewProvider
+            counter_sunk_screw_provider = LargeBlockFlatHeadScrewProvider
 
         screw_size = ScrewBlock(screw_provider).build(screw_size_category, lid_screws_thickness, self.size.wall_thickness)["size"]  # refactor to avoid this
         pw = self.size.outer_width
@@ -258,15 +271,18 @@ class Enclosure:
         sl = screw_size[1]
         wt = self.size.wall_thickness
         corners = [
-            ( (0+sw/2+wt,  0+sl/2+wt),    0 ),
-            ( (0+sw/2+wt,  pl-sl/2-wt),  90 ),
-            ( (pw-sw/2-wt, pl-sl/2-wt), 180 ),
-            ( (pw-sw/2-wt, 0+sl/2+wt),  270 )
+            ( (0+sw/2+wt,  0+sl/2+wt),    0,  (1.5, 1.5)   ),
+            ( (0+sw/2+wt,  pl-sl/2-wt),  90,  (1.5, -1.5)  ),
+            ( (pw-sw/2-wt, pl-sl/2-wt), 180,  (-1.5, -1.5) ),
+            ( (pw-sw/2-wt, 0+sl/2+wt),  270,  (-1.5, 1.5)  )
         ]
         for c in corners:
             screw_pos = c[0]
             screw_rotation = c[1]
+            hole_position = c[2] if large_block_offcentered_hole else (0, 0)
             screw = self.add_screw(
+                screw_provider=screw_provider,
+                counter_sunk_screw_provider=counter_sunk_screw_provider,
                 screw_size_category=screw_size_category,
                 block_thickness=lid_screws_thickness,
                 abs_pos=screw_pos,
@@ -274,7 +290,7 @@ class Enclosure:
                 taper=TaperOptions.Z_TAPER_ANGLE,
                 taper_rotation=screw_rotation,
                 with_counter_sunk_block=True,
-                screw_provider=screw_provider
+                hole_position=hole_position,
             )
             translate_z = screw["size"][2] + self.lid_thickness_error_margin + self.size.wall_thickness
             cs_block = screw["counter_sunk_block"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])

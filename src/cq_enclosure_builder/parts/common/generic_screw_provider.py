@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-from .hole_type import HoleType
+from cq_enclosure_builder.parts.common.hole_type import HoleType
 
 class GenericScrewProvider:
     @classmethod

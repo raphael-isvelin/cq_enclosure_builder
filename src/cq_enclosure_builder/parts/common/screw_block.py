@@ -19,8 +19,8 @@ from enum import Enum
 
 import cadquery as cq
 import cq_warehouse.extensions
-from .hole_type import HoleType
-from .screws_providers import DefaultScrewProvider
+from cq_enclosure_builder.parts.common.hole_type import HoleType
+from cq_enclosure_builder.parts.common.screws_providers import DefaultScrewProvider
 
 class FitOptions(Enum):
     CLOSE = "Close"
@@ -67,7 +67,8 @@ class ScrewBlock:
         taper: TaperOptions = DEFAULT_TAPER,
         taper_rotation: float = 0.0,
         xy_taper_incline: float = 0.75,
-        xy_taper_from: float = 0  # useful to start your screw inside of a wall
+        xy_taper_from: float = 0,  # useful to start your screw inside of a wall
+        hole_position: Tuple[float, float] = (0, 0),
     ):
         fastener, block_size, hole_type = self.screw_provider.build_fastener(screw_size_category)
         cs_fastener = cs_block_size = None
@@ -84,7 +85,7 @@ class ScrewBlock:
         screw_block = (
             cq.Workplane("XY")
                 .box(*block_size, centered=(True, True, False))
-                .faces(">Z").workplane().pushPoints([(0,0)])
+                .faces(">Z").workplane().pushPoints([hole_position])
         )
         if hole_type == HoleType.THREADED_HOLE:
             screw_block = screw_block.threadedHole(fastener=fastener, depth=screw_hole_depth, fit=fit.value, counterSunk=is_counter_sunk)
@@ -145,7 +146,7 @@ class ScrewBlock:
                 cs_block = (
                     cq.Workplane("XY")
                         .box(*cs_block_size, enclosure_wall_thickness, centered=(True, True, False))
-                        .faces(">Z").workplane().pushPoints([(0,0)])
+                        .faces(">Z").workplane().pushPoints([hole_position])
                         .clearanceHole(fastener=cs_fastener, depth=enclosure_wall_thickness, fit=fit.value, counterSunk=True)
                         .translate([0, 0, block_thickness])
                 )
