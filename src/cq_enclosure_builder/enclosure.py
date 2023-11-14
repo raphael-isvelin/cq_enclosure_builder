@@ -208,6 +208,7 @@ class Enclosure:
         counter_sunk_screw_provider = DefaultScrewProvider,
         with_counter_sunk_block: bool = True,
         hole_position: Tuple[float, float] = (0, 0),
+        counter_sunk_extrude_depth: float = 2.0,
     ) -> ScrewBlock:
         # TODO support lid != Face.BOTTOM + refactor; see issue #2
 
@@ -230,6 +231,8 @@ class Enclosure:
             taper_rotation=taper_rotation,
             with_counter_sunk_block=with_counter_sunk_block,
             hole_position=hole_position,
+            counter_sunk_extrude_depth=counter_sunk_extrude_depth,
+            counter_sunk_negative_mask_error_margin=pos_error_margin,
         )
         
         screw["block"] = screw["block"].translate([*pos, pos_error_margin])
@@ -291,10 +294,11 @@ class Enclosure:
                 taper_rotation=screw_rotation,
                 with_counter_sunk_block=True,
                 hole_position=hole_position,
+                counter_sunk_extrude_depth=2.0,
             )
             translate_z = screw["size"][2] + self.lid_thickness_error_margin + self.size.wall_thickness
-            cs_block = screw["counter_sunk_block"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
-            cs_mask = screw["counter_sunk_mask"].rotate((0, 0, 0), (1, 0, 0), 180).translate([0, 0, translate_z])
+            cs_block = screw["counter_sunk_block"].mirror("XY").translate([0, 0, translate_z])
+            cs_mask = screw["counter_sunk_mask"].mirror("XY").translate([0, 0, translate_z])
             self.panels[Face.BOTTOM].add_screw_counter_sunk(cs_block, cs_mask)
 
     def _build_lid_support(self) -> None:

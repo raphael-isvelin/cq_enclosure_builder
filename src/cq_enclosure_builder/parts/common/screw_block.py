@@ -69,6 +69,8 @@ class ScrewBlock:
         xy_taper_incline: float = 0.75,
         xy_taper_from: float = 0,  # useful to start your screw inside of a wall
         hole_position: Tuple[float, float] = (0, 0),
+        counter_sunk_extrude_depth: float = 0,
+        counter_sunk_negative_mask_error_margin: float = 0.4,
     ):
         fastener, block_size, hole_type = self.screw_provider.build_fastener(screw_size_category)
         cs_fastener = cs_block_size = None
@@ -145,16 +147,29 @@ class ScrewBlock:
             try:
                 cs_block = (
                     cq.Workplane("XY")
-                        .box(*cs_block_size, enclosure_wall_thickness, centered=(True, True, False))
-                        .faces(">Z").workplane().pushPoints([hole_position])
-                        .clearanceHole(fastener=cs_fastener, depth=enclosure_wall_thickness, fit=fit.value, counterSunk=True)
-                        .translate([0, 0, block_thickness])
+                        .box(*cs_block_size, enclosure_wall_thickness + counter_sunk_extrude_depth, centered=(True, True, False))
+                        .faces(">Z").workplane().pushPoints([(0, 0)])
+                        .clearanceHole(fastener=cs_fastener, depth=enclosure_wall_thickness + counter_sunk_extrude_depth, fit=fit.value, counterSunk=True)
+                        .translate([*hole_position, block_thickness - counter_sunk_extrude_depth])
                 )
                 cs_mask = (
                     cq.Workplane("XY")
                         .box(*cs_block_size, enclosure_wall_thickness, centered=(True, True, False))
-                        .translate([0, 0, block_thickness])
+                        .translate([*hole_position, block_thickness])
                 )
+                if counter_sunk_extrude_depth > 0:
+                    negative_mask_size = (
+                        cs_block_size[0] + counter_sunk_negative_mask_error_margin*2,
+                        cs_block_size[1] + counter_sunk_negative_mask_error_margin*2,
+                        enclosure_wall_thickness + counter_sunk_extrude_depth
+                    )
+                    cs_block_negative_mask = (
+                        cq.Workplane("XY")
+                            .box(*negative_mask_size, centered=(True, True, False))
+                            .translate([*hole_position, block_thickness])
+                            .translate([0, 0, -(block_size[2] + enclosure_wall_thickness)])
+                    )
+                    screw_block = screw_block.cut(cs_block_negative_mask)
             except Exception as e:
                 raise ValueError("Couldn't create counter-sunk; enclosure_wall_thickness should be thickness than the screw head") from e
 

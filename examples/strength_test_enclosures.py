@@ -23,8 +23,8 @@ pf.set_default_parameters({
 
 def build_strength_test_enclosure(with_support: bool):
     project_name = "strength-test-" + ("with" if with_support else "without") + "-support"
-    project_info = ProjectInfo(project_name, "4")
-    enclosure = Enclosure(enclosure_size, project_info=project_info, lid_screws_size_category="m3")
+    project_info = ProjectInfo(project_name, "9")
+    enclosure = Enclosure(enclosure_size, project_info=project_info, lid_screws_size_category="m3", lid_screws_heat_set=True)
 
     pots = LayoutGroup.fixed_width_line_of_parts(
         enclosure_size.outer_width,
@@ -38,6 +38,12 @@ def build_strength_test_enclosure(with_support: bool):
     )
     spacer = LayoutElement.spacer_y(15)  # size isn't very accurate for now, see TODO in the method's code
     spst = LayoutElement("SPST", pf.build_button())
+
+    title = pf.build_text(text="Strength test", fontsize=8, cut=False, width=40, length=10, thickness=1.0)
+    subtitle = pf.build_text(text="v9", fontsize=11, cut=False, width=20, length=12, thickness=1.0)
+    enclosure.add_part_to_face(Face.TOP, "Title", title, rel_pos=(0, 6.4))
+    enclosure.add_part_to_face(Face.TOP, "Subtitle", subtitle, rel_pos=(0, -4))
+    enclosure.add_part_to_face(Face.BOTTOM, "Version", subtitle, rel_pos=(0, 0))
 
     top_elements = LayoutGroup.fixed_width_line_of_elements(
         enclosure_size.outer_length,
