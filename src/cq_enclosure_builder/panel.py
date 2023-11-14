@@ -45,7 +45,8 @@ class Panel:
             part_color: Tuple[float, float, float] = None,
             alpha: float = 1.0,
             lid_size_error_margin: float = 0.0,  # if provided, panel will be smaller than mask
-            project_info: ProjectInfo = ProjectInfo()
+            project_info: ProjectInfo = ProjectInfo(),
+            add_chamfer: bool = False,
         ):
         self.face: Face = face
         self.size: PanelSize = size
@@ -71,6 +72,7 @@ class Panel:
         self.debug_assemblies["other"] = None
         self.debug_assemblies["combined"] = cq.Assembly(None, name=self.face.label + " - Debug")
         self.project_info: ProjectInfo = project_info
+        self.add_chamfer: bool = add_chamfer
         self.additional_printables: Dict[str, Tuple[float, float], cq.Workplane] = []
         self._alpha: float = alpha
         self._parts_to_add = []
@@ -118,6 +120,12 @@ class Panel:
                 .box(self.true_size.width, self.true_size.length, self.true_size.wall_thickness,
                      centered=(True, True, False))
         )
+        if self.add_chamfer:
+            wall = (
+                wall
+                    .faces("-Z").edges()
+                    .chamfer(self.true_size.wall_thickness * 0.75, self.true_size.wall_thickness * 0.75 * 0.35)
+            )
         self.panel = cq.Assembly(None, name="Panel TOP")
         for part_to_add in self._parts_to_add:
             part_obj = part_to_add["part"]

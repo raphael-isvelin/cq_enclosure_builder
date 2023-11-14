@@ -67,6 +67,7 @@ class Enclosure:
         lid_screws_heat_set: bool = True,
         lid_screws_size_category: str = "m3",
         lid_screws_large_block_offcentered_hole: bool = True,
+        lid_panel_add_chamfer: bool = True,
         no_fillet_top: bool = False,
         no_fillet_bottom: bool = False,
     ):
@@ -106,7 +107,15 @@ class Enclosure:
 
         for info in self.panels_specs:
             lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
-            self.panels[info[0]] = Panel(info[0], PanelSize(*info[1]), alpha=info[3], lid_size_error_margin=lid_size_error_margin, project_info=self.project_info)
+            add_chamfer = False if info[0] not in lid_on_faces else lid_panel_add_chamfer
+            self.panels[info[0]] = Panel(
+                info[0],
+                PanelSize(*info[1]),
+                alpha=info[3],
+                lid_size_error_margin=lid_size_error_margin,
+                project_info=self.project_info,
+                add_chamfer=add_chamfer,
+            )
 
         # Lid should be created before the screws are added (cut the screws' masks from the lid)
         if add_lid_support:
