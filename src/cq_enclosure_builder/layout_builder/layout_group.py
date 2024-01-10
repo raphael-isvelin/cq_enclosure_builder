@@ -213,14 +213,15 @@ class LayoutGroup(LayoutElement):
         cols: int,
         margin_rows: float = 0,
         margin_cols: float = 0,
+        align_to_outside_footprint: bool = False,
     ):
         row_groups = []
         for i in range(0, rows):
             parts = []
             for j in range(0, cols):
                 parts.append((f"{label} {i+1}-{j+1}", part))
-            row_groups.append(LayoutGroup.line_of_parts(parts, margin=margin_cols, horizontal=True))
-        return LayoutGroup.line_of_elements(row_groups, margin=margin_rows, horizontal=False)
+            row_groups.append(LayoutGroup.line_of_parts(parts, margin=margin_cols, horizontal=True, align_to_outside_footprint=align_to_outside_footprint))
+        return LayoutGroup.line_of_elements(row_groups, margin=margin_rows, horizontal=False, align_to_outside_footprint=align_to_outside_footprint)
 
     @staticmethod
     def extreme_point_in_footprints_of_elements(
