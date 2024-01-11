@@ -1,5 +1,9 @@
 # cq_enclosure_builder
-Easily generate printable enclosures for your projects in just a few lines of code.
+In just a **few lines of code, generate printable enclosures** for your projects that can **resist >100 kg/220 lbs** (*see [Strength test](#strength-test)).
+
+The part shown in the [Features](#features) and [Strength test](#strength-test) sections below weights 68g and would cost about **1.36€ in plastic** (assuming a price of 20€/kg), but **could be halved** for a weaker prototyping version.
+
+While the builder currently meets my needs, the project isn't battle-tested yet, as I've only used it for one ongoing project. If you encounter any problems or have features you'd like to see, please feel free to contribute or create an issue. Thanks!
 
 ### Features
 - **Parts library**: includes jacks, barrel plugs, USBs, and more (22 parts across 16 categories so far—see [List of built-in parts](#available-parts-list-builtins)).
@@ -9,8 +13,13 @@ Easily generate printable enclosures for your projects in just a few lines of co
 - **Layout builder**: offers parametric lines and grids of parts.
 - **STL export**: generates ready-to-print files.
 
-| ![Code](./docs/img/cqeb_example_code.jpg)<br><sub>Code to generate the model</sub> | ![Preview](./docs/img/cqeb_example_preview.jpg)<br><sub>Model preview</sub> | ![Photo](./docs/img/cqeb_example_photo.jpg)<br><sub>TODO IMAGE Printed result</sub> |
-|:--------------------------:|:---------------------------:|:----------:|
+Below, you can find the code used to generate an enclosure, the 3D preview, and the printed result *(the seamlines [Z-seam] and generate print quality can be improved by tweaking your printer and slicer settings)*:
+
+<img width=600 alt="Code, preview, and printed sample" src="./docs/img/cqeb_example.jpg"/>
+
+A more complex enclosure using the [Layout builder](#api-reference-layout-group) to align parts: *(**WIP**, part of my soon-to-be released <a href="https://www.youtube.com/watch?v=JoJEhhwpi9Q" target="_blank">modular multi-effect guitar pedal</a>)*
+
+![Octopus](./docs/img/octopus.gif)
 
 ---
 
@@ -39,7 +48,7 @@ Easily generate printable enclosures for your projects in just a few lines of co
     - **[List of built-in parts](#available-parts-list-builtins)**
     - **[Adding a new Part](#available-parts-add-new)**
     - **[Adding a new Part from a STL or STEP file](#available-parts-add-new-step)**
-- **[Strength Test](#strength-test)**
+- **[Strength test](#strength-test)**
     - **[With support](#strength-test)**
     - **[Without support](#strength-test)**
 - **[API Reference](#api-reference)**
@@ -320,16 +329,20 @@ Once you have a STEP file, follow the steps (ah!) shown in [example 16](#example
 <a name="strength-test"></a>
 ## Strength test
 
-The enclosures should be strong enough for most needs, including guitar pedals (which experience regular stomping!)
+The enclosures should be strong enough for most common needs, including guitar pedals (which experience regular stomping!)
 
-I conducted two tests using <a href="https://www.amazon.de/dp/B09KL2JYT6" target="_blank">this PLA</a>:
+I conducted two tests using <a href="https://www.amazon.de/-/en/PLA-Silk-Filament-Dimensional-Accuracy/dp/B0BG46HQLS?psc=1" target="_blank">this Silk PLA</a>. **Standard PLA** should be somewhat stronger, while **PLA+** will significantly deform before it snaps. For thorough research on what makes a print strong, see [CNC Kitchen on YouTube](https://www.youtube.com/@CNCKitchen).
 - in the first test, the enclosure was constructed without any support beneath the SPST;
-- for the second test, a small 'pillar' was added underneath the SPST (see [example 13](#example-13) above), making it very solid (if you don't plan to stand on top of it).
+- for the second test, **a small 'pillar' was added underneath the SPST** (see [example 13](#example-13) above), making it very solid (if you don't plan to stand on top of it).
 
 The code used to generate the STLs for these tests can be found [here](./examples/strength_test_enclosures.py).
 
-| ![TODO!](./docs/img/strength-test-with-support.jpg) | ![TODO!](./docs/img/strength-test-without-support.jpg) |
-|:------------------------------------:|:-------------------------------------:|
+**Note**: smart use of supports can make the print extremely strong in regular use [stomping on the button], and while it should resist some drops and other types of hits, at the end of the day,  (including some drops), it's still just plastic!
+
+| With support, can resist >100 kg ('unlimited', as there's no floating part) | Without support, resists 20-35 kg before the first crack... | ...but likely won't break right away |
+|:---------------------------------:|:-----:|:-----:|
+| ![Strength test: with support](./docs/img/strength-test-with-support.jpg) | ![Strength test: without support](./docs/img/strength-test-without-support.jpg) | ![Strength test: without support, partially broken](./docs/img/strength-test-without-support-broken.jpg) |
+
 
 ---
 
@@ -400,6 +413,7 @@ The code used to generate the STLs for these tests can be found [here](./example
 | *(static)* `line_of_elements` -> [LayoutGroup](#api-reference-layout-group)  | <ul><li>`elements: List[`[LayoutElement](#api-reference-layout-element)`]`</li></ul>The rest is identical to `line_of_parts`. | The `element` variant is useful to combine groups. |
 | *(static)* `fixed_width_line_of_parts` -> [LayoutGroup](#api-reference-layout-group) | <ul><li>`size: float`: the maximum space taken by the line.</li><li>`parts: Union[`[Part](#api-reference-part)`, Tuple[str, `[Part](#api-reference-part)`]]`: either a list of parts or a list of tuple containing a label for the part and part itself.</li><li>`horizontal: bool` (default: `True`)</li><li>`add_margin_on_sides: bool` (default `True`): if `False`, the first and last elements will be touching the start and end of the line; if `True`, the same margin found between each element will also be at the start and end.<li>`group_center_at_0_0: bool` (default: `True`): *see `line_of_parts`.*</li><li>`align_other_dimension_at_0: bool` (default: `True`): *see `line_of_parts`.*</li><li>`align_to_outside_footprint: bool` (default: `False`): *see `line_of_parts`.*</li></ul> | Return a line of element spaced equally, taking a set amount of space. |
 | *(static)* `fixed_width_line_of_elements` -> [LayoutGroup](#api-reference-layout-group) | <ul><li>`elements: List[`[LayoutElement](#api-reference-layout-element)`]`</li></ul>The rest is identical to `fixed_width_line_of_parts` (same order—`elements` is the second parameter). | The `element` variant is useful to combine groups. |
+| *(static)* `line_of_parts` -> [LayoutGroup](#api-reference-layout-group)  | <ul><li>`parts: Union[`[Part](#api-reference-part)`, Tuple[str, `[Part](#api-reference-part)`]]`: accepts either a list of parts or a list of tuples. Each tuple should contain a label for the part followed by the part itself.</li>`margin: float` (default: `5`): the spacing between each element.</li><li>`horizontal: bool` (default: `True`): if `False`, the line will be vertical.<li>`align_other_dimension_at_0: bool` (default: `True`): if `True`, each element will be `translate` by `inside_footprint_offset` (if `horizontal`, it will only translate the Y position; and vice versa).</li><li>`align_start_to_outside_footprint: bool` (default: `False`): dietermines alignment for the starting point. If `True`, the `ouside_footprint` of the first element aligns with position 0 (this is relevant if the `inside_footprint` is larger than the outside). Otherwise, it uses the `total_footprint`, selecting whichever dimension is largest.</li><li>`align_to_outside_footprint: bool` (default: `False`): if `True`, the `outside_footprint` of all parts will directly be in context (when `margin=0`). Otherwise, it uses the `total_footprint`, selecting whichever dimension is largest.</li></ul> | Return a simple group where each part is next to each other in a line. |
 | *(static)* `grid_of_part` -> [LayoutGroup](#api-reference-layout-group) | <ul><li>`label: str`</li><li>`part`: [Part](#api-reference-part)</li><li>`rows: int`: number of rows.</li><li>`cols: int`: number of columns.</li><li>`margin_rows: float` (default: `5`): margin between each row.</li><li>`margin_cols: float` (default: `5`): margin between each col.</li><li>`align_to_outside_footprint: bool` (default: `False`): see `line_of_parts`.</li></ul> | Return a grid of `rows` x `cols` made up the same [Part](#api-reference-part). |
 
 ---
