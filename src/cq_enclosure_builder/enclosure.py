@@ -333,12 +333,17 @@ class Enclosure:
                 self.printables[printable_name] = (printable[2], printable_size)
 
         panels_assembly, panels_masks_assembly = self._build_panels_assembly(walls_explosion_factor, lid_panel_shift)
+        self.panels_assembly = panels_assembly
+        self.panels_masks_assembly = panels_masks_assembly
         self.frame = self._build_frame_assembly(panels_masks_assembly)
         self.lid_screws_assembly = self._build_lid_screws_assembly()
 
         footprints_assembly = self._build_debug_assembly([("footprint_in", "I"), ("footprint_out", "O")], walls_explosion_factor, lid_panel_shift)
         holes_assembly = self._build_debug_assembly([("hole", "")], walls_explosion_factor, lid_panel_shift)
         other_debug_assembly = self._build_debug_assembly([("other", "")], walls_explosion_factor, lid_panel_shift)
+        self.footprints_assembly = footprints_assembly
+        self.holes_assembly = holes_assembly
+        self.other_debug_assembly = other_debug_assembly
 
         self._assemble_printables();
 

@@ -1,5 +1,5 @@
 """
-   Copyright 2023 Raphaël Isvelin
+   Copyright 2025 Raphaël Isvelin
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,20 +25,19 @@ class PotentiometerWh148Part(GenericThreadedWithStopPart):
     Potentiometer connector WH148 (basic 3-pin pot)
     """
 
+    # TODO length is overkill, need to make it smaller, but add some offset
     def __init__(
         self,
         enclosure_wall_thickness: float,
         pot_knob: KnobOrCap = KNOB_18_x_17_25
     ):
-        # TODO the 'body' of the pot in the inside_footprint is the wrong way around (relative to the dent)
-
         thread_depth = 6.4
         thread_diameter = 6.8
         super().__init__(
             enclosure_wall_thickness,
 
-            width=17.2,
-            length=20.4,
+            width=18,
+            length=27,
 
             thread_diameter=6.8,
             thread_diameter_error_margin=0.6,
@@ -54,7 +53,7 @@ class PotentiometerWh148Part(GenericThreadedWithStopPart):
                 ( (1.15, 2.5, 2), (-(11.85-(thread_diameter/2)-(2.2/2)), 0)  )
             ],
             dent_size_error_margin=0.6,
-            dent_thickness_error_margin=0.2
+            dent_thickness_error_margin=0.0
         )
 
         potentiometer_block_thickness = 9.5
@@ -71,18 +70,21 @@ class PotentiometerWh148Part(GenericThreadedWithStopPart):
             cq.Workplane("front")
                 .circle(17.2/2)
                 .extrude(self.inside_footprint_thickness)
+
                 .translate([0, 0, -self.inside_footprint_thickness - self.block_thickness])
                 .add(
                     cq.Workplane("front")
-                        .box(15.1, 21.2-(17.2/2), 3.4, centered=(True, True, False))
-                        .translate([0, 17.2/2, -3.4 - self.block_thickness])
+                        .box(15.1, 21.4-(17.2/2), 3.4, centered=(True, False, False))
+                        # .translate([0, -17.2/2, -3.4 - self.block_thickness])
+                        .translate([0, -(21.4-(17.2/2)), -3.4 - self.block_thickness])
                 )
+                .add(self.dents.translate([0, 0, self.actual_wall_thickness - self.enclosure_wall_thickness]))
         )
         footprint_out = (
             cq.Workplane("front")
                 .circle(self.thread_diameter/2)
                 .extrude(self.outside_footprint_thickness)
-                .translate([0, 0, enclosure_wall_thickness])
+                .translate([0, 0, self.actual_wall_thickness])
                 
         )
 
@@ -102,6 +104,8 @@ class PotentiometerWh148Part(GenericThreadedWithStopPart):
 
         footprint_in = self.mirror_and_translate(footprint_in)
         footprint_out = self.mirror_and_translate(footprint_out)
+        footprint_in = footprint_in.translate([0, 0, self.actual_wall_thickness - self.enclosure_wall_thickness])
+        footprint_out = footprint_out.translate([0, 0, self.actual_wall_thickness - self.enclosure_wall_thickness])
 
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out

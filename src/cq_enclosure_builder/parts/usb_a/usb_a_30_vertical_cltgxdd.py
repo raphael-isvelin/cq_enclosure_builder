@@ -35,6 +35,7 @@ class UsbA30VerticalCltgxddPart(Part):
         orientation_vertical: bool = False,
         center_is_outward_facing_hole: bool = True,
         rotate_180 = True,
+        filleted_hole = True,
     ):
         if not center_is_outward_facing_hole:
             print("WARNING: use of center_is_outward_facing_hole=False in USB C is deprecated; the layout builder assumes True, it can cause alignment issues")
@@ -81,13 +82,24 @@ class UsbA30VerticalCltgxddPart(Part):
         )
 
         # USB hole
-        usb_hole = (
-            cq.Workplane("front")
-                .workplane()
-                .rect(*usb_size)
-                .extrude(usb_depth)
-                .translate([*usb_pos, 0])
-        )
+        if filleted_hole:
+            usb_hole = (
+                cq.Workplane()
+                    .sketch()
+                    .rect(usb_size[0] + 0.25, usb_size[1] + 0.25)
+                    .vertices()
+                    .fillet(0.4)
+                    .finalize()
+                    .extrude(usb_depth)
+            )
+        else:
+            usb_hole = (
+                cq.Workplane("front")
+                    .workplane()
+                    .rect(*usb_size)
+                    .extrude(usb_depth)
+                    .translate([*usb_pos, 0])
+            )
         board = (
             board
                 .faces(">Z")

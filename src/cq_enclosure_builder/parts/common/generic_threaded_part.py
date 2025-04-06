@@ -143,13 +143,14 @@ class GenericThreadedWithStopPart(Part):
 
         smaller_side = min(width, length)
         nut_depth = washer_thickness + nut_thickness + margin_after_nut
-        block_thickness = thread_depth - nut_depth - enclosure_wall_thickness
+        required_distance_to_inner_wall = thread_depth - nut_depth - 0.01
+        block_thickness = max(0, required_distance_to_inner_wall - enclosure_wall_thickness)
         self.smaller_side: float = smaller_side
         self.nut_depth: float = nut_depth
         self.block_thickness: float = block_thickness
-
-        if block_thickness <= 0.00001:
-            print("WARNING! Hole for '" + type(self).__name__ + "' won't go through the hole as enclosure_wall_thickness is too high compared to the thread length. block_thickness=" + str(block_thickness) + ". TODO add support!")
+        extrude_block = enclosure_wall_thickness < required_distance_to_inner_wall
+        self.actual_wall_thickness = enclosure_wall_thickness if extrude_block else required_distance_to_inner_wall
+        board_offset = enclosure_wall_thickness - self.actual_wall_thickness
 
         thread_hole = (
             cq.Workplane("front")
@@ -165,48 +166,59 @@ class GenericThreadedWithStopPart(Part):
             dent = (
                 cq.Workplane("front")
                     .box(dent_size[0] + dent_size_error_margin, dent_size[1] + dent_size_error_margin, dent_size[2] + dent_thickness_error_margin, centered=(True, True, False))
-                    .translate([*dent_pos, -block_thickness])
+                    .translate([*dent_pos, 0])
             )
+            dent = dent.translate([0, 0, -block_thickness if extrude_block else (enclosure_wall_thickness - required_distance_to_inner_wall)])
             dents = dents.add(dent)
 
-        board = (
-            cq.Workplane("front")
-                .box(width, length, enclosure_wall_thickness, centered=(True, True, False))
-                .cut(thread_hole)
-        )
-
-        self.pyramid: cq.Workplane = (
-            cq.Workplane("front")
-                .polyline([(0, 0), (smaller_side, 0), (smaller_side, smaller_side), (0, smaller_side)])
-                .close()
-                .extrude(-smaller_side, taper=pyramid_taper)
-                .translate([-(smaller_side/2), -(smaller_side/2), 0])
-                .cut((
-                    cq.Workplane("front")
-                        .box(smaller_side, smaller_side, 20, centered=(True, True, False))
-                        .translate([0, 0, -(20 + block_thickness)]))
-
-                )
-                .cut(thread_hole)
-        )
-
-        panel_wall = (
-            cq.Workplane("front")
-                .circle(thread_diameter/2 + 1)
-                .extrude(-block_thickness)
-                .cut(thread_hole)
-        )
-
-        if len(dents_specs) > 0:
-            board = board.cut(dents)
-            self.pyramid = self.pyramid.cut(dents)
-            panel_wall = panel_wall.cut(dents)
-            
         panel = (
-            board
-                .add(self.pyramid)
-                .add(panel_wall)
+            cq.Workplane("front")
+                .box(width, length, self.actual_wall_thickness, centered=(True, True, False))
+                .translate([0, 0, board_offset])
+                .cut(thread_hole)
         )
+
+        if extrude_block:
+            base_pyramid: cq.Workplane = (
+                cq.Workplane("front")
+                    .polyline([(0, 0), (smaller_side, 0), (smaller_side, smaller_side), (0, smaller_side)])
+                    .close()
+                    .extrude(-smaller_side, taper=pyramid_taper)
+                    .translate([-(smaller_side/2), -(smaller_side/2), 0])
+            )
+            pyramid_cut_box = (
+                cq.Workplane("front")
+                    .box(smaller_side, smaller_side, 20, centered=(True, True, False))
+                    .translate([0, 0, -(20 + block_thickness)])
+            )
+            self.pyramid = (
+                base_pyramid
+                    .cut(pyramid_cut_box)
+                    .cut(thread_hole)
+            )
+
+        # panel_wall = (
+        #     cq.Workplane("front")
+        #         .circle(thread_diameter/2 + 1)
+        #         .extrude(-block_thickness)
+        #         .cut(thread_hole)
+        # )
+        panel_wall = cq.Workplane("front")
+        if len(dents_specs) > 0:
+            panel = panel.cut(dents)
+            if extrude_block:
+                self.pyramid = self.pyramid.cut(dents)
+                panel_wall = (
+                    panel_wall
+                        .circle(thread_diameter/2 + 1)
+                        .extrude(-block_thickness)
+                        .cut(thread_hole)
+                )
+                panel_wall = panel_wall.cut(dents)
+                panel = panel.add(panel_wall)
+
+        if extrude_block:
+            panel.add(self.pyramid)
 
         mask = (
             cq.Workplane("front")
@@ -217,17 +229,17 @@ class GenericThreadedWithStopPart(Part):
         self.size.width     = width
         self.size.thickness = enclosure_wall_thickness + block_thickness
 
-        objects = [panel, mask, board, self.pyramid, panel_wall, thread_hole, dents]
+        objects = [panel, mask, thread_hole]
+        if extrude_block:
+            self.pyramid = self.mirror_and_translate(self.pyramid)
+            panel_wall = self.mirror_and_translate(panel_wall)
         objects = list(map(self.mirror_and_translate, objects))
-
-        panel, mask, board, self.pyramid, panel_wall, thread_hole, dents = objects
+        panel, mask, thread_hole = objects
 
         self.part = panel
         self.mask = mask
+        self.dents = dents
         self.debug_objects.hole = thread_hole
-        self.debug_objects.others["pyramid"]    = self.pyramid
-        self.debug_objects.others["panel_wall"] = panel_wall 
-        self.debug_objects.others["dents"]      = dents
 
     def mirror_and_translate(self, obj):
         return obj.mirror("XY").translate([0, 0, self.enclosure_wall_thickness])
