@@ -21,6 +21,7 @@ from typing import List, Type, Tuple, Dict, Any, Callable
 
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory_protocol import PartsFactoryProtocol
+from . import PanelSize
 
 
 class PartFactoryMeta(type):
@@ -234,6 +235,12 @@ class PartFactory(PartsFactoryProtocol, metaclass=PartFactoryMeta):
     def set_default_parameters(cls, defaults: Dict[str, Any]) -> None:
         """Sets the default parameters for parts."""
         cls.default_parameters.update(defaults)
+
+    @classmethod
+    def set_panel_size(cls, panel_size: PanelSize) -> None:
+        cls.set_default_parameters({
+            "enclosure_wall_thickness": panel_size.wall_thickness
+        })
 
     @classmethod
     def set_defaults(cls, defaults: Dict[str, Dict]) -> None:

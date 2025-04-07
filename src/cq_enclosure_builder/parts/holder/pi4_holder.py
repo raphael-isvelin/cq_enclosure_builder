@@ -1,5 +1,5 @@
 """
-   Copyright 2023 Raphaël Isvelin
+   Copyright 2025 Raphaël Isvelin
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock
 from cq_enclosure_builder.parts_factory import register_part
 
-@register_part("holder", "RPi 4B")
+# TODO use AbstractHolderPart
+@register_part("holder", "RPi_4B")
 class Pi4HolderPart(Part):
     """
     4-screw holder for Raspberry Pi 4B (should be compatible with other Pis, check screw distance)
@@ -83,7 +84,7 @@ class Pi4HolderPart(Part):
 
         footprint_in = screws_a.toCompound()
         if add_model_to_footprint:
-            model_path = os.path.join(os.path.dirname(__file__), "rpi_4b_light.stp")
+            model_path = os.path.join(os.path.dirname(__file__), "step/rpi_4b_light.stp")
             model = cq.importers.importStep(model_path)
             pi_footprint = (
                 model

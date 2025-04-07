@@ -33,7 +33,7 @@ class AbstractHolderPart(Part):
         self,
         enclosure_wall_thickness: float,
         block_thickness: float,
-        # Part fields
+        # Part fields - TODO move before ewt/sbt once they're mandatory
         cls_file,
         part_category,
         part_id,
@@ -62,7 +62,7 @@ class AbstractHolderPart(Part):
 
 
     # Base board and mask with screws and supports, centered on 0,0
-    def get_base_board_and_mask(self, board_size):
+    def build_base_board_and_mask(self, board_size):
         screw_blocks_a = self.get_screw_blocks()
         supports_a = self.get_support_blocks()
 
@@ -79,6 +79,50 @@ class AbstractHolderPart(Part):
         )
 
         return (part, mask)
+
+
+    def build_and_set_default_board_and_mask(self, board_size_xy):
+        board_size = (*board_size_xy, self.enclosure_wall_thickness)
+
+        self.size.width, self.size.length, self.size.thickness = board_size
+
+        self.part, self.mask = self.build_base_board_and_mask(board_size)
+
+
+    def build_and_set_default_footprints(
+        self,
+        pcb_thickness: float,
+        add_model_to_footprint = True,
+        use_simplified_model = False,
+        use_ultra_simplified_model = False,
+    ):
+        # Inside footprint
+        self.inside_footprint = (self.size.width, self.size.length)
+        self.inside_footprint_thickness = pcb_thickness + self.block_thickness
+        self.inside_footprint_offset = (0, 0)
+
+        footprint_in = cq.Workplane("front")
+        if add_model_to_footprint:
+            footprint_in = super().get_step_model(
+                use_simplified_model,
+                use_ultra_simplified_model,
+                [0, self.inside_footprint[1], self.block_thickness + self.enclosure_wall_thickness]
+            )
+        else:
+            footprint_in = (
+                cq.Workplane("front")
+                    .box(*self.inside_footprint, self.inside_footprint_thickness - self.block_thickness, centered=(True, True, False))
+                    .translate([0, 0, self.block_thickness + self.enclosure_wall_thickness])
+            )
+
+        self.debug_objects.footprint.inside  = footprint_in
+
+        # Outside footprint
+        self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint_thickness = 0
+        self.outside_footprint_offset = (0, 0)
+
+        self.debug_objects.footprint.outside = None
 
 
     def get_screw_blocks(self):

@@ -20,21 +20,8 @@ from typing_extensions import Self
 import cadquery as cq
 from cq_enclosure_builder import Face, ProjectInfo
 from cq_enclosure_builder.part import Part
+from . import PanelSize
 
-class PanelSize:
-    def __init__(
-        self,
-        width: float,
-        length: float,
-        wall_thickness: float,
-        total_thickness: float = None  # default: wall_thickness
-    ):
-        self.width = width
-        self.length = length
-        self.wall_thickness = wall_thickness
-        self.total_thickness = total_thickness
-        if self.total_thickness is None:
-            self.total_thickness = self.wall_thickness
 
 class Panel:
     def __init__(

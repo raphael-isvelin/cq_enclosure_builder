@@ -17,46 +17,45 @@
 import cadquery as cq
 
 from cq_enclosure_builder.parts.holder.abstract_holder_part import AbstractHolderPart, USE_DEFAULT_SCREW_BLOCK_PROVIDER
+from cq_enclosure_builder.parts.common.screw_block import ScrewBlock
 from cq_enclosure_builder.parts_factory import register_part
 
 PART_CATEGORY = "holder"
-PART_ID = "Octopus_Motherboard"
+PART_ID = "MIDI_to_UART"
 
 """
-Octopus motherboard
+MIDI to UART board holder
 """
 @register_part(PART_CATEGORY, PART_ID)
-class OctopusMotherboardHolderPart(AbstractHolderPart):
+class MidiToUartHolderPart(AbstractHolderPart):
 
-    BOARD_SIZE_XY = (255, 166)
+    BOARD_SIZE_XY = (22, 28)
 
     # STEP model
-    STEP_FILE = None  # full version is too complex for cq
-    SIMPLIFIED_STEP_FILE = "step/octopus_motherboard_simplified.step"
-    ULTRA_SIMPLIFIED_STEP_FILE = "step/octopus_motherboard_footprint.step"  # TODO make the model a bit more 3D (general 'hitboxes')
+    STEP_FILE = "step/midi_to_uart.step"
+    SIMPLIFIED_STEP_FILE = None
+    ULTRA_SIMPLIFIED_STEP_FILE = None
 
     MODEL_OFFSET = [-BOARD_SIZE_XY[0]/2, -BOARD_SIZE_XY[1]/2, 0]
-    PCB_THICKNESS = 32.417 - 5.167  # excluding everything under the PCB (pins)
+    PCB_THICKNESS = 11.54 - 1.31  # excluding everything under the PCB (pins)
 
     # Screws and Supports
+    DEFAULT_SCREW_BLOCK_PROVIDER = lambda this: ScrewBlock().m2_5(this.block_thickness, this.enclosure_wall_thickness)[this.default_screw_block_id]
     SCREWS_SPECS = [
-        ( [ 41.6,   BOARD_SIZE_XY[1] -  67.8],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
-        ( [  5,     BOARD_SIZE_XY[1] - 161.2],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
-        ( [249.5,   BOARD_SIZE_XY[1] - 160.9],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
-        ( [177.8,   BOARD_SIZE_XY[1] -  71.3],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
+        ( [3.5, 3.5],                   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
+        ( [3.5, BOARD_SIZE_XY[1] - 3.5],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
     ]
     SCREWS_POS_OFFSET = [-BOARD_SIZE_XY[0]/2, -BOARD_SIZE_XY[1]/2, 0]
     SUPPORT_BLOCKS_SPECS = [
-        ( [3,                   BOARD_SIZE_XY[1] - 3],   (6, 6) ),
-        ( [BOARD_SIZE_XY[0] - 3,   BOARD_SIZE_XY[1] - 3],   (6, 6) ),
+        ( [BOARD_SIZE_XY[0] - 1.5, 1.5],                   (3, 3) ),
+        ( [BOARD_SIZE_XY[0] - 1.5, BOARD_SIZE_XY[1] - 1.5],   (3, 3) ),
     ]
     SUPPORT_BLOCKS_POS_OFFSET = [-BOARD_SIZE_XY[0]/2, -BOARD_SIZE_XY[1]/2, 0]
-
 
     def __init__(
         self,
         enclosure_wall_thickness,
-        screw_block_thickness = 6,
+        screw_block_thickness = 2,
         add_model_to_footprint = True,
         use_simplified_model = False,
         use_ultra_simplified_model = False,
@@ -71,16 +70,17 @@ class OctopusMotherboardHolderPart(AbstractHolderPart):
             cls_file,
             PART_CATEGORY,
             PART_ID,
-            OctopusMotherboardHolderPart.STEP_FILE,
-            OctopusMotherboardHolderPart.SIMPLIFIED_STEP_FILE,
-            OctopusMotherboardHolderPart.ULTRA_SIMPLIFIED_STEP_FILE,
-            OctopusMotherboardHolderPart.MODEL_OFFSET,
+            MidiToUartHolderPart.STEP_FILE,
+            MidiToUartHolderPart.SIMPLIFIED_STEP_FILE,
+            MidiToUartHolderPart.ULTRA_SIMPLIFIED_STEP_FILE,
+            MidiToUartHolderPart.MODEL_OFFSET,
         )
-        super().set_screws_specs(OctopusMotherboardHolderPart.SCREWS_SPECS, OctopusMotherboardHolderPart.SCREWS_POS_OFFSET)
-        super().set_support_blocks_specs(OctopusMotherboardHolderPart.SUPPORT_BLOCKS_SPECS, OctopusMotherboardHolderPart.SUPPORT_BLOCKS_POS_OFFSET)
+        super().set_screws_specs(MidiToUartHolderPart.SCREWS_SPECS, MidiToUartHolderPart.SCREWS_POS_OFFSET)
+        super().set_support_blocks_specs(MidiToUartHolderPart.SUPPORT_BLOCKS_SPECS, MidiToUartHolderPart.SUPPORT_BLOCKS_POS_OFFSET)
+        super().set_default_screw_block_provider(MidiToUartHolderPart.DEFAULT_SCREW_BLOCK_PROVIDER)
 
         # Board & mask
-        super().build_and_set_default_board_and_mask(OctopusMotherboardHolderPart.BOARD_SIZE_XY)
+        super().build_and_set_default_board_and_mask(MidiToUartHolderPart.BOARD_SIZE_XY)
 
         # Inside & outside footprints
-        super().build_and_set_default_footprints(OctopusMotherboardHolderPart.PCB_THICKNESS, add_model_to_footprint, use_simplified_model, use_ultra_simplified_model)
+        super().build_and_set_default_footprints(MidiToUartHolderPart.PCB_THICKNESS, add_model_to_footprint, use_simplified_model, use_ultra_simplified_model)
