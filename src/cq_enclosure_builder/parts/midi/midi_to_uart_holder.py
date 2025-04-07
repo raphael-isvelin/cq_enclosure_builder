@@ -74,7 +74,7 @@ class MidiToUartHolderPart(Part):
         self.size.width, self.size.length = board_size
         self.size.thickness = enclosure_wall_thickness
 
-        pcb_thickness = 11.54 - 1.31
+        pcb_thickness = 11.54 - 1.31  # excluding everything under the PCB (pins)
         self.inside_footprint = (self.size.width, self.size.length)
         self.inside_footprint_thickness = pcb_thickness + screw_block_thickness
         self.inside_footprint_offset = (0, 0)

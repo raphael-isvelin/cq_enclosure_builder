@@ -30,7 +30,7 @@ class Pi4HolderPart(Part):
         self,
         enclosure_wall_thickness,
         screw_block_thickness = 4,
-        add_pi_to_footprint = True,
+        add_model_to_footprint = True,
     ):
         super().__init__()
 
@@ -82,7 +82,7 @@ class Pi4HolderPart(Part):
         self.outside_footprint_thickness = 0
 
         footprint_in = screws_a.toCompound()
-        if add_pi_to_footprint:
+        if add_model_to_footprint:
             model_path = os.path.join(os.path.dirname(__file__), "rpi_4b_light.stp")
             model = cq.importers.importStep(model_path)
             pi_footprint = (

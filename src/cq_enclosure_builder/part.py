@@ -14,6 +14,7 @@
    limitations under the License.
 """
 
+import os
 from typing import List, Dict, Tuple
 
 import cadquery as cq
@@ -54,10 +55,26 @@ class PartSize:
         self.thickness: float = 0
 
 
+"""Base class for all parts."""
 class Part:
-    """Base class for all parts."""
+    def __init__(
+        self,
+        cls_file: str = None,       # (i.e. __file__ - TODO check other way) TODO add to all parts, remove default
+        part_category: str = None,  # TODO add to all parts, remove default
+        part_id: str = None,        # TODO add to all parts, remove default
+        detailed_step_file: str = None,
+        simplified_step_file: str = None,
+        ultra_simplified_step_file: str = None,
+        model_offset = [0, 0, 0],
+    ):
+        self.cls_file = cls_file
+        self.part_category = part_category
+        self.part_id = part_id
+        self.detailed_step_file = detailed_step_file
+        self.simplified_step_file = simplified_step_file
+        self.ultra_simplified_step_file = ultra_simplified_step_file
+        self.model_offset = model_offset
 
-    def __init__(self):
         # To simplify, we want to design all panels in a way where the side of the panel
         #   that's supposed to be inside of the box (e.g. screw holes, ramps, etc.) is on the top,
         #   and part that we want to stick out of the box (e.g. nothing so far) is on the bottom.
@@ -86,6 +103,7 @@ class Part:
 
         self.debug_objects: DebugObjects = DebugObjects()
 
+
     def assembly_parts_to_cq_assembly(self) -> cq.Assembly:
         if self.assembly_parts is None:
             return None
@@ -93,6 +111,7 @@ class Part:
         for part in self.assembly_parts:
             panel_assembly.add(part.workplane, name=part.name, color=part.color)
         return panel_assembly
+
 
     def validate(self) -> List[str]:
         errors: List[str] = []
@@ -112,3 +131,37 @@ class Part:
             errors.append("Both debug_objects.footprint.inside and debug_objects.footprint.outside are None")
 
         return errors
+
+
+    def get_step_model_path(self, use_simplified_model: bool, use_ultra_simplified_model: bool) -> str:
+        if self.detailed_step_file is None and self.simplified_step_file is None and self.ultra_simplified_step_file is None:
+            return None
+
+        step_dir = "../src/cq_enclosure_builder/parts/" + self.part_category    # when launched from Jupyter
+        if self.cls_file is not None: os.path.dirname(self.cls_file)            # regular launch
+
+        step_file = None
+        # TODO less stupid..
+        if use_ultra_simplified_model:
+            if self.ultra_simplified_step_file is not None: step_file = self.ultra_simplified_step_file
+            elif self.simplified_step_file is not None: step_file = self.simplified_step_file
+            else: step_file= self.detailed_step_file
+        elif use_simplified_model:
+            if self.simplified_step_file is not None: step_file = self.simplified_step_file
+            elif self.ultra_simplified_step_file is not None: step_file = self.ultra_simplified_step_file
+            else: step_file = self.detailed_step_file
+        else:
+            if self.detailed_step_file is not None: step_file = self.detailed_step_file
+            elif self.simplified_step_file is not None: step_file = self.simplified_step_file
+            else: step_file = self.ultra_simplified_step_file
+
+        return os.path.join(step_dir, step_file)
+
+
+    def get_step_model(self, use_simplified_model: bool, use_ultra_simplified_model: bool, extra_offset = [0,0,0]):
+            model_path = self.get_step_model_path(use_simplified_model, use_ultra_simplified_model)
+            return (
+                cq.importers.importStep(model_path)
+                    .translate(self.model_offset)
+                    .translate(extra_offset)
+            )
