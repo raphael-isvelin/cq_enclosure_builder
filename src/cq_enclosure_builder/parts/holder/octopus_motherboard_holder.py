@@ -55,11 +55,11 @@ class OctopusMotherboardHolderPart(AbstractHolderPart):
 
     def __init__(
         self,
-        enclosure_wall_thickness,
-        screw_block_thickness = 6,
-        add_model_to_footprint = True,
-        use_simplified_model = False,
-        use_ultra_simplified_model = False,
+        enclosure_wall_thickness: float,
+        screw_block_thickness: float = 6,
+        add_model_to_footprint: bool = True,
+        use_simplified_model: bool = False,
+        use_ultra_simplified_model: bool = False,
     ):
         try: cls_file = __file__            # regular launch
         except NameError: cls_file = None   # when launched from Jupyter

@@ -40,7 +40,6 @@ class MidiToUartHolderPart(AbstractHolderPart):
     PCB_THICKNESS = 11.54 - 1.31  # excluding everything under the PCB (pins)
 
     # Screws and Supports
-    DEFAULT_SCREW_BLOCK_PROVIDER = lambda this: ScrewBlock().m2_5(this.block_thickness, this.enclosure_wall_thickness)[this.default_screw_block_id]
     SCREWS_SPECS = [
         ( [3.5, 3.5],                   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
         ( [3.5, BOARD_SIZE_XY[1] - 3.5],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
@@ -77,7 +76,6 @@ class MidiToUartHolderPart(AbstractHolderPart):
         )
         super().set_screws_specs(MidiToUartHolderPart.SCREWS_SPECS, MidiToUartHolderPart.SCREWS_POS_OFFSET)
         super().set_support_blocks_specs(MidiToUartHolderPart.SUPPORT_BLOCKS_SPECS, MidiToUartHolderPart.SUPPORT_BLOCKS_POS_OFFSET)
-        super().set_default_screw_block_provider(MidiToUartHolderPart.DEFAULT_SCREW_BLOCK_PROVIDER)
 
         # Board & mask
         super().build_and_set_default_board_and_mask(MidiToUartHolderPart.BOARD_SIZE_XY)
