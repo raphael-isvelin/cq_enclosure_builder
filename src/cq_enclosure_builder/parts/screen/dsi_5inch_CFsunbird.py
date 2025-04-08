@@ -69,7 +69,7 @@ class Dsi5InchCfsunbirdPart(Part):
         center_is_outward_facing_hole: bool = True,
         ramp_width_l_plus_r: float = 2.8,   # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
         ratio_bevel_lr_to_bt: float = 1.5,  # N times less than ^ for top and bottom, careful with slopes >35 degrees
-        add_pi_footprint: bool = True,
+        add_pi_footprint: bool = False,
         pi_footprint_offset: Tuple[float, float] = DEFAULT_PI_OFFSET,
     ):
         # TODO refactor, it's copy/pasted from HDMI will little modifications:
@@ -187,7 +187,7 @@ class Dsi5InchCfsunbirdPart(Part):
 
         if add_pi_footprint:
             # TODO cleaner way to avoid duplicating the STEP (e.g. a package storing the models of common objects)
-            model_path = os.path.join(os.path.dirname(__file__), "../holder/", "rpi_4b_light.stp")
+            model_path = os.path.join(os.path.dirname(__file__), "../holder/", "step/rpi_4b_light.stp")
             model = (
                 cq.importers.importStep(model_path)
                     .translate([

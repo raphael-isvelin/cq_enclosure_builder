@@ -84,7 +84,11 @@ class Pi4HolderPart(Part):
 
         footprint_in = screws_a.toCompound()
         if add_model_to_footprint:
-            model_path = os.path.join(os.path.dirname(__file__), "step/rpi_4b_light.stp")
+            step_dir = "../src/cq_enclosure_builder/parts/holder"
+            try: step_dir = os.path.dirname(__file__)   # regular launch
+            except NameError: pass                      # when launched from Jupyter
+
+            model_path = os.path.join(step_dir, "step/rpi_4b_light.stp")
             model = cq.importers.importStep(model_path)
             pi_footprint = (
                 model

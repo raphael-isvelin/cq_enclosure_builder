@@ -22,14 +22,16 @@ from cq_enclosure_builder.parts.common.generic_threaded_part import GenericThrea
 from cq_enclosure_builder.parts_factory import register_part
 
 
-# TODO when needed, make panel more modular (at least grid configuration, eventually jack model)
-@register_part("jack", "Panel 6x2x8")
-class JacksPanel6x2x8Part(Part):
-    """
-    6.35mm female jack connector ACJS-MV-5 (and 2, 3S, etc.)
+"""
+Panel of 6.35mm female jacks connector ACJS-MV-5 (and 2, 3S, etc.)
 
-    https://www.mouser.ee/ProductDetail/Amphenol-Audio/ACJS-MV-5?qs=c9RBuMmXG6JIOKwHTyIaMA%3D%3D
-    """
+6x2x8 layout - TODO when needed, make panel more modular (at least grid configuration, eventually jack model)
+
+https://www.mouser.ee/ProductDetail/Amphenol-Audio/ACJS-MV-5?qs=c9RBuMmXG6JIOKwHTyIaMA%3D%3D
+"""
+@register_part("jack", "Panel_6x2x8")
+class JacksPanel6x2x8Part(Part):
+
 
     def __init__(
         self,
@@ -41,15 +43,13 @@ class JacksPanel6x2x8Part(Part):
         super().__init__()
 
         board_size = (159, 42.13, enclosure_wall_thickness)
-        board_offset = (8.4, 0)
 
         board = (
             cq.Workplane("front")
                 .box(*board_size, centered=(True, True, False))
-                .translate([*board_offset, 0])
         )
 
-        pyramid = self.get_pyramid(15.8, 0.4, 9.9)
+        pyramid = self.get_pyramid(15.8, 4.4 - enclosure_wall_thickness, 9.9)
         pyramid = pyramid.translate([0, 0, enclosure_wall_thickness])
 
         jacks_pos = [
@@ -62,34 +62,39 @@ class JacksPanel6x2x8Part(Part):
             (-27-17,   8.613),   (-27-17, -8.387),
             (-27-17*2, 8.613), (-27-17*2, -8.387),
         ]
+        jacks_offset = (-8.4, 0)
+
         dents = self.get_dents(enclosure_wall_thickness, 0.4)
         jacks_pyramids = cq.Workplane("front")
         all_dents = cq.Workplane("front")
-        for p in jacks_pos:
-            board = board.add(pyramid.translate(p))
-            board = board.cut(dents.translate(p))
+        for base_pos in jacks_pos:
+            pos = (base_pos[0] + jacks_offset[0], base_pos[1] + jacks_offset[1])
+            board = board.add(pyramid.translate(pos))
+            board = board.cut(dents.translate(pos))
         board.add(jacks_pyramids)
         board = (
             board
                 .faces(">Z").workplane()
+                .center(*jacks_offset)
                 .pushPoints(jacks_pos)
                 .hole(9.9)
         )
         # board = board.cut(all_dents)
 
         self.part = board
-        self.mask = cq.Workplane("front").box(*board_size, centered=(True, True, False)).translate([*board_offset, 0])
+        self.mask = cq.Workplane("front").box(*board_size, centered=(True, True, False))
 
         self.size.width, self.size.length, self.size.thickness = board_size
 
         self.inside_footprint = (self.size.width, self.size.length)
         self.inside_footprint_thickness = 20
-        self.inside_footprint_offset = (8.4, 0)
+        # self.inside_footprint_offset = (8.4, 0)
+        self.inside_footprint_offset = (0, 0)
 
         self.outside_footprint = (153.3, 31.29)
         self.outside_footprint_thickness = nut_thickness
-        self.outside_footprint_offset = (8.5, 0.113)
-
+        self.outside_footprint_offset = (0, 0)
+        # self.outside_footprint_offset = (8.5, 0.113) # TODO seems like it's ignored - move whole board to 0,0
 
         if add_model_to_footprint:
             step_dir = "../src/cq_enclosure_builder/parts/jack"  # when launched from Jupyter
@@ -99,7 +104,7 @@ class JacksPanel6x2x8Part(Part):
             model = (
                 cq.importers.importStep(model_path)
                     .rotate((0,0,0), (1,0,0), 180)
-                    .translate([-132.5+8.4, -100, 30.145])  # base offset +8.4 / +8.613/-8.387. / all 17, big 27 
+                    .translate([-132.5, -100, 30.145])  # base offset +8.4 / +8.613/-8.387. / all 17, big 27 
             )
             footprint_in = cq.Workplane("front").add(model)
             bounding_box = model.val().BoundingBox()
@@ -117,14 +122,15 @@ class JacksPanel6x2x8Part(Part):
 
         footprint_nut = cq.Workplane("front").circle(nut_diameter/2).extrude(nut_thickness).translate([0, 0, -nut_thickness])
         footprint_out = cq.Workplane("front")
-        for p in jacks_pos:
-            footprint_out = footprint_out.add(footprint_nut.translate(p))
+        for base_pos in jacks_pos:
+            pos = (base_pos[0] + jacks_offset[0], base_pos[1] + jacks_offset[1])
+            footprint_out = footprint_out.add(footprint_nut.translate(pos))
 
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
 
 
-    def get_pyramid(self, size: float, block_thickness: float, thread_hole_diameter: float, taper: int = 40):
+    def get_pyramid(self, size: float, block_thickness: float, thread_hole_diameter: float, taper: int = 45):
         base_pyramid: cq.Workplane = (
             cq.Workplane("front")
                 .polyline([(0, 0), (size, 0), (size, size), (0, size)]).close()
