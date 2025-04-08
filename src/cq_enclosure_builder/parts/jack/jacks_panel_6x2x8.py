@@ -28,10 +28,12 @@ Panel of 6.35mm female jacks connector ACJS-MV-5 (and 2, 3S, etc.)
 6x2x8 layout - TODO when needed, make panel more modular (at least grid configuration, eventually jack model)
 
 https://www.mouser.ee/ProductDetail/Amphenol-Audio/ACJS-MV-5?qs=c9RBuMmXG6JIOKwHTyIaMA%3D%3D
+
+TODO when needed, make panel more modular (at least grid configuration, eventually jack model)
+
 """
 @register_part("jack", "Panel_6x2x8")
 class JacksPanel6x2x8Part(Part):
-
 
     def __init__(
         self,
@@ -125,6 +127,11 @@ class JacksPanel6x2x8Part(Part):
         for base_pos in jacks_pos:
             pos = (base_pos[0] + jacks_offset[0], base_pos[1] + jacks_offset[1])
             footprint_out = footprint_out.add(footprint_nut.translate(pos))
+        footprint_out.add(
+            cq.Workplane("front")
+                .box(*self.outside_footprint, 0.2, centered=(True, True, False))
+                .translate([0, 0, -0.2])
+        )
 
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
