@@ -74,7 +74,7 @@ class MotorizedFaderPsm60CtrlPart(Part):
 
         footprint_in = None
         if add_model_to_footprint:
-            step_dir = "../src/cq_enclosure_builder/parts/potentiometer"  # when launched from Jupyter
+            step_dir = "../src/cq_enclosure_builder/parts/potentiometer/step"  # when launched from Jupyter
             try: step_dir = os.path.dirname(__file__)  # regular launch
             except NameError: pass
             model_path = os.path.join(step_dir, "psm60_with_controller_noslider.step")

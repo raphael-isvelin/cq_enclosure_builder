@@ -141,8 +141,8 @@ class Part:
         if self.detailed_step_file is None and self.simplified_step_file is None and self.ultra_simplified_step_file is None:
             return None
 
-        step_dir = "../src/cq_enclosure_builder/parts/" + self.part_category    # when launched from Jupyter
-        if self.cls_file is not None: os.path.dirname(self.cls_file)            # regular launch
+        step_dir = "../src/cq_enclosure_builder/parts/" + self.part_category     # when launched from Jupyter
+        if self.cls_file is not None: step_dir = os.path.dirname(self.cls_file)  # regular launch
 
         step_file = None
         # TODO less stupid..

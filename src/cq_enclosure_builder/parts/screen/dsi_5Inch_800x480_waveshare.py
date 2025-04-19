@@ -375,7 +375,7 @@ class Dsi5Inch800x480WavesharePart(Part):
         ]
         bracket_size = (141+6, 20)
 
-        bracket_thickness = 5.5
+        bracket_thickness = 4.5
         bracket = (
             cq.Workplane("front")
                 .rect(*bracket_size)
