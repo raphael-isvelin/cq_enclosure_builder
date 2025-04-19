@@ -66,7 +66,8 @@ class Part:
         simplified_step_file: str = None,
         ultra_simplified_step_file: str = None,
         model_offset = [0, 0, 0],
-        model_rotation = ((0, 0, 0), (1, 0, 0), 180),
+        model_rotation = None,
+        model_mirror = None,
     ):
         self.cls_file = cls_file
         self.part_category = part_category
@@ -76,6 +77,7 @@ class Part:
         self.ultra_simplified_step_file = ultra_simplified_step_file
         self.model_offset = model_offset
         self.model_rotation = model_rotation
+        self.model_mirror = model_mirror
 
         # To simplify, we want to design all panels in a way where the side of the panel
         #   that's supposed to be inside of the box (e.g. screw holes, ramps, etc.) is on the top,
@@ -165,10 +167,14 @@ class Part:
 
             model = cq.importers.importStep(model_path)
 
-            if isinstance(self.model_rotation, list):
-                for rotation in self.model_rotation:
-                    model = model.rotate(*rotation)
-            else:
-                model = model.rotate(*self.model_rotation)
+            if self.model_rotation is not None:
+                if isinstance(self.model_rotation, list):
+                    for rotation in self.model_rotation:
+                        model = model.rotate(*rotation)
+                else:
+                    model = model.rotate(*self.model_rotation)
 
-            return model.translate(self.model_offset).translate(extra_offset)
+            model = model.translate(self.model_offset).translate(extra_offset)
+
+            if self.model_mirror is not None: return model.mirror(self.model_mirror)
+            else: return model

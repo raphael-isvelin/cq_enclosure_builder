@@ -22,24 +22,28 @@ from cq_enclosure_builder.parts.common.screw_block import ScrewBlock
 from cq_enclosure_builder.parts_factory import register_part
 from cq_warehouse.fastener import CounterSunkScrew
 
+"""
+Quad Motorized fader with controller
+
+PSM60-081A-103B2: https://www.mouser.ee/ProductDetail/652-PSM60-081A-103B2
+Controller: https://www.pcbway.com/project/shareproject/Motorized_Slide_Pot_Controller_0d1f8563.html
+Carrier: TODO link
+"""
 @register_part("potentiometer", "PSM60_Ctrl_x4")
 class QuadMotorizedFaderPsm60CtrlPart(Part):
-    """
-    Quad Motorized fader with controller
 
-    PSM60-081A-103B2: https://www.mouser.ee/ProductDetail/652-PSM60-081A-103B2
-    Controller: https://www.pcbway.com/project/shareproject/Motorized_Slide_Pot_Controller_0d1f8563.html
-    """
     def __init__(
         self,
-        enclosure_wall_thickness,
-        fader_distance = 23,
-        add_model_to_footprint = True,
+        enclosure_wall_thickness: float,
+        fader_distance: float = 23,
+        add_model_to_footprint: bool = True,
+        rotate_90: bool = True,
     ):
         super().__init__()
 
-        board_size = (112, 90.1, 1.5)
-        board_offset = (-5.00, 3.55)
+        board_size = (112, 100, 1.5)
+        board_offset = (0, 0)
+        model_offset = [-0.75, -(fader_distance*0.5 - 8.33), 41.21 + 1.5]
         slit_size = (72, 3)
 
         screws_pos = [
@@ -77,7 +81,7 @@ class QuadMotorizedFaderPsm60CtrlPart(Part):
         inside_footprint_single = (112, 21.095)
         self.inside_footprint = (112, 90.1)
         self.inside_footprint_thickness = 37.6
-        self.inside_footprint_offset = (5.00, 3.55)
+        self.inside_footprint_offset = (0, model_offset[1]+3.17)
 
         self.outside_footprint = (86, 13)
         self.outside_footprint_thickness = 9
@@ -87,15 +91,13 @@ class QuadMotorizedFaderPsm60CtrlPart(Part):
             step_dir = "../src/cq_enclosure_builder/parts/potentiometer"  # when launched from Jupyter
             try: step_dir = os.path.dirname(__file__)  # regular launch
             except NameError: pass
-            model_path = os.path.join(step_dir, "psm60_with_controller_noslider.step")
+            model_path = os.path.join(step_dir, "quad_faders_with_carrier.step")
             model = (
                 cq.importers.importStep(model_path)
-                    .rotate((0,0,0), (1,0,0), 180)
-                    .translate([0, 0, min(board_size[2], enclosure_wall_thickness)])
+                    .rotate((0,0,0), (1,0,0), 0)
+                    .translate(model_offset)
             )
-            footprint_in = cq.Workplane("front")
-            for offset_y in [fader_distance*0.5, fader_distance*1.5, fader_distance*-0.5, fader_distance*-1.5]:
-                footprint_in.add(model.translate([0, offset_y, 0]))
+            footprint_in = model
             bounding_box = model.val().BoundingBox()
             self.inside_footprint_offset = (
                 -abs(abs(bounding_box.xmin) - abs(bounding_box.xmax)) / 2,
@@ -121,3 +123,12 @@ class QuadMotorizedFaderPsm60CtrlPart(Part):
             )
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
+
+        if rotate_90:
+            rotate_and_translate = lambda obj: obj.rotate((0, 0, 0), (0, 0, 1), -90)
+            self.part, self.mask, self.debug_objects.footprint.inside, self.debug_objects.footprint.outside  = list(map(rotate_and_translate,
+                    [board, mask, footprint_in, footprint_out]))
+
+            self.outside_footprint = (self.outside_footprint[1], self.outside_footprint[0])
+            self.inside_footprint = (self.inside_footprint[1], self.inside_footprint[0])
+            self.inside_footprint_offset = (self.inside_footprint_offset[1], self.inside_footprint_offset[0])

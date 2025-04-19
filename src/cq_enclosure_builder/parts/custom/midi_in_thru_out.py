@@ -28,7 +28,7 @@ class MidiInThruOutPart(Part):
         ]
         midi_hole_pos = [ (0, -13.4), (0, 13.4) ]
 
-        board_size = (28.2, 46, enclosure_wall_thickness)
+        board_size = (32, 46, enclosure_wall_thickness)
 
         midi_hole_diameter = 15.1 + 0.5
         screw_holes_diameter = 2.9 + 0.3
@@ -37,7 +37,7 @@ class MidiInThruOutPart(Part):
         midi_depth_margin = 2
 
         trs_pos = (10.053, 0)
-        wall_thickness_for_trs = 1
+        wall_thickness_for_trs = 2.2
         trs_thread_depth = 4.6
         trs_nut_depth = 2
         trs_nut_diameter = 7.9
@@ -87,13 +87,14 @@ class MidiInThruOutPart(Part):
         self.inside_footprint_thickness = 21
         self.inside_footprint_offset = (0, 0)
 
+        # footprint_in = (
+        #     cq.Workplane("front")
+        #         .rect(*self.inside_footprint)
+        #         .extrude(self.inside_footprint_thickness - enclosure_wall_thickness)
+        #         .translate([0, 0, enclosure_wall_thickness])
+        # )
+        # footprint_in.add(
         footprint_in = (
-            cq.Workplane("front")
-                .rect(*self.inside_footprint)
-                .extrude(self.inside_footprint_thickness - enclosure_wall_thickness)
-                .translate([0, 0, enclosure_wall_thickness])
-        )
-        footprint_in.add(
             cq.Workplane("front")
                 .pushPoints([trs_pos])
                 .circle(trs_body_diameter/2)
@@ -118,7 +119,7 @@ class MidiInThruOutPart(Part):
         self.debug_objects.footprint.inside  = footprint_in
 
         # Outside footprint
-        self.outside_footprint = (self.size.width, self.size.length)
+        self.outside_footprint = (28, self.size.length)
         self.outside_footprint_thickness = 3
         self.outside_footprint_offset = (0, 0)
 

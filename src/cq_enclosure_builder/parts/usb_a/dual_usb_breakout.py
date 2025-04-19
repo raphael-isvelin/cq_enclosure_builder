@@ -101,7 +101,6 @@ class DualUsbBreakoutPart(Part):
         )
 
         # Spacer
-        print("DIY dual USB: built required " + str(block_spacer_thickness) + "mm spacer (calculated " + str(calculated_block_thickness) + ", block_thicknes " + str(block_thickness) + ")")
         self.spacer = self.build_blocks(enclosure_wall_thickness, DualUsbBreakoutPart.BLOCKS_SPECS, block_spacer_thickness, DualUsbBreakoutPart.SCREW_HOLE_SIZE+0.8, block_spacer_thickness).translate([0, 0, -enclosure_wall_thickness])
         
         self.debug_objects.others["spacer"]  = (

@@ -41,6 +41,7 @@ class JacksPanel6x2x8Part(Part):
         nut_diameter = 14.3,
         nut_thickness = 3.4,
         add_model_to_footprint: bool = True,
+        use_simplified_model: bool = False,
     ):
         super().__init__()
 
@@ -89,24 +90,22 @@ class JacksPanel6x2x8Part(Part):
         self.size.width, self.size.length, self.size.thickness = board_size
 
         self.inside_footprint = (self.size.width, self.size.length)
-        self.inside_footprint_thickness = 20
-        # self.inside_footprint_offset = (8.4, 0)
+        self.inside_footprint_thickness = 50
         self.inside_footprint_offset = (0, 0)
 
         self.outside_footprint = (153.3, 31.29)
         self.outside_footprint_thickness = nut_thickness
         self.outside_footprint_offset = (0, 0)
-        # self.outside_footprint_offset = (8.5, 0.113) # TODO seems like it's ignored - move whole board to 0,0
 
         if add_model_to_footprint:
             step_dir = "../src/cq_enclosure_builder/parts/jack"  # when launched from Jupyter
             try: step_dir = os.path.dirname(__file__)  # regular launch
             except NameError: pass
-            model_path = os.path.join(step_dir, "jacks_panel_6x2x8.step")
+            model_path = os.path.join(step_dir, "jacks_panel_6x2x8_simplified.step" if use_simplified_model else "jacks_panel_6x2x8.step")
             model = (
                 cq.importers.importStep(model_path)
                     .rotate((0,0,0), (1,0,0), 180)
-                    .translate([-132.5, -100, 30.145])  # base offset +8.4 / +8.613/-8.387. / all 17, big 27 
+                    .translate([0, 0, 30.145])  # base offset +8.4 / +8.613/-8.387. / all 17, big 27
             )
             footprint_in = cq.Workplane("front").add(model)
             bounding_box = model.val().BoundingBox()

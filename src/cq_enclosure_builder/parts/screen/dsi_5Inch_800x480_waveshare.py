@@ -1,4 +1,3 @@
-
 """
    Copyright 2025 Raphaël Isvelin
 
@@ -52,11 +51,12 @@ TODO waveshare link
 """
 @register_part(PART_CATEGORY, PART_ID)
 class Dsi5Inch800x480WavesharePart(Part):
-    """ TODO cleanup this absolute mess of a class """
+    """
+    TODO cleanup this absolute mess of a class
+    Careful - nothing is really calculated dynamically
+    """
 
-    BOARD_SIZE_XY = (180, 180)
-
-    RAMP_SLOPE_THICKNESS = 2
+    RAMP_SLOPE_THICKNESS = 1
 
     # STEP model
     STEP_FILE = "step/waveshare-5inch-dsi-800x480.stp"
@@ -68,21 +68,16 @@ class Dsi5Inch800x480WavesharePart(Part):
     MODEL_ROTATION = [ ((0, 0, 0), (1, 0, 0), 180),    ((0, 0, 0), (0, 0, 1), 180) ]
 
 
-    DISTANCE_BETWEEN_SCREWS_X = 110.8 - 1.0
-    DISTANCE_BETWEEN_OUTER_SCREWS_Y = 67.6 + 24
-    DISTANCE_BETWEEN_INNER_SCREWS_Y = 67.6
-
-    # TODO check dimensions with my screen
-    DEFAULT_PI_OFFSET = (
-        -(DISTANCE_BETWEEN_SCREWS_X/2) + 15,
-        -(DISTANCE_BETWEEN_INNER_SCREWS_Y/2) + 2.43,
-    )
+    # DISTANCE_BETWEEN_SCREWS_X = 110.8 - 1.0
+    # DISTANCE_BETWEEN_SCREWS_X = 110.8 - 1.0
+    DISTANCE_BETWEEN_SCREWS_X = 66.5*2
+    DISTANCE_BETWEEN_SCREWS_Y = 68
 
     def __init__(
         self,
         enclosure_wall_thickness: float,
         bracket_extra_thickness: float = 1.4,  # brackets are pressing the screen in place
-        ramp_width_l_plus_r: float = 2.8,      # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
+        ramp_width_l_plus_r: float = 3,      # X/2mm on the left + X/2mm on the right, careful with slopes >35 degrees
         ratio_bevel_lr_to_bt: float = 1.5,     # N times less than ^ for top and bottom, careful with slopes >35 degrees
         add_model_to_footprint: bool = True,
         use_simplified_model: bool = False,
@@ -103,7 +98,7 @@ class Dsi5Inch800x480WavesharePart(Part):
 
 
         screen_module_thickness = 14.68 - 0.88
-        screen_viewing_area_clearance = 0.4*2
+        screen_viewing_area_clearance = -2 #0.4*2
         screen_viewing_area_size = (109 - screen_viewing_area_clearance, 65.8 - screen_viewing_area_clearance)
         screen_bevel_size = (3.1, 8.3, 5.85, 5.85)  # top, bottom, left, right
         viewing_area_offset = (0.0, 0)
@@ -112,7 +107,7 @@ class Dsi5Inch800x480WavesharePart(Part):
 
         screw_block_thickness = screen_module_thickness - enclosure_wall_thickness
 
-        ramp_base_thickness = 1.6
+        ramp_base_thickness = 0.4#1#.6
         ramp_slope_thickness = Dsi5Inch800x480WavesharePart.RAMP_SLOPE_THICKNESS
         part_thickness = ramp_base_thickness + ramp_slope_thickness
 
@@ -123,8 +118,8 @@ class Dsi5Inch800x480WavesharePart(Part):
             screen_viewing_area_size[1] + screen_bevel_size[0] + screen_bevel_size[1]
         )
         screen_board_size = (
-            screen_w_bevel_size[0] +  4, # magic number, TODO calculate margin from screw size
-            screen_w_bevel_size[1] + 32  # space for screws TODO unhardcode for HDMI v. DSI
+            screen_w_bevel_size[0] + 24,
+            screen_w_bevel_size[1] + 6
         )
 
         screen_w_ramp_width = screen_viewing_area_size[0] + ramp_width_l_plus_r
@@ -133,6 +128,7 @@ class Dsi5Inch800x480WavesharePart(Part):
         ratioed_screen_w_ramp_width = screen_w_ramp_width / ratio_bevel_lr_to_bt
 
         alpha = required_taper_for_x(ratioed_screen_width, ratioed_screen_w_ramp_width, ramp_slope_thickness)
+        print("alpha=" + str(alpha))
 
         screen_w_ramp_length = tapered_dimensions(ratioed_screen_width, screen_viewing_area_size[1], ramp_slope_thickness, alpha)
         #print(f"TAPER ANGLE: {str(alpha)} for ramp {str(ramp_width_l_plus_r)} ratio {str(ratio_bevel_lr_to_bt)}")
@@ -170,31 +166,51 @@ class Dsi5Inch800x480WavesharePart(Part):
                 .cut(viewing_area_hole)
                 .translate([0, 0, -(part_thickness - enclosure_wall_thickness)])
 
-                .faces("<Z").workplane()
-                .pushPoints([
-                    # TODO cleanup, update base coords instead of hardcode
-                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)-31.8,   +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2+insert_block_size/2 ),  # TMl
-                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)-31.8,   -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2+insert_block_size/2 ),  # BMl
-                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)+20,     +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2+insert_block_size/2 ),  # TMr
-                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)+20,     -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2+insert_block_size/2 ),  # BMr
-                ])
-                .rect(insert_block_size, insert_block_size, centered=True)
-                .extrude(2.5)
+                .moveTo(-screen_board_size[0]/2 + 6, 0)
+                .rect(12, screen_board_size[1])
+                .extrude(2)
+                .moveTo(+screen_board_size[0]/2 - 6, 0)
+                .rect(12, screen_board_size[1])
+                .extrude(2)
+                .moveTo(0, +screen_board_size[1]/2 - 3)
+                .rect(screen_board_size[0], 6)
+                .extrude(2)
 
                 .faces("<Z").workplane()
                 .pushPoints([
                     # TODO cleanup, update base coords instead of hardcode
-                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)-31.8,   +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2+insert_block_size/2 ),  # TMl
-                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)-31.8,   -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2+insert_block_size/2 ),  # BMl
-                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)+20,     +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2+insert_block_size/2 ),  # TMr
-                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)+20,     -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2+insert_block_size/2 ),  # BMr
+                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  22.65 + insert_block_size/2 ),  # TMl
+                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -26.38 + insert_block_size/2),  # BMl
+                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  22.65 + insert_block_size/2 ),  # TMr
+                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -26.38 + insert_block_size/2 ),  # BMr
+                    
+                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -32.114 ),  # TL
+                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  +35.893  ),  # BL
+                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -32.114  ),  # TR
+                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  +35.893  ),  # BR
                 ])
-                .hole(4, insert_thickness)
+                .rect(insert_block_size, insert_block_size, centered=True)
+                .extrude(3)
+
+                .faces("<Z").workplane()
+                .pushPoints([
+                    # TODO cleanup, update base coords instead of hardcode
+                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  22.65 + insert_block_size/2 ),  # TMl
+                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -26.38 + insert_block_size/2),  # BMl
+                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  22.65 + insert_block_size/2 ),  # TMr
+                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -26.38 + insert_block_size/2 ),  # BMr
+                    
+                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -32.114  ),  # TL
+                    (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  +35.893 ),  # BL
+                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -32.114  ),  # TR
+                    (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  +35.893 ),  # BR
+                ])
+                .hole(4.5, insert_thickness)
         )
         screen_w_ramps_hole = screen_w_ramps_hole.translate([0, 0, -(part_thickness - enclosure_wall_thickness)])
 
-        screws, screws_mask = self.build_screws_assembly(screw_block_thickness, enclosure_wall_thickness, part_thickness, (screen_w_ramp_width, screen_w_ramp_length))
-        screen_panel = screen_panel.cut(screws_mask)
+        #screws, screws_mask = self.build_screws_assembly(screw_block_thickness, enclosure_wall_thickness, part_thickness, (screen_w_ramp_width, screen_w_ramp_length))
+        screen_panel = screen_panel#.cut(screws_mask)
 
         mask = (
             cq.Workplane("front")
@@ -202,18 +218,18 @@ class Dsi5Inch800x480WavesharePart(Part):
         )
 
         mirror_and_translate = lambda obj: obj.mirror("XY").translate([0, 0, enclosure_wall_thickness])
-        screen_panel, mask, screws_mask, screen_w_ramps_hole = list(map(mirror_and_translate,
-                [screen_panel, mask, screws_mask, screen_w_ramps_hole]))
+        screen_panel, mask, screen_w_ramps_hole = list(map(mirror_and_translate,
+                [screen_panel, mask, screen_w_ramps_hole]))
 
         mirror_and_translate = lambda obj: obj.mirror("XY").translate([0, 0, part_thickness])
-        screws = list(map(mirror_and_translate, screws))
+        #screws = list(map(mirror_and_translate, screws))
 
         debug_screen_block = (  # screw blocks shouldn't collide with that
             cq.Workplane("front")
                 .box(*screen_w_bevel_size, part_thickness, centered=(True, True, False))
         )
 
-        bracket, bracket_alt, bracket_split, bracket_footprint, bracket_size = self.build_brackets(enclosure_wall_thickness, bracket_extra_thickness, viewing_area_offset)
+        bracket, bracket_footprint, bracket_size = self.build_brackets(enclosure_wall_thickness, bracket_extra_thickness, viewing_area_offset)
 
         self.size.width     = screen_board_size[0]
         self.size.length    = screen_board_size[1]
@@ -238,22 +254,19 @@ class Dsi5Inch800x480WavesharePart(Part):
 
 
         assembly_parts = [AssemblyPart(screen_panel, "Screen", cq.Color(*DEFAULT_PART_COLOR))]
-        for idx, screw in enumerate(screws):
-            assembly_parts.append(AssemblyPart(screw, f"Screw {idx}", cq.Color(0.7, 0.3, 0.8)))
+        #for idx, screw in enumerate(screws):
+        #    assembly_parts.append(AssemblyPart(screw, f"Screw {idx}", cq.Color(0.7, 0.3, 0.8)))
 
-            
-
-        footprint_in.add(footprint_in
-            .add(bracket_footprint.rotate((0, 0, 0), (0, 1, 0), 180).translate([56.5, 0, 16.6 + 2]))
-            .add(bracket_footprint.rotate((0, 0, 0), (0, 1, 0), 180).translate([-56.5, 0, 16.6 + 2]))
-            .add(bracket_alt.rotate((0, 0, 0), (0, 1, 0), 180).translate([+(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)-31.8, 0, 16.6 + 2]))
-            .add(bracket_alt.rotate((0, 0, 0), (0, 1, 0), 180).translate([-(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2)+20, 0, 16.6 + 2]))
+        footprint_in = (
+            footprint_in
+                .add(bracket_footprint.rotate((0, 0, 0), (0, 1, 0), 180).translate([0, -35.8 + 4.755, 20-0.5]))
+                .add(bracket_footprint.rotate((0, 0, 0), (0, 1, 0), 0).rotate((0, 0, 0), (0, 0, 1), 180).translate([0, 35.8 - 4.755 - 4.5, 20-0.5-5.5]))
         )
 
         # Inside footprint
         self.inside_footprint = (self.size.width, self.size.length)
         self.inside_footprint_thickness = 20
-        self.inside_footprint_offset = (0, -2.6-0.52)#-(2.6-1.504))
+        self.inside_footprint_offset = (0, -2.6-0.52)
 
         # footprint_in = cq.Workplane("front")
         if add_model_to_footprint:
@@ -276,14 +289,32 @@ class Dsi5Inch800x480WavesharePart(Part):
         self.outside_footprint_thickness = 0
         self.outside_footprint_offset = (0, 0)
 
-                             
-        self.additional_printables = [
-            ("screen-bracket-1", bracket_size, bracket),
-            ("screen-bracket-2", bracket_size, bracket),
-            ("screen-bracket-3", bracket_size, bracket_alt),
-            ("screen-bracket-4", bracket_size, bracket_alt),
-        ]
+        # Risers
+        riser = (
+            cq.Workplane("front")
+                .box(insert_block_size, insert_block_size, 7.6-0.1, centered=(True, True, False))
+                .circle(4/2)
+                .cutThruAll()
+                # .hole(4, 9.5)
+        )
+        all_risers = (
+            cq.Assembly()
+                .add(riser.translate([0, (insert_block_size+1)*0, 0]))
+                .add(riser.translate([0, (insert_block_size+1)*1, 0]))
+                .add(riser.translate([0, (insert_block_size+1)*2, 0]))
+                .add(riser.translate([0, (insert_block_size+1)*3, 0]))
+                .add(riser.translate([insert_block_size+1, (insert_block_size+1)*0, 0]))
+                .add(riser.translate([insert_block_size+1, (insert_block_size+1)*1, 0]))
+                .add(riser.translate([insert_block_size+1, (insert_block_size+1)*2, 0]))
+                .add(riser.translate([insert_block_size+1, (insert_block_size+1)*3, 0]))
+        )
 
+        # Printables                             
+        self.additional_printables = [
+            ("all-risers", (insert_block_size*2+1, insert_block_size*4+3), all_risers.toCompound()),
+            ("bracket-1", bracket_size, bracket),
+            ("bracket-2", bracket_size, bracket.rotate((0, 0, 0), (0, 0, 1), 180)),
+        ]
                              
         self.debug_objects.footprint.outside = None
 
@@ -293,6 +324,9 @@ class Dsi5Inch800x480WavesharePart(Part):
 
         self.debug_objects.footprint.inside  = footprint_in
         self.debug_objects.footprint.outside = footprint_out
+        self.debug_objects.others["all_risers"] = all_risers.toCompound()
+        self.debug_objects.others["bracket-1"] = bracket
+        self.debug_objects.others["bracket-2"] = bracket.rotate((0, 0, 0), (0, 0, 1), 180)
 
         self.debug_objects.hole = None #viewing_area_hole
 
@@ -302,10 +336,10 @@ class Dsi5Inch800x480WavesharePart(Part):
 
         screws_pos = [
             # TODO cleanup, update base coords instead of hardcode
-            (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2) - 1.6,  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2) - 2 ),  # TL
-            (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2) - 1.6,  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2) - 2 ),  # BL
-            (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2) + 1.6,  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2) - 2 ),  # TR
-            (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2) + 1.6,  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2) - 2 ),  # BR
+            # (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_Y/2) - 2 ),  # TL
+            # (  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_Y/2) - 2 ),  # BL
+            # (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_Y/2) - 2 ),  # TR
+            # (  +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2),  -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_Y/2) - 2 ),  # BR
         ]
 
         screws = []
@@ -325,22 +359,23 @@ class Dsi5Inch800x480WavesharePart(Part):
         bracket_extra_thickness: float,
         viewing_area_offset: float
     ):
-        # TODO cleanup this mess
         outer_screws_pos = [
-            (0, -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2),
-            (0, +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_OUTER_SCREWS_Y/2)-2),
-        ]
-        inner_pi_screws_pos = [
-            (0, -26.38),
-            (0, 22.65),
+            (-(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2), 4.755),
+            (-(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2), -4.755),
+            (+(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2), -4.755),
+            (+(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_SCREWS_X/2), 4.755),
         ]
         inner_screws_pos = [
-            (0, -(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_INNER_SCREWS_Y/2)-2),
-            (0, +(Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_INNER_SCREWS_Y/2)-2),
+            (-56.5,   -4.755),
+            (-23.086, +4.755),
+            (+34.914, +4.755),
+            (+56.5,   -4.755),
         ]
-        bracket_size = (10, 110)
+        inner_bottom_screws_pos = [
+        ]
+        bracket_size = (141+6, 20)
 
-        bracket_thickness = 4
+        bracket_thickness = 5.5
         bracket = (
             cq.Workplane("front")
                 .rect(*bracket_size)
@@ -349,34 +384,16 @@ class Dsi5Inch800x480WavesharePart(Part):
                 .pushPoints(outer_screws_pos)
                 .hole(4.3)
                 .pushPoints(inner_screws_pos)
-                .hole(3)
-        )
-        bracket_alt = (
-            cq.Workplane("front")
-                .rect(*bracket_size)
-                .extrude(bracket_thickness)
-                .faces(">Z").workplane()
-                .pushPoints(outer_screws_pos)
-                .hole(4.3)
-                .pushPoints(inner_pi_screws_pos)
-                .hole(2.7)
-        )
-
-        bracket_split = bracket.cut(
-            cq.Workplane("front")
-                .rect(10, Dsi5Inch800x480WavesharePart.DISTANCE_BETWEEN_INNER_SCREWS_Y - 12)
-                .extrude(enclosure_wall_thickness + bracket_extra_thickness)
+                .hole(2.8)
         )
 
         bracket_footprint = bracket.translate([0,0,0])  # copied pre-transofmration, as we don't want to rotate/translate it--legacy
 
         # Makes them nicer to display in Enclosure#all_printables_assembly (aligned with the)
         bracket = bracket.rotate((0, 0, 0), (0, 0, 1), 90)
-        bracket_split = bracket_split.rotate((0, 0, 0), (0, 0, 1), 90)
         bracket_size = (bracket_size[1], bracket_size[0])
 
         # Center to 0,0
         bracket = bracket.translate([*viewing_area_offset, 0])
-        bracket_split = bracket_split.translate([*viewing_area_offset, 0])
 
-        return (bracket, bracket_alt, bracket_split, bracket_footprint, bracket_size)
+        return (bracket, bracket_footprint, bracket_size)

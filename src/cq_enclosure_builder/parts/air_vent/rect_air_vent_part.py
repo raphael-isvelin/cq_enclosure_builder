@@ -1,5 +1,5 @@
 """
-   Copyright 2023 Raphaël Isvelin
+   Copyright 2025 Raphaël Isvelin
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import cadquery as cq
 from cq_enclosure_builder.part import Part
 from cq_enclosure_builder.parts_factory import register_part
 from cq_enclosure_builder.parts.common.screw_block import ScrewBlock, TaperOptions
-from cq_enclosure_builder.parts.common.screws_providers import TinyBlockFlatHeadScrewProvider
+from cq_enclosure_builder.parts.common.screws_providers import TinyBlockFlatHeadScrewProvider, DefaultHeatSetScrewProvider
 from cq_enclosure_builder.parts.air_vent.fan_size import FanSize
 
 
@@ -50,9 +50,9 @@ class RectAirVentPart(Part):
         with_fan_screws: Union[FanSize, None] = FanSize._30_MM,
         fan_screws_size: str = "m3",
         fan_screws_taper_mode: TaperOptions = TaperOptions.XY_TAPER,
-        fan_screws_taper_rotation: float = 0,
+        fan_screws_taper_rotation: float = 180,
         fan_screws_taper_incline: float = 0.75,
-        fan_screws_taper_on: str = "1100"  # TODO cleanup one day; sorry future self, just want to be done with it :shrug:
+        fan_screws_taper_on: str = "0011"  # TODO cleanup one day; sorry future self, just want to be done with it :shrug:
     ):
         super().__init__()
 
@@ -93,7 +93,7 @@ class RectAirVentPart(Part):
         self.size.thickness = thickness
 
         self.inside_footprint = (self.size.width, self.size.length)  # TODO should account for the screw blocks (incl. taper)
-        self.inside_footprint_thickness = thickness - enclosure_wall_thickness
+        self.inside_footprint_thickness = 14 - enclosure_wall_thickness
         self.inside_footprint_offset = (0, 0)
 
         self.outside_footprint = (self.size.width, self.size.length)
@@ -138,8 +138,9 @@ class RectAirVentPart(Part):
             )
             fan_screws = fan_screws_a["screws"]  #.translate([0, 0, enclosure_wall_thickness])
             fan_masks = fan_screws_a["masks"]  #.translate([0, 0, enclosure_wall_thickness])
-            footprint_in = footprint_in.add(fan_screws_a["footprint_in"])
+            # footprint_in = footprint_in.add(fan_screws_a["footprint_in"])
             fan_footprint = fan_screws_a["footprint_size"]
+            footprint_in = fan_screws_a["footprint_in"]
             self.inside_footprint = (
                 self.inside_footprint[0] if self.inside_footprint[0] > fan_footprint[0] else fan_footprint[0],
                 self.inside_footprint[1] if self.inside_footprint[1] > fan_footprint[1] else fan_footprint[1],
@@ -152,10 +153,6 @@ class RectAirVentPart(Part):
         self.part = board
         self.mask = mask
 
-        footprint_in = footprint_in.add(board).cut(
-            cq.Workplane("front")
-                .box(*self.inside_footprint, enclosure_wall_thickness, centered=(True, True, False))
-        )
         footprint_out = (
             cq.Workplane("front")
                 .rect(*self.outside_footprint)
@@ -177,12 +174,12 @@ class RectAirVentPart(Part):
         screw_block_taper_rotation: float = 0,
         screw_block_taper_incline: float = 0.75,
         screw_block_taper_on: str = "1111",  # should taper that specific screw block? same order as screws_pos
-        screw_block_hole_distance_to_wall: float = 0.8
+        screw_block_hole_distance_to_wall: float = 1.4
     ):
-        screw = ScrewBlock(screw_provider=TinyBlockFlatHeadScrewProvider).build(
+        screw = ScrewBlock(screw_provider=DefaultHeatSetScrewProvider).build(
             screw_size, block_thickness, enclosure_wall_thickness, screw_hole_depth=block_thickness-screw_block_hole_distance_to_wall, fill_pointy_bit=True,
             taper=screw_block_taper_option, taper_rotation=screw_block_taper_rotation, xy_taper_incline=screw_block_taper_incline, xy_taper_from=enclosure_wall_thickness)
-        screw_no_taper = ScrewBlock(screw_provider=TinyBlockFlatHeadScrewProvider).build(
+        screw_no_taper = ScrewBlock(screw_provider=DefaultHeatSetScrewProvider).build(
             screw_size, block_thickness, enclosure_wall_thickness, screw_hole_depth=block_thickness-screw_block_hole_distance_to_wall, fill_pointy_bit=True)
 
         distance_between_screws = None  # center to center
@@ -240,5 +237,4 @@ class RectAirVentPart(Part):
             "footprint_in": footprint_in,
             "footprint_size": (footprint_size, footprint_size),
             "footprint_thickness": footprint_thickness,
-            #"base_plate": base_plate.translate([0, 0, -enclosure_wall_thickness])
         }

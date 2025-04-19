@@ -20,7 +20,7 @@ ENABLE_REPLAY = True
 
 import cadquery as cq
 
-from jupyter_cadquery import show as jcq_show, open_viewer
+from jupyter_cadquery import show as jcq_show, open_viewer, Camera
 
 from jupyter_cadquery.replay import replay, enable_replay, disable_replay
 enable_replay(ENABLE_REPLAY)
@@ -53,13 +53,13 @@ def show(obj, viewer="Assembly", anchor="right", hide_contains=objects_to_hide):
         height=VIEWER_HEIGHT,
         theme=VIEWER_THEME,
         collapse=1,
-        optimal_bb=True,
+        # optimal_bb=True,
         render_edges=True,
         axes=True,
         axes0=True,
         grid=[True, True, True],
         #black_edges=True,
-        reset_camera=False,
+        reset_camera=Camera.KEEP,
         #show_parent=True,
         #timeit=True,
         #js_debug=True

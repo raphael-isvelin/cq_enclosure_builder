@@ -41,6 +41,8 @@ class AbstractHolderPart(Part):
         simplified_step_file,
         ultra_simplified_step_file,
         model_offset,
+        model_rotation = None,
+        model_mirror = None,
     ):
         self.enclosure_wall_thickness = enclosure_wall_thickness
         self.block_thickness = block_thickness
@@ -51,7 +53,9 @@ class AbstractHolderPart(Part):
             step_file,
             simplified_step_file,
             ultra_simplified_step_file,
-            model_offset
+            model_offset,
+            model_rotation,
+            model_mirror,
         )
         self.screws_specs = []
         self.screws_pos_offset = [0, 0, 0]

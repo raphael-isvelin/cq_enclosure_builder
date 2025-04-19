@@ -28,7 +28,7 @@ Octopus motherboard
 @register_part(PART_CATEGORY, PART_ID)
 class OctopusMotherboardHolderPart(AbstractHolderPart):
 
-    BOARD_SIZE_XY = (255, 166)
+    BOARD_SIZE_XY = (261, 166)
 
     # STEP model
     STEP_FILE = None  # full version is too complex for cq
@@ -36,19 +36,27 @@ class OctopusMotherboardHolderPart(AbstractHolderPart):
     ULTRA_SIMPLIFIED_STEP_FILE = "step/octopus_motherboard_footprint.step"  # TODO make the model a bit more 3D (general 'hitboxes')
 
     MODEL_OFFSET = [-BOARD_SIZE_XY[0]/2, -BOARD_SIZE_XY[1]/2, 0]
+    MODEL_ROTATION = None
+    MODEL_MIRROR = "XZ"
     PCB_THICKNESS = 32.417 - 5.167  # excluding everything under the PCB (pins)
 
     # Screws and Supports
     SCREWS_SPECS = [
-        ( [ 41.6,   BOARD_SIZE_XY[1] -  67.8],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
-        ( [  5,     BOARD_SIZE_XY[1] - 161.2],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
-        ( [249.5,   BOARD_SIZE_XY[1] - 160.9],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
-        ( [177.8,   BOARD_SIZE_XY[1] -  71.3],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),
+        ( [ 46.87,  71.86],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),  # MH1
+        ( [ 11   , 161.20],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),   # MH2
+        ( [255.5 ,  160.9],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),    # MH3
+        ( [182.81,  71.42],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),  # MH4
+        ( [104.88,  72.12],   USE_DEFAULT_SCREW_BLOCK_PROVIDER ),  # MH5
     ]
     SCREWS_POS_OFFSET = [-BOARD_SIZE_XY[0]/2, -BOARD_SIZE_XY[1]/2, 0]
+    third_width = BOARD_SIZE_XY[0]/3
     SUPPORT_BLOCKS_SPECS = [
-        ( [3,                   BOARD_SIZE_XY[1] - 3],   (6, 6) ),
-        ( [BOARD_SIZE_XY[0] - 3,   BOARD_SIZE_XY[1] - 3],   (6, 6) ),
+        ( [3                   , 3                   ],   (6, 6) ),
+        ( [third_width + 3     , 3                   ],   (6, 6) ),
+        ( [third_width*2 + 3   , 3                   ],   (6, 6) ),
+        ( [BOARD_SIZE_XY[0] - 3, 3                   ],   (6, 6) ),
+        ( [third_width + 3     , BOARD_SIZE_XY[1] - 3], (6, 6) ),
+        ( [third_width*2 + 3   , BOARD_SIZE_XY[1] - 3], (6, 6) ),
     ]
     SUPPORT_BLOCKS_POS_OFFSET = [-BOARD_SIZE_XY[0]/2, -BOARD_SIZE_XY[1]/2, 0]
 
@@ -75,6 +83,8 @@ class OctopusMotherboardHolderPart(AbstractHolderPart):
             OctopusMotherboardHolderPart.SIMPLIFIED_STEP_FILE,
             OctopusMotherboardHolderPart.ULTRA_SIMPLIFIED_STEP_FILE,
             OctopusMotherboardHolderPart.MODEL_OFFSET,
+            OctopusMotherboardHolderPart.MODEL_ROTATION,
+            OctopusMotherboardHolderPart.MODEL_MIRROR,
         )
         super().set_screws_specs(OctopusMotherboardHolderPart.SCREWS_SPECS, OctopusMotherboardHolderPart.SCREWS_POS_OFFSET)
         super().set_support_blocks_specs(OctopusMotherboardHolderPart.SUPPORT_BLOCKS_SPECS, OctopusMotherboardHolderPart.SUPPORT_BLOCKS_POS_OFFSET)
