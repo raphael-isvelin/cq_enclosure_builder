@@ -70,6 +70,13 @@ class Enclosure:
         lid_panel_add_chamfer: bool = True,
         no_fillet_top: bool = False,
         no_fillet_bottom: bool = False,
+        backpanel_face: Face = None,
+        backpanel_size: Tuple[float, float] = None,
+        backpanel_thickness: float = 0.7,
+        backpanel_pos: Tuple[float, float, float] = None,
+        backpanel_tapered_top: bool = True,
+        backpanel_screws_pos = [],
+        backpanel_screw_diameter = 2.3,
     ):
         if lid_on_faces != [Face.BOTTOM]:
             # TODO: add support for lid != BOTTOM; see issue #2
@@ -108,14 +115,31 @@ class Enclosure:
         for info in self.panels_specs:
             lid_size_error_margin = 0 if info[0] not in lid_on_faces else lid_panel_size_error_margin
             add_chamfer = False if info[0] not in lid_on_faces else lid_panel_add_chamfer
-            self.panels[info[0]] = Panel(
-                info[0],
-                PanelSize(*info[1]),
-                alpha=info[3],
-                lid_size_error_margin=lid_size_error_margin,
-                project_info=self.project_info,
-                add_chamfer=add_chamfer,
-            )
+
+            if info[0] == backpanel_face:
+                self.panels[info[0]] = Panel(
+                    info[0],
+                    PanelSize(*info[1]),
+                    alpha=info[3],
+                    lid_size_error_margin=lid_size_error_margin,
+                    project_info=self.project_info,
+                    add_chamfer=add_chamfer,
+                    backpanel_size=backpanel_size,
+                    backpanel_thickness=backpanel_thickness,
+                    backpanel_pos=backpanel_pos,
+                    backpanel_tapered_top=backpanel_tapered_top,
+                    backpanel_screws_pos=backpanel_screws_pos,
+                    backpanel_screw_diameter=backpanel_screw_diameter,
+                )
+            else:
+                self.panels[info[0]] = Panel(
+                    info[0],
+                    PanelSize(*info[1]),
+                    alpha=info[3],
+                    lid_size_error_margin=lid_size_error_margin,
+                    project_info=self.project_info,
+                    add_chamfer=add_chamfer,
+                )
 
         # Lid should be created before the screws are added (cut the screws' masks from the lid)
         if add_lid_support:

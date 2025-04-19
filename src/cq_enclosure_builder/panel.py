@@ -1,5 +1,5 @@
 """
-   Copyright 2023 Raphaël Isvelin
+   Copyright 2025 Raphaël Isvelin
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from typing_extensions import Self
 import cadquery as cq
 from cq_enclosure_builder import Face, ProjectInfo
 from cq_enclosure_builder.part import Part
-from . import PanelSize
+from cq_enclosure_builder import PanelSize
 
 
 class Panel:
@@ -34,7 +34,13 @@ class Panel:
             lid_size_error_margin: float = 0.0,  # if provided, panel will be smaller than mask
             project_info: ProjectInfo = ProjectInfo(),
             add_chamfer: bool = False,
-        ):
+            backpanel_size: Tuple[float, float] = None,
+            backpanel_thickness: float = 0.7,
+            backpanel_pos: Tuple[float, float, float] = None,
+            backpanel_tapered_top: bool = True,
+            backpanel_screws_pos = [],
+            backpanel_screw_diameter = 2.3,
+    ):
         self.face: Face = face
         self.size: PanelSize = size
         self.lid_size_error_margin: float = lid_size_error_margin
@@ -60,6 +66,12 @@ class Panel:
         self.debug_assemblies["combined"] = cq.Assembly(None, name=self.face.label + " - Debug")
         self.project_info: ProjectInfo = project_info
         self.add_chamfer: bool = add_chamfer
+        self.backpanel_size = backpanel_size
+        self.backpanel_thickness = backpanel_thickness
+        self.backpanel_pos = backpanel_pos
+        self.backpanel_tapered_top = backpanel_tapered_top
+        self.backpanel_screws_pos = backpanel_screws_pos
+        self.backpanel_screw_diameter = backpanel_screw_diameter
         self.additional_printables: Dict[str, Tuple[float, float], cq.Workplane] = []
         self._alpha: float = alpha
         self._parts_to_add = []
@@ -113,23 +125,35 @@ class Panel:
                     .faces("-Z").edges()
                     .chamfer(self.true_size.wall_thickness * 0.75, self.true_size.wall_thickness * 0.75 * 0.35)
             )
+
+        backpanel = None
+        backpanel_with_part_mask = None
+        if self.backpanel_size is not None and self.backpanel_pos is not None:
+            backpanel = self._build_backpanel()
+            backpanel_with_part_mask = backpanel.translate([0,0,0])
+
         self.panel = cq.Assembly(None, name="Panel TOP")
         for part_to_add in self._parts_to_add:
             part_obj = part_to_add["part"]
             if part_obj.additional_printables is not None:
                 self.additional_printables.extend(part_obj.additional_printables)
             self._add_part_to_debug_assemblies(part_to_add)
-            wall = wall.cut(
-                part_obj.mask.translate([*part_to_add["pos"], 0])
-            )
+            translated_part_mask = part_obj.mask.translate([*part_to_add["pos"], 0])
+            wall = wall.cut(translated_part_mask)
+            if backpanel_with_part_mask is not None:
+                backpanel_with_part_mask = backpanel_with_part_mask.cut(translated_part_mask)
             if part_obj.assembly_parts != None:
+                if backpanel is not None:
+                    print("WARNING - support of backpanel when assembly_parts is present hasn't been implemented yet")
                 self.panel = self.panel.add(
                     self._translate_assembly_objects_and_rotate_to_face(part_obj.assembly_parts, [*part_to_add["pos"], 0]))
                     #self._rotate_assembly_to_face(part_obj.part_assembly.translate([*part_to_add["pos"], 0])))
             else:
+                translated_part = part_obj.part.translate([*part_to_add["pos"], 0])
+                if backpanel is not None:
+                    translated_part = translated_part.cut(backpanel)
                 self.panel = self.panel.add(
-                    self._rotate_to_face(
-                        part_obj.part.translate([*part_to_add["pos"], 0])),
+                    self._rotate_to_face(translated_part),
                     name=part_to_add["label"],
                     color=cq.Color(*self._part_color if part_to_add["color"] is None else part_to_add["color"], part_to_add["alpha"]),
                 )
@@ -137,6 +161,29 @@ class Panel:
                 self.size.total_thickness = part_obj.size.thickness
         for screw_cs in self._screw_counter_sunks:
             wall = wall.cut(screw_cs[1]).add(screw_cs[0])
+
+        if backpanel is not None:
+            wall = wall.cut(backpanel)
+            if len(self.backpanel_screws_pos) > 0:
+                wall = (
+                    wall
+                        .faces('front').workplane()
+                        .center(self.backpanel_pos[0], self.backpanel_pos[1])
+                        .pushPoints(self.backpanel_screws_pos)
+                        .hole(self.backpanel_screw_diameter)
+                )
+                backpanel = (
+                    backpanel
+                        .faces('front').workplane()
+                        .center(self.backpanel_pos[0], self.backpanel_pos[1])
+                        .pushPoints(self.backpanel_screws_pos)
+                        .hole(self.backpanel_screw_diameter)
+                )
+                self.additional_printables.append(("backpanel-" + str(self.face), (*self.backpanel_size, self.backpanel_thickness), backpanel_with_part_mask))
+
+        self.wall = wall.translate([0,0,0])
+        self.panelbefore = self.panel.translate([0,0,0])
+
         self.panel = self.panel.add(self._rotate_to_face(wall), name="Wall", color=cq.Color(*self._color, self._alpha))
         self.debug_assemblies["combined"] = self._build_combined_debug_assembly()
         self.panel_with_debug = (
@@ -145,6 +192,20 @@ class Panel:
                 .add(self.debug_assemblies["combined"], name="Debug")
         )
         return self
+
+    def _build_backpanel(self):
+        copper_size = self.backpanel_size
+        copper_thickness = self.backpanel_thickness
+        copper = cq.Workplane("front").rect(*copper_size).extrude(copper_thickness)
+        if self.backpanel_tapered_top:
+            copper = copper.cut(
+                cq.Workplane("left")
+                    .polyline([(0, 0), (copper_thickness, copper_thickness), (copper_thickness, 0)]).close()
+                    .extrude(copper_size[0])
+                    .translate([copper_size[0]/2, -copper_size[1]/2, 0])
+            )
+        copper = copper.translate(self.backpanel_pos)
+        return copper
 
     def _rotate_to_face(self, wp) -> cq.Workplane:
         if self.face == Face.TOP:

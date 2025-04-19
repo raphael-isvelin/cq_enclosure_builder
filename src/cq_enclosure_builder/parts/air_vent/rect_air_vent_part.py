@@ -39,7 +39,7 @@ class RectAirVentPart(Part):
         enclosure_wall_thickness: float,
         width: float = 30,
         length: float = 25,
-        thickness: float = 6,
+        thickness: float = 8,
         margin: float = 0.5,
         hole_angle: float = 25,
         hole_width: float = 1.6,
@@ -47,8 +47,8 @@ class RectAirVentPart(Part):
         taper: bool = True,
         taper_margin: float = 3,
         taper_angle: float = 35,
-        with_fan_screws: Union[FanSize, None] = FanSize._30_MM,
-        fan_screws_size: str = "m3",
+        with_fan_screws: Union[FanSize, None] = FanSize._40_MM,
+        fan_screws_size: str = "m2",
         fan_screws_taper_mode: TaperOptions = TaperOptions.XY_TAPER,
         fan_screws_taper_rotation: float = 180,
         fan_screws_taper_incline: float = 0.75,
@@ -174,7 +174,7 @@ class RectAirVentPart(Part):
         screw_block_taper_rotation: float = 0,
         screw_block_taper_incline: float = 0.75,
         screw_block_taper_on: str = "1111",  # should taper that specific screw block? same order as screws_pos
-        screw_block_hole_distance_to_wall: float = 1.4
+        screw_block_hole_distance_to_wall: float = 3,
     ):
         screw = ScrewBlock(screw_provider=DefaultHeatSetScrewProvider).build(
             screw_size, block_thickness, enclosure_wall_thickness, screw_hole_depth=block_thickness-screw_block_hole_distance_to_wall, fill_pointy_bit=True,
